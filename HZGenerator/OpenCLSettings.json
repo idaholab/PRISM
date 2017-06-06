@@ -1,0 +1,6 @@
+{
+  "CompileOptions" : "-cl-mad-enable",
+  "Sources" : [
+    "MaskKernels.cl"
+  ]
+}

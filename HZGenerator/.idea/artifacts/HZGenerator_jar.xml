@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="HZGenerator:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/HZGenerator_jar</output-path>
+    <root id="archive" name="IDXGenerator.jar">
+      <element id="module-output" name="HZGenerator" />
+    </root>
+  </artifact>
+</component>

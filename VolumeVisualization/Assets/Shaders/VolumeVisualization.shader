@@ -1,4 +1,4 @@
-﻿Shader "Custom/VolumeVisualization"
+﻿﻿Shader "Custom/VolumeVisualization"
 {
 	Properties
 	{
@@ -153,7 +153,6 @@
 					if (ray_pos.x < 0 || ray_pos.y < 0 || ray_pos.z < 0) break;
 					if (ray_pos.x > 1 || ray_pos.y > 1 || ray_pos.z > 1) break;
 				}
-
 				return fColor * _NormPerRay;
 			}
 			ENDCG
