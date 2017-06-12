@@ -1,11 +1,10 @@
 ﻿// Adapted from a script at: http://wiki.unity3d.com/index.php?title=MouseOrbitImproved 
 using UnityEngine;
 using System.Collections;
- 
-[AddComponentMenu("Camera-Control/Mouse Orbit with zoom")]
+using UnityEngine.EventSystems;
+
 public class ArcBallCamera : MonoBehaviour
 {
-
     public Transform target;
     public float distance = 5.0f;
     public float xSpeed = 120.0f;
@@ -19,8 +18,9 @@ public class ArcBallCamera : MonoBehaviour
 
     private Rigidbody rigidbody;
 
-    float x = 0.0f;
-    float y = 0.0f;
+    private float x = 0.0f;
+    private float y = 0.0f;
+
 
     // Use this for initialization
     void Start()
@@ -36,11 +36,15 @@ public class ArcBallCamera : MonoBehaviour
         {
             rigidbody.freezeRotation = true;
         }
+
     }
 
     void LateUpdate()
     {
-        if (target && Input.GetMouseButton(0))
+        if (target != null
+            && Input.GetMouseButton(0) 
+            && EventSystem.current.currentSelectedGameObject == null
+            && !EventSystem.current.IsPointerOverGameObject())
         {
             x += Input.GetAxis("Mouse X") * xSpeed * distance * 0.02f;
             y -= Input.GetAxis("Mouse Y") * ySpeed * 0.02f;
@@ -51,11 +55,6 @@ public class ArcBallCamera : MonoBehaviour
 
             distance = Mathf.Clamp(distance - Input.GetAxis("Mouse ScrollWheel") * 5, distanceMin, distanceMax);
 
-            RaycastHit hit;
-            if (Physics.Linecast(target.position, transform.position, out hit))
-            {
-                distance -= hit.distance;
-            }
             Vector3 negDistance = new Vector3(0.0f, 0.0f, -distance);
             Vector3 position = rotation * negDistance + target.position;
 
@@ -71,11 +70,6 @@ public class ArcBallCamera : MonoBehaviour
 
             distance = Mathf.Clamp(distance - Input.GetAxis("Mouse ScrollWheel") * 5, distanceMin, distanceMax);
 
-            RaycastHit hit;
-            if (Physics.Linecast(target.position, transform.position, out hit))
-            {
-                distance -= hit.distance;
-            }
             Vector3 negDistance = new Vector3(0.0f, 0.0f, -distance);
             Vector3 position = rotation * negDistance + target.position;
 
