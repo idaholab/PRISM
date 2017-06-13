@@ -9,6 +9,7 @@ public class UserInterface : MonoBehaviour {
     public Text maxStepsValueText;
     public Text normPerStepValueText;
     public Text normPerRayValueText;
+    public Text hzRenderLevelValueText;
 
     // Use this for initialization
     void Start () {
@@ -16,12 +17,13 @@ public class UserInterface : MonoBehaviour {
         maxStepsValueText.text = GameObject.Find("Max Steps Slider").GetComponent<Slider>().value.ToString();
         normPerStepValueText.text = GameObject.Find("Norm Per Step Slider").GetComponent<Slider>().value.ToString();
         normPerRayValueText.text = GameObject.Find("Norm Per Ray Slider").GetComponent<Slider>().value.ToString();
+        hzRenderLevelValueText.text = GameObject.Find("HZ Render Level Slider").GetComponent<Slider>().value.ToString();
     }
 	
 	// Update is called once per frame
 	void Update () {
-		
-	}
+
+    }
 
 
     /* Slider Update Functions */
@@ -41,5 +43,11 @@ public class UserInterface : MonoBehaviour {
     {
         volume.GetComponent<Renderer>().material.SetFloat("_NormPerRay", newVal);
         normPerRayValueText.text = newVal.ToString();
+    }
+
+    public void updateHZRenderLevel(float newVal)
+    {
+        volume.GetComponent<Renderer>().material.SetInt("_HZRenderLevel", (int) newVal);
+        hzRenderLevelValueText.text = newVal.ToString();
     }
 }
