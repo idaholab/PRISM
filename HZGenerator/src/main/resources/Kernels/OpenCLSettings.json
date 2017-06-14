@@ -3,6 +3,7 @@
   "Sources" : [
     "KawaseBlur.cl",
     "Threshold.cl",
-    "Morton.cl"
+    "Morton.cl",
+    "Scan.cl"
   ]
 }
