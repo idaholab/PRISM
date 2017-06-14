@@ -9,29 +9,31 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+
+import java.io.File;
+import java.nio.file.Paths;
+
 import static org.jocl.CL.*;
 
 
-public class HZGeneratorGUI extends Application {
+public class MainClass extends Application {
 	Stage stage;
 
 	public static void main(String[] args) {
-		// Initialize OpenCL
-		if (CLFW.Initialize() != CL_SUCCESS) {
-			System.out.println("OpenCL failed to initialize.");
-			return;
-		}
-
-		Application.launch(HZGeneratorGUI.class, args);
+		Application.launch(MainClass.class, args);
 	}
 
 	@Override
 	public void start(Stage stage) throws Exception {
+		// Initialize OpenCL
+		File openCLSettings = new File(getClass().getClassLoader().getResource("Kernels/OpenCLSettings.json").getPath());
+		if (CLFW.Initialize(openCLSettings) != CL_SUCCESS) {
+			System.out.println("OpenCL failed to initialize.");
+			return;
+		}
+
 		FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("HZGeneratorGUI.fxml"));
 		Parent root = (Parent)loader.load();
-		HZController controller = (HZController)loader.getController();
-		controller.stage = stage;
-		controller.initialize();
 
 		this.stage = stage;
 		stage.setTitle("HZ Volume Generator");

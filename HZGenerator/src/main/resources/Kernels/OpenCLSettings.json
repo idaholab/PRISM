@@ -1,6 +1,8 @@
 {
   "CompileOptions" : "-cl-mad-enable",
   "Sources" : [
-    "MaskKernels.cl"
+    "KawaseBlur.cl",
+    "Threshold.cl",
+    "Morton.cl"
   ]
 }

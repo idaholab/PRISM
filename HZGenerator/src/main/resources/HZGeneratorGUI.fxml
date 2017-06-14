@@ -3,15 +3,13 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ChoiceBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
-<?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.control.Slider?>
-<?import javafx.scene.control.Spinner?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.control.TreeView?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
@@ -21,11 +19,11 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane fx:id="rootPane" minHeight="-Infinity" minWidth="-Infinity" prefHeight="505.0" prefWidth="1080.0" styleClass="background" stylesheets="@HZGeneratorGUI.css" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="HZController">
+<AnchorPane fx:id="rootPane" minHeight="-Infinity" minWidth="-Infinity" prefHeight="505.0" prefWidth="1080.0" styleClass="background" stylesheets="@HZGeneratorGUI.css" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller">
    <children>
       <HBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="474.0" prefWidth="1080.0" styleClass="rootHBox" stylesheets="@HZGeneratorGUI.css">
          <children>
-            <TabPane prefHeight="474.0" prefWidth="367.0" tabClosingPolicy="UNAVAILABLE">
+            <TabPane fx:id="fileTabPane" prefHeight="474.0" prefWidth="367.0" tabClosingPolicy="UNAVAILABLE">
               <tabs>
                 <Tab text="TIFF">
                   <content>
@@ -41,10 +39,10 @@
                                   <RowConstraints maxHeight="420.0" minHeight="10.0" prefHeight="343.0" vgrow="SOMETIMES" />
                                 </rowConstraints>
                                  <children>
-                                    <HBox onDragDropped="#dropFolder" prefHeight="56.0" prefWidth="339.0" spacing="10.0">
+                                    <HBox prefHeight="56.0" prefWidth="339.0" spacing="10.0">
                                        <children>
-                                          <Button mnemonicParsing="false" onAction="#openFolderDialogue" prefHeight="37.0" prefWidth="218.0" text="Choose img directory" />
-                                          <TextField fx:id="txtSelectedDirectory1" editable="false" prefHeight="24.0" prefWidth="155.0" />
+                                          <Button fx:id="btnOpenTiffVolume" mnemonicParsing="false" onAction="#openVolume" prefHeight="37.0" prefWidth="218.0" text="Choose TIFF directory" />
+                                          <TextField fx:id="txtTiffPath" editable="false" prefHeight="24.0" prefWidth="155.0" />
                                        </children>
                                        <opaqueInsets>
                                           <Insets />
@@ -53,16 +51,16 @@
                                           <Insets bottom="10.0" top="10.0" />
                                        </padding>
                                     </HBox>
-                                    <TreeView fx:id="fileTree" prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2" />
                                     <HBox prefHeight="100.0" prefWidth="200.0" spacing="10.0" GridPane.rowIndex="1">
                                        <children>
-                                          <Button mnemonicParsing="false" onAction="#openFolderDialogue" prefHeight="37.0" prefWidth="224.0" text="Choose destination" />
-                                          <TextField fx:id="txtSelectedDirectory" editable="false" prefHeight="28.0" prefWidth="161.0" />
+                                          <Button mnemonicParsing="false" prefHeight="37.0" prefWidth="224.0" text="Choose destination" />
+                                          <TextField fx:id="txtTiffResultPath" editable="false" prefHeight="28.0" prefWidth="161.0" />
                                        </children>
                                        <padding>
                                           <Insets bottom="10.0" top="10.0" />
                                        </padding>
                                     </HBox>
+                                    <ListView fx:id="tiffImageList" prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2" />
                                  </children>
                                  <padding>
                                     <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
@@ -91,10 +89,10 @@
                                     <RowConstraints maxHeight="420.0" minHeight="10.0" prefHeight="233.0" vgrow="SOMETIMES" />
                                  </rowConstraints>
                                  <children>
-                                    <HBox onDragDropped="#dropFolder" prefHeight="56.0" prefWidth="339.0" spacing="10.0">
+                                    <HBox prefHeight="56.0" prefWidth="339.0" spacing="10.0">
                                        <children>
-                                          <Button mnemonicParsing="false" onAction="#openFolderDialogue" prefHeight="37.0" prefWidth="217.0" text="Choose raw source" />
-                                          <TextField fx:id="txtSelectedDirectory11" editable="false" prefHeight="24.0" prefWidth="155.0" />
+                                          <Button fx:id="btnOpenRawSource" mnemonicParsing="false" onAction="#openVolume" prefHeight="37.0" prefWidth="217.0" text="Choose raw source" />
+                                          <TextField fx:id="txtRawPath" editable="false" prefHeight="24.0" prefWidth="155.0" />
                                        </children>
                                        <opaqueInsets>
                                           <Insets />
@@ -105,8 +103,8 @@
                                     </HBox>
                                     <HBox prefHeight="100.0" prefWidth="200.0" spacing="10.0" GridPane.rowIndex="1">
                                        <children>
-                                          <Button mnemonicParsing="false" onAction="#openFolderDialogue" prefHeight="37.0" prefWidth="220.0" text="Choose destination" />
-                                          <TextField fx:id="txtSelectedDirectory1" editable="false" prefHeight="28.0" prefWidth="161.0" />
+                                          <Button mnemonicParsing="false" prefHeight="37.0" prefWidth="220.0" text="Choose destination" />
+                                          <TextField fx:id="txtRawResultPath" editable="false" prefHeight="28.0" prefWidth="161.0" />
                                        </children>
                                        <padding>
                                           <Insets bottom="10.0" top="10.0" />
@@ -115,17 +113,17 @@
                                     <HBox prefHeight="248.0" prefWidth="340.0" spacing="10.0" GridPane.rowIndex="2">
                                        <children>
                                           <Label alignment="CENTER" prefHeight="37.0" prefWidth="85.0" text="Size (X, Y, Z)" textAlignment="RIGHT" wrapText="true" />
-                                          <Spinner id="spnrX" fx:id="spnrX" editable="true" prefHeight="37.0" prefWidth="70.0" />
-                                          <Spinner id="spnrY" fx:id="spnrY" editable="true" prefHeight="37.0" prefWidth="70.0" />
-                                          <Spinner id="spnrZ" fx:id="spnrZ" editable="true" prefHeight="37.0" prefWidth="73.0" />
+                                          <TextField fx:id="txtRawX" prefHeight="37.0" prefWidth="76.0" />
+                                          <TextField fx:id="txtRawY" prefHeight="37.0" prefWidth="78.0" />
+                                          <TextField fx:id="txtRawZ" prefHeight="37.0" prefWidth="82.0" />
                                        </children>
                                     </HBox>
                                     <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="3">
                                        <children>
-                                          <Button layoutY="2.0" mnemonicParsing="false" prefHeight="33.0" prefWidth="340.0" text="Break out images" />
+                                          <Button layoutY="2.0" mnemonicParsing="false" onAction="#setRawDimension" prefHeight="33.0" prefWidth="340.0" text="Break out images" />
                                        </children>
                                     </AnchorPane>
-                                    <ListView prefHeight="221.0" prefWidth="340.0" GridPane.rowIndex="4" />
+                                    <ListView fx:id="rawImageList" prefHeight="221.0" prefWidth="340.0" GridPane.rowIndex="4" />
                                  </children>
                                  <padding>
                                     <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
@@ -173,10 +171,9 @@
                      <children>
                         <Label text="Masked?" />
                         <Label text="Threshold" GridPane.rowIndex="1" />
-                        <CheckBox fx:id="isMasked" mnemonicParsing="false" onAction="#maskChecked" prefHeight="29.0" prefWidth="1.0" GridPane.columnIndex="1" />
+                        <CheckBox fx:id="isMasked" mnemonicParsing="false" onAction="#toggleMask" prefHeight="29.0" prefWidth="1.0" GridPane.columnIndex="1" />
                         <Slider fx:id="slider" blockIncrement="0.1" disable="true" majorTickUnit="0.2" max="0.5" min="-0.5" minorTickCount="1" prefHeight="14.0" prefWidth="108.0" showTickMarks="true" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-                        <CheckBox fx:id="isMasked1" layoutX="113.0" layoutY="10.0" mnemonicParsing="false" onAction="#maskChecked" prefHeight="29.0" prefWidth="1.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                        <Label text="Compute Time:" GridPane.rowIndex="2" />
+                        <CheckBox fx:id="isMasked1" layoutX="113.0" layoutY="10.0" mnemonicParsing="false" onAction="#toggleMask" prefHeight="29.0" prefWidth="1.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                         <Label fx:id="lblTime" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                      </children>
                   </GridPane>
@@ -191,26 +188,35 @@
                 <RowConstraints maxHeight="157.0" minHeight="0.0" prefHeight="85.0" vgrow="SOMETIMES" />
               </rowConstraints>
                <children>
-                  <GridPane prefHeight="76.0" prefWidth="359.0" GridPane.rowIndex="1">
+                  <GridPane prefHeight="84.0" prefWidth="348.0" GridPane.rowIndex="1">
                     <columnConstraints>
-                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="97.0" minWidth="10.0" prefWidth="68.0" />
-                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="257.0" minWidth="10.0" prefWidth="178.0" />
-                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="137.0" minWidth="10.0" prefWidth="113.0" />
+                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="152.0" minWidth="10.0" prefWidth="142.0" />
+                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="257.0" minWidth="10.0" prefWidth="27.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="137.0" minWidth="10.0" prefWidth="114.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="137.0" minWidth="10.0" prefWidth="66.0" />
                     </columnConstraints>
                     <rowConstraints>
                       <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                       <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                     </rowConstraints>
                      <children>
-                        <Button mnemonicParsing="false" prefHeight="27.0" prefWidth="108.0" styleClass="custom-button" stylesheets="@HZGeneratorGUI.css" text="Generate" GridPane.columnIndex="2" GridPane.rowIndex="2">
-                           <font>
-                              <Font size="14.0" />
-                           </font>
-                        </Button>
+                        <Label alignment="CENTER" prefHeight="21.0" prefWidth="138.0" text="Num Levels:" />
+                        <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="21.0" prefWidth="144.0" text="Estimated File Size:" GridPane.rowIndex="2" />
+                        <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
+                           <children>
+                              <Label alignment="CENTER" layoutX="2.0" layoutY="3.0" prefHeight="21.0" prefWidth="114.0" text="Min Dim Width" />
+                           </children></AnchorPane>
+                        <Label fx:id="lblNumLevels" text="-1" GridPane.columnIndex="1" />
+                        <Label fx:id="lblFileSize" text="-1" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                        <Label alignment="CENTER" layoutX="10.0" layoutY="12.0" prefHeight="21.0" prefWidth="138.0" text="Num Bricks:" GridPane.rowIndex="1" />
+                        <Label fx:id="lblNumBricks" layoutX="146.0" layoutY="63.0" text="-1" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                        <Label alignment="CENTER" prefHeight="21.0" prefWidth="117.0" text="Max Dim Width" GridPane.columnIndex="2" />
+                        <ChoiceBox fx:id="maxDimWidthChoice" prefWidth="150.0" styleClass="drop-down" GridPane.columnIndex="3" />
+                        <ChoiceBox fx:id="minDimWidthChoice" prefWidth="150.0" styleClass="drop-down" GridPane.columnIndex="3" GridPane.rowIndex="2" />
                      </children>
                      <padding>
-                        <Insets bottom="10.0" />
+                        <Insets bottom="10.0" top="10.0" />
                      </padding>
                   </GridPane>
                   <TabPane prefHeight="330.0" prefWidth="347.0" tabClosingPolicy="UNAVAILABLE">
@@ -231,14 +237,11 @@
       </HBox>
       <Pane layoutX="1.0" layoutY="472.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="38.0" prefWidth="1080.0">
          <children>
-            <ProgressBar layoutY="-3.0" prefHeight="33.0" prefWidth="1080.0" progress="0.0">
-               <opaqueInsets>
-                  <Insets />
-               </opaqueInsets>
-               <padding>
-                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-               </padding>
-            </ProgressBar>
+            <Button layoutX="965.0" layoutY="-2.0" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#generate" prefHeight="30.0" prefWidth="110.0" styleClass="custom-button" stylesheets="@HZGeneratorGUI.css" text="Generate">
+               <font>
+                  <Font size="14.0" />
+               </font>
+            </Button>
          </children>
       </Pane>
    </children>

@@ -184,3 +184,11 @@
     -fx-alignment: CENTER;
     -fx-text-fill: #d8d8d8;
 }
+
+.drop-down {
+
+}
+
+.choice-box .label {
+     -fx-text-fill: black;
+}

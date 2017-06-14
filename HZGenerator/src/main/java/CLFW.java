@@ -4,6 +4,7 @@
  * Initialize before use.
  */
 
+import static java.lang.Math.*;
 import static org.jocl.CL.*;
 import org.jocl.*;
 
@@ -27,7 +28,7 @@ public class CLFW {
 	protected CLFW() {}
 
 	// Generates the static fields required to use OpenCL
-	public static int Initialize() {
+	public static int Initialize(File openCLSettings) {
 		int[] error = new int[1];
 		final int platformIndex = 0;
 		final long deviceType = CL_DEVICE_TYPE_ALL;
@@ -71,12 +72,12 @@ public class CLFW {
 		// Compile source files
 		try {
 			// Read json to get kernel file names
-			String contents = new String(Files.readAllBytes(Paths.get("OpenCLSettings.json")));
+			String contents = new String(Files.readAllBytes(Paths.get(openCLSettings.getPath())));
 			JSONObject obj = new JSONObject(contents);
 			JSONArray arr = obj.getJSONArray("Sources");
 			String[] sources = new String[arr.length()];
 			for (int i = 0; i < arr.length(); ++i)
-				sources[i] = new String(Files.readAllBytes(Paths.get((String)arr.get(i))));
+				sources[i] = new String(Files.readAllBytes(Paths.get( openCLSettings.getParent() + "/" + (String)arr.get(i))));
 
 			// Compile the kernels
 			cl_program program = clCreateProgramWithSource(DefaultContext, sources.length, sources,
@@ -116,4 +117,6 @@ public class CLFW {
 
 		return error[0];
 	}
+
+	public static int NextPow2(int num) {return max((int)pow(2, ceil(log(num)/log(2))), 8);}
 }

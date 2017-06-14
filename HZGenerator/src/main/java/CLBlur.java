@@ -89,7 +89,7 @@ public class CLBlur implements BufferedImageOp {
 				0, Pointer.to(dataSrc), error
 		);
 
-		// Run kawase blur
+		// Run kawase blurSlice
 		int[] r = {2,3,3,5,7};
 		error[0] |= clSetKernelArg(kawaseBlurKernel, 0, Sizeof.cl_int, Pointer.to(width));
 		error[0] |= clSetKernelArg(kawaseBlurKernel, 1, Sizeof.cl_int, Pointer.to(height));
