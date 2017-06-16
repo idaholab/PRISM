@@ -3,6 +3,7 @@
 	Properties
 	{
 		_MainTex("Texture", 2D) = "white" {}								// An array of bytes that is the 8-bit raw data. It is essentially a 1D array/texture.
+		_VolumeDataTexture("3D Data Texture", 3D) = "" {}
 		_Axis("Axes Order", Vector) = (1, 2, 3)								// coordinate i = 0,1,2 in Unity corresponds to coordinate _Axis[i]-1 in the data
 		_NormPerStep("Intensity Normalization per Step", Float) = 1
 		_NormPerRay("Intensity Normalization per Ray" , Float) = 1
@@ -33,23 +34,32 @@
 
 			/********************* DATA *********************/
 			sampler2D _MainTex;
+			sampler3D _VolumeDataTexture;
 			float3 _Axis;
 			float _NormPerStep;
 			float _NormPerRay;
 			float _Steps;
 			int _HZRenderLevel;
-			uint lastBitMask = 0x40000000;			// a 1 bit in the second most significant bit
+
+			//#define LAST_BIT_MASK 1 << 24						// a 1 bit in the second most significant bit
+			static uint LAST_BIT_MASK = (1 << 24);
 
 			/******************** STRUCTS ********************/
 
 			struct appdata {
 				float4 pos : POSITION;
+				float2 texcoord : TEXCOORD0;
 			};
 
 			struct v2f {
+				//[nointerpolation]
 				float4 pos : SV_POSITION;
 				float3 ray_o : TEXCOORD1; // ray origin
 				float3 ray_d : TEXCOORD2; // ray direction
+				// TEST: Perspective correction
+				float3 normal : TEXCOORD3;
+				//float3 normal : NORMAL;
+				// END TEST
 			};
 
 			/******************* FUNCTIONS *******************/
@@ -87,45 +97,92 @@
 				o.pos = mul(UNITY_MATRIX_MVP, i.pos);
 				o.ray_d = -ObjSpaceViewDir(i.pos);
 				o.ray_o = i.pos.xyz - o.ray_d;
+				/*o.normal = o.pos.xyz; */
+
 
 				return o;
 			}
 
-			//int3 quantizePoint(float3 cartesianPoint)
-			//{
-			//	return int3(floor(cartesianPoint.x), floor(cartesianPoint.y), floor(cartesianPoint.z));
-			//}
+			/***************************************** HZ CURVING CODE ************************************************/
+			uint Compact1By2(uint x)
+			{
+				x &= 0x09249249;                  // x = ---- 9--8 --7- -6-- 5--4 --3- -2-- 1--0
+				x = (x ^ (x >> 2)) & 0x030c30c3; // x = ---- --98 ---- 76-- --54 ---- 32-- --10
+				x = (x ^ (x >> 4)) & 0x0300f00f; // x = ---- --98 ---- ---- 7654 ---- ---- 3210
+				x = (x ^ (x >> 8)) & 0xff0000ff; // x = ---- --98 ---- ---- ---- ---- 7654 3210
+				x = (x ^ (x >> 16)) & 0x000003ff; // x = ---- ---- ---- ---- ---- --98 7654 3210
+				return x;
+			}
+
+			uint DecodeMorton3X(uint code)
+			{
+				return Compact1By2(code >> 2);
+			}
+
+			uint DecodeMorton3Y(uint code)
+			{
+				return Compact1By2(code >> 1);
+			}
+
+			uint DecodeMorton3Z(uint code)
+			{
+				return Compact1By2(code >> 0);
+			}
+
+			uint3 decode(uint c)
+			{
+				uint3 cartEquiv = uint3(0,0,0);
+				c = c << 1 | 1;
+				uint i = c | c >> 1;
+				i |= i >> 2;
+				i |= i >> 4;
+				i |= i >> 8;
+				i |= i >> 16;
+
+				i -= i >> 1;
+
+				c *= LAST_BIT_MASK / i;
+				c &= (~LAST_BIT_MASK);
+				cartEquiv.x = DecodeMorton3X(c);
+				cartEquiv.y = DecodeMorton3Y(c);
+				cartEquiv.z = DecodeMorton3Z(c);
+
+				return cartEquiv;
+			}
 
 			// Expands an 8-bit integer into 24 bits by inserting 2 zeros after each bit
-			uint expandBits(uint v)
+			// Taken from: https://webcache.googleusercontent.com/search?q=cache:699-OSphYRkJ:https://fgiesen.wordpress.com/2009/12/13/decoding-morton-codes/+&cd=1&hl=en&ct=clnk&gl=us
+			uint Part1By2(uint x)
 			{
-				v = (v * 0x00010001u) & 0xFF0000FFu;
-				v = (v * 0x00000101u) & 0x0F00F00Fu;
-				v = (v * 0x00000011u) & 0xC30C30C3u;
-				v = (v * 0x00000005u) & 0x49249249u;
-				return v;
+				x &= 0x000003ff;                  // x = ---- ---- ---- ---- ---- --98 7654 3210
+				x = (x ^ (x << 16)) & 0xff0000ff; // x = ---- --98 ---- ---- ---- ---- 7654 3210
+				x = (x ^ (x << 8)) & 0x0300f00f;  // x = ---- --98 ---- ---- 7654 ---- ---- 3210
+				x = (x ^ (x << 4)) & 0x030c30c3;  // x = ---- --98 ---- 76-- --54 ---- 32-- --10
+				x = (x ^ (x << 2)) & 0x09249249;  // x = ---- 9--8 --7- -6-- 5--4 --3- -2-- 1--0
+				return x;
 			}
 
 			// Calculates a 24-bit Morton code for the given 3D point located within the unit cube [0, 1]
 			// Taken from: https://devblogs.nvidia.com/parallelforall/thinking-parallel-part-iii-tree-construction-gpu/
 			uint morton3D(float3 pos)
 			{
-				// Quantize the position
-				pos.x = min(max(pos.x * 1024.0f, 0.0f), 1023.0f);
-				pos.y = min(max(pos.y * 1024.0f, 0.0f), 1023.0f);
-				pos.z = min(max(pos.z * 1024.0f, 0.0f), 1023.0f);
+				// Quantize to the correct resolution
+				pos.x = min(max(pos.x * 256.0f, 0.0f), 255.0f);
+				pos.y = min(max(pos.y * 256.0f, 0.0f), 255.0f);
+				pos.z = min(max(pos.z * 256.0f, 0.0f), 255.0f);
 
 				// Interlace the bits
-				uint xx = expandBits((uint) pos.x);
-				uint yy = expandBits((uint) pos.y);
-				uint zz = expandBits((uint) pos.z);
-				return xx * 4 + yy * 2 + zz;
+				uint xx = Part1By2((uint) pos.x);
+				uint yy = Part1By2((uint) pos.y);
+				uint zz = Part1By2((uint) pos.z);
+
+				return xx << 2 | yy << 1 | zz;
 			}
 
 			// Return the index into the hz-ordered array of data given a quantized point within the volume
 			uint getHZIndex(uint zIndex)
 			{
-				int hzIndex = zIndex | lastBitMask;		// set leftmost one
+				uint hzIndex = (zIndex | LAST_BIT_MASK);		// set leftmost one
 				hzIndex /= hzIndex & -hzIndex;			// remove trailing zeros
 				return (hzIndex >> 1);					// remove rightmost one
 			}
@@ -134,39 +191,73 @@
 			// Assumption: Texture2D has (0,0) in bottom left, (1,1) in top right.
 			float2 textureCoordFromHzIndex(uint hzIndex, uint texWidth, uint texHeight)
 			{
-				uint xCoord = hzIndex % texWidth;
-				uint yCoord = hzIndex / texWidth;
 				float2 texCoord = float2(
-					hzIndex % texWidth,		// x coord
-					hzIndex / texWidth		// y coord
+					hzIndex % texWidth,				// x coord
+					hzIndex / (float) texWidth		// y coord
 					);
 
 				// Convert to texture coordinates in [0, 1]
-				texCoord = (texCoord - 0.5) + 0.5;
+				texCoord.x = texCoord.x / (float) texWidth;
+				texCoord.y = texCoord.y / (float) texHeight;
 
 				return texCoord;
 			}
 
-			// Gets the intensity data value at a given position in the 3D texture
-			// note: pos is normalized in [0, 1]
-			float4 sampleIntensity(float3 pos) {
+			float3 texCoord3DFromHzIndex(uint hzIndex, uint texWidth, uint texHeight, uint texDepth)
+			{
+				float3 texCoord = float3(0,0,0);
+				texCoord.z = hzIndex / (texWidth * texHeight);
+				hzIndex = hzIndex - (texCoord.z * texWidth * texHeight);
+				texCoord.y = hzIndex / texWidth;
+				texCoord.x = hzIndex % texHeight;
+
+				// Convert to texture coordinates in [0, 1]
+				texCoord.z = texCoord.z / (float)texDepth;
+				texCoord.y = texCoord.y / (float)texHeight;
+				texCoord.x = texCoord.x / (float)texWidth;
+
+				return texCoord;
+			}
+
+			/***************************************** END HZ CURVING CODE ************************************************/
+
+			float sampleIntensityHz2D(float3 pos) 
+			{
+				/******** SAMPLING 2D HZ CURVED RAW DATA ***********/
+				uint zIndex = morton3D(pos);										// Get the Z order index
+				//uint newIndex = zIndex & (~511);									// Used for rendering different levels
+				uint hzIndex = getHZIndex(zIndex);									// Find the hz order index	
+				float2 texCoord = textureCoordFromHzIndex(hzIndex, 4096, 4096);		// Convert the index to the right texture coordinate for sampling in the 4096 x 4096 texture
+				float data = tex2Dlod(_MainTex, float4(texCoord.xy, 0, 0)).a;		// Sample the color from the main texture that holds the data
+				return data;
+			}
+
+			float sampleIntensityHz3D(float3 pos)
+			{
+				/********* SAMPLING 3D HZ CURVED RAW DATA WITH TEXTURE COORD CALCULATION **********/
+				uint zIndex = morton3D(pos); // Get the Z order index				
+				uint hzIndex = getHZIndex(zIndex); // Find the hz order index
+				float3 texCoord = texCoord3DFromHzIndex(hzIndex, 256, 256, 256);
+				float data = tex3Dlod(_VolumeDataTexture, float4(texCoord, 0)).a;
+				return data;
+			}
+
+			float sampleIntensityRaw3D(float3 pos)
+			{
+				/********* SAMPLING 3D RAW WITH POSITION GIVEN ***********/
 				// Get the position in texture coordinates
-				//float3 posTex = float3(pos[_Axis[0] - 1],pos[_Axis[1] - 1],pos[_Axis[2] - 1]);						// IS THIS STILL NEEDED?
-				//posTex = (posTex - 0.5) + 0.5;
-
-				// Get the Z order index
-				uint zIndex = morton3D(pos);
-
-				// find the hz order index
-				int hzIndex = getHZIndex(zIndex);
-
-				// Convert the index to the right texture coordinate for sampling in the 4096 x 4096 texture
-				float2 texCoord = textureCoordFromHzIndex(hzIndex, 4096, 4096);
-
-				// sample the color from the main texture that holds the data 
-				float data = tex2Dlod(_MainTex, float4(texCoord.xy, 0, 0)).a;
-				//float data = tex3Dlod(_VolumeDataTexture, float4(posTex,0)).a;
-
+				float3 posTex = float3(pos[_Axis[0] - 1], pos[_Axis[1] - 1], pos[_Axis[2] - 1]);
+				float data = tex3Dlod(_VolumeDataTexture, float4(posTex, 0)).a;
+				return data;
+			}
+			
+			// Gets the intensity data value at a given position in the volume.
+			// Note: This is a wrapper for the other sampling methods.
+			// Note: pos is normalized in [0, 1]
+			float4 sampleIntensity(float3 pos) {
+				//float data = sampleIntensityHz2D(pos);
+				//float data = sampleIntensityHz3D(pos);
+				float data = sampleIntensityRaw3D(pos);
 				return float4(data, data, data, data);
 			}
 
@@ -193,8 +284,8 @@
 				// Convert to texture space
 				pNear = pNear + 0.5;
 				pFar = pFar + 0.5;
-				//return float4(pNear, 1);
-				//return float4(pFar , 1);
+				//return float4(pNear, 1);		// Test for near intersections
+				//return float4(pFar , 1);		// Test for far intersections
 				
 				// Set up ray marching parameters
 				float3 ray_pos = pNear;
@@ -203,7 +294,7 @@
 				float3 ray_step = normalize(ray_dir) * sqrt(3) / _Steps;
 				//return float4(abs(ray_dir), 1);
 				//return float4(length(ray_dir), length(ray_dir), length(ray_dir), 1);
-
+	
 				// Perform the ray march
 				float4 fColor = 0;
 				float4 ray_col = 0;

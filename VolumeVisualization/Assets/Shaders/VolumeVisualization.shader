@@ -94,7 +94,7 @@
 			// note: pos is normalized in [0, 1]
 			float4 sampleIntensity(float3 pos) {
 				float3 posTex = float3(pos[_Axis[0] - 1],pos[_Axis[1] - 1],pos[_Axis[2] - 1]);
-				posTex = (posTex - 0.5) + 0.5;
+
 				float data = tex3Dlod(_VolumeDataTexture, float4(posTex,0)).a;
 
 				return float4(data, data, data, data);
