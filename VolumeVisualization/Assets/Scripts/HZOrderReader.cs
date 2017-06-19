@@ -1,10 +1,12 @@
-﻿using System;
+﻿// Written by stermj
+
+using System;
 using System.IO;
 using UnityEngine;
 
 public class HZOrderReader : MonoBehaviour {
 
-    public int width = 256;      // X dimension
+    public int width = 128;      // X dimension
     public int height = 256;     // Y dimension
     public int depth = 256;      // Z dimension
 
@@ -14,7 +16,7 @@ public class HZOrderReader : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
-        readRaw8Into2D(path + filename + extension);
+        //readRaw8Into2D(path + filename + extension);
         readRaw8Into3D(path + filename + extension);
     }
 
@@ -77,7 +79,7 @@ public class HZOrderReader : MonoBehaviour {
 
         // Put the intensity scalar values into the Texture3D
         Texture3D data = new Texture3D(width, height, depth, TextureFormat.Alpha8, false);
-        data.filterMode = FilterMode.Point;
+        //data.filterMode = FilterMode.Point;
         data.SetPixels(scalars);
         data.Apply();
 
