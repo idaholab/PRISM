@@ -6,6 +6,8 @@ using UnityEngine.UI;
 public class UserInterface : MonoBehaviour {
 
     public GameObject volume;
+
+	// General slider text
     public Text maxStepsValueText;
     public Text normPerRayValueText;
     public Text hzRenderLevelValueText;
@@ -16,15 +18,14 @@ public class UserInterface : MonoBehaviour {
         maxStepsValueText.text = GameObject.Find("Max Steps Slider").GetComponent<Slider>().value.ToString();
         normPerRayValueText.text = GameObject.Find("Norm Per Ray Slider").GetComponent<Slider>().value.ToString();
         hzRenderLevelValueText.text = GameObject.Find("HZ Render Level Slider").GetComponent<Slider>().value.ToString();
-    }
+	}
 	
 	// Update is called once per frame
 	void Update () {
 
     }
 
-
-    /* Slider Update Functions */
+    /* General Slider Update Functions */
     public void updateStepsValue(float newVal)
     {
         volume.GetComponent<Renderer>().material.SetFloat("_Steps", newVal);
