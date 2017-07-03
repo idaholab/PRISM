@@ -1,4 +1,8 @@
-﻿// Written by stermj
+﻿/* HZ Order Reader | Marko Sterbentz 6/19/2017
+ * This script reads in raw data into either a 2D or 3D texture.
+ * Note: The way the data is interpreted must be handled in the shader.
+ * Note: It also provides functionality for testing the HZ curving.
+ */ 
 
 using System;
 using System.IO;

@@ -8,7 +8,7 @@ Shader "Custom/HZVolume"
 		_VolumeDataTexture("3D Data Texture", 3D) = "" {}
 		_Axis("Axes Order", Vector) = (1, 2, 3)								// coordinate i = 0,1,2 in Unity corresponds to coordinate _Axis[i]-1 in the data
 		_NormPerRay("Intensity Normalization per Ray" , Float) = 1
-		_Steps("Max Number of Steps", Range(1,1024)) = 128
+		_Steps("Max Number of Steps", Range(1,1024)) = 512
 		_HZRenderLevel("HZ Render Level", Int) = 1
 		_TransferFunctionTex("Transfer Function", 2D) = "white" {}
 	}
@@ -94,7 +94,7 @@ Shader "Custom/HZVolume"
 				o.pos = mul(UNITY_MATRIX_MVP, i.pos);
 				o.ray_d = -ObjSpaceViewDir(i.pos);
 				o.ray_o = i.pos.xyz - o.ray_d;
-
+				
 				return o;
 			}
 
@@ -293,7 +293,7 @@ Shader "Custom/HZVolume"
 				// Perform the ray march
 				float4 fColor = 0;
 				float4 ray_col = 0;
-
+				
 				for (int k = 0; k < _Steps; k++)
 				{
 					// Determine the value at this point on the current ray

@@ -1,5 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿/* User Interface | Marko Sterbentz 6/6/2017
+ * This script provides functionality for updating the shader with general values provided by the user.
+ */ 
+
 using UnityEngine;
 using UnityEngine.UI;
 

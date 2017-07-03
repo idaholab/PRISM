@@ -1,5 +1,7 @@
-﻿// Written by stermj
-
+﻿/* RAW File Mapper | Marko Sterbentz 5/31/2017
+ * Provides functionality for reading in 8-bit raw data to a 3D texture.
+ * Note: This file is deprecated and should not be used.
+ */ 
 using System.IO;
 using UnityEngine;
 

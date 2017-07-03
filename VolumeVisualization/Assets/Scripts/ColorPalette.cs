@@ -1,10 +1,12 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿/* Color Palette | Marko Sterbentz 6/30/2017
+ * This script handles user input on a color palette pop-up menu.
+ */ 
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ColorPaletteHandler : MonoBehaviour {
-	
+public class ColorPalette : MonoBehaviour
+{
+
 	// The transfer function panel and its associated script
 	public GameObject transferFunctionPanel;
 	private TransferFunction transferFunction;
@@ -23,7 +25,8 @@ public class ColorPaletteHandler : MonoBehaviour {
 	private Color currentColor;
 
 	// Use this for initialization
-	void Start () {
+	void Start()
+	{
 		// Initialize the color palette text fields
 		redValueText.text = redSlider.value.ToString();
 		greenValueText.text = greenSlider.value.ToString();
@@ -36,10 +39,11 @@ public class ColorPaletteHandler : MonoBehaviour {
 		// Don't display/use the color palette on startup
 		this.gameObject.SetActive(false);
 	}
-	
+
 	// Update is called once per frame
-	void Update () {
-		
+	void Update()
+	{
+
 	}
 
 	/* Color Palette Slider Update Functions */

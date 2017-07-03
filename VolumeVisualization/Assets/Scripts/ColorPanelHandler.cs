@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿/* Color Panel Handler | Marko Sterbentz 6/22/2017
+ * This script handles user input for the color portion of the transfer function.
+ */ 
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -7,10 +9,8 @@ using Vectrosity;
 public class ColorPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandler, IPointerUpHandler
 {
 	public Canvas colorCanvas;                                  // The canvas that overlays the color panel and will be used to draw the color graph.
-	//public GameObject colorPalettePanel;						// The panel that will be used to select a color for a control point. 
 
     private TransferFunction transferFunction;                  // The transfer function that modifies the volume when visualizing.
-	//private ColorPaletteHandler colorPaletteHandler;			// The color palette that modifies the color of the current active point in the color panel.
 
     private RectTransform panelRectTransform;					// The RectTransform of the color panel.
     private float maxWidth;                                     // The local maximum width of the color panel.
@@ -18,11 +18,10 @@ public class ColorPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
     private int isovalueRange;									// The range of possible isovalues for the current volume.							// TODO: Dynamically generate this, rather than baking it in...
 
 	private VectorLine colorGraphPoints;                        // The Vectrosity points that will be drawn for the color points.
+	private VectorLine colorGraphHighlightedPoint;              // The Vectrosity point that will be draw on top of the currently active point in the color panel.
 
 	private float pointRadius = 10.0f;							// Radius of the Vectrosity points in the graph.
-	private float borderSize = 10.0f;							// Size of the border around the panel. Padding on the internal edges of the panel is added. CAUSES BUGS WHEN NOT 0.0
-
-	//public Color defaultColor = Color.red;						// The default color choice when creating a new color control point.
+	private float borderSize = 0.0f;							// Size of the border around the panel. Padding on the internal edges of the panel is added. CAUSES BUGS WHEN NOT 0.0
 
     // Use this for initialization
     void Start () {
@@ -37,7 +36,12 @@ public class ColorPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 		colorGraphPoints = new VectorLine("colorGraphPoints", new List<Vector2>(), pointRadius, LineType.Points);
 		colorGraphPoints.color = Color.white;
 		colorGraphPoints.SetCanvas(colorCanvas, false);
-    }
+
+		// Initialize the color graph highlight point
+		colorGraphHighlightedPoint = new VectorLine("alphaGraphHighlightedPoint", new List<Vector2>(), pointRadius, LineType.Points);
+		colorGraphHighlightedPoint.color = Color.black;
+		colorGraphHighlightedPoint.SetCanvas(colorCanvas, false);
+	}
 	
 	// Update is called once per frame
 	void Update () {
@@ -51,6 +55,9 @@ public class ColorPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 
 		// Check if there is a control point at the localPosition, and return it if there is one
 		transferFunction.setActivePoint(getClickedPoint(localPosition));
+
+		transferFunction.dehighlightPoints();
+		transferFunction.closeColorPalette();
 
 		// Left click
 		if (Input.GetMouseButton(0))
@@ -95,7 +102,6 @@ public class ColorPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
     {
 		// Finalizes the temporary color point
 		//transferFunction.finalizeActivePoint();
-		Debug.Log("Color panel pointer up activated!");
 	}
 
 	// Updates the color Vectrosity graph in the user interface by updating and drawing the points.
@@ -117,8 +123,27 @@ public class ColorPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 		colorGraphPoints.Draw();
 	}
 
+	// Highlights the current active point in the transfer function .
+	public void highlightActivePoint()
+	{
+		List<Vector2> highlightedPoint = new List<Vector2>();
+
+		Vector2 activePointPosition = getLocalPositionFromColorPoint(transferFunction.getActivePoint());
+		highlightedPoint.Add(activePointPosition);
+		colorGraphHighlightedPoint.points2 = highlightedPoint;
+
+		colorGraphHighlightedPoint.Draw();
+	}
+
+	// De-highlights the color points in the transfer function.
+	public void dehighlightPoints()
+	{
+		colorGraphHighlightedPoint.points2 = new List<Vector2>();
+		colorGraphHighlightedPoint.Draw();
+	}
+
 	// Converts the given color control point to the local space within the color panel
-	public Vector2 getLocalPositionFromColorPoint(ControlPoint colorPoint)
+	private Vector2 getLocalPositionFromColorPoint(ControlPoint colorPoint)
 	{
 		Vector2 localPosition = new Vector2();
 
@@ -179,8 +204,4 @@ public class ColorPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 		return null;
 	}
 
-	public TransferFunction getTransferFunction()
-	{
-		return transferFunction;
-	}
 }
