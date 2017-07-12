@@ -11,6 +11,9 @@ Shader "Custom/HZVolume"
 		_Steps("Max Number of Steps", Range(1,1024)) = 512
 		_HZRenderLevel("HZ Render Level", Int) = 1
 		_TransferFunctionTex("Transfer Function", 2D) = "white" {}
+		_ClippingPlaneNormal("Clipping Plane Normal", Vector) = (1, 0, 0)
+		_ClippingPlanePosition("Clipping Plane Position", Vector) = (0.5, 0.5, 0.5)
+		_ClippingPlaneEnabled("Clipping Plane Enabled", Int) = 0				// A "boolean" for whether the clipping plane is active or not. 0 == false, 1 == true
 	}
 
 	SubShader
@@ -42,8 +45,10 @@ Shader "Custom/HZVolume"
 			float _NormPerRay;
 			float _Steps;
 			int _HZRenderLevel;
+			float3 _ClippingPlaneNormal;
+			float3 _ClippingPlanePosition;
+			int _ClippingPlaneEnabled;
 
-			//#define LAST_BIT_MASK 1 << 24						// a 1 bit in the second most significant bit
 			static uint LAST_BIT_MASK = (1 << 24);
 
 			/******************** STRUCTS ********************/
@@ -55,8 +60,8 @@ Shader "Custom/HZVolume"
 
 			struct v2f {
 				float4 pos : SV_POSITION;
-				float3 ray_o : TEXCOORD1; // ray origin
-				float3 ray_d : TEXCOORD2; // ray direction
+				float3 ray_o : TEXCOORD1;		// ray origin
+				float3 ray_d : TEXCOORD2;		// ray direction
 			};
 
 			/******************* FUNCTIONS *******************/
@@ -177,9 +182,9 @@ Shader "Custom/HZVolume"
 			// Return the index into the hz-ordered array of data given a quantized point within the volume
 			uint getHZIndex(uint zIndex)
 			{
-				uint hzIndex = (zIndex | LAST_BIT_MASK);		// set leftmost one
-				hzIndex /= hzIndex & -hzIndex;			// remove trailing zeros
-				return (hzIndex >> 1);					// remove rightmost one
+				uint hzIndex = (zIndex | LAST_BIT_MASK);	// set leftmost one
+				hzIndex /= hzIndex & -hzIndex;				// remove trailing zeros
+				return (hzIndex >> 1);						// remove rightmost one
 			}
 
 			// Returns the texture coordinate of the hzIndex into a texture of the given size
@@ -283,17 +288,56 @@ Shader "Custom/HZVolume"
 				//return float4(pFar , 1);		// Test for far intersections
 				
 				// Set up ray marching parameters
-				float3 ray_pos = pNear;
-				float3 ray_dir = pFar - pNear;
+				float3 ray_start = pNear;									// The start position of the ray
+				float3 ray_stop = pFar;										// The end position of the ray
+				float3 ray_pos = ray_start;									// The current position of the ray during the march
 
-				float3 ray_step = normalize(ray_dir) * sqrt(3) / _Steps;
+				float3 ray_dir = ray_stop - ray_start;						// The direction of the ray (un-normalized)
+				float ray_length = length(ray_dir);							// The length of the ray to travel
+				ray_dir = normalize(ray_stop - ray_start);					// The direction of the ray (normalized)
+
+				//float3 ray_step = ray_dir * sqrt(3) / _Steps;				// The step size of the ray-march (OLD)
+				float3 ray_step = ray_dir * (ray_length / (float) _Steps);	// The step size of the ray-march (NEW)
+
 				//return float4(abs(ray_dir), 1);
 				//return float4(length(ray_dir), length(ray_dir), length(ray_dir), 1);
-	
+
+				// Use the clipping plane to clip the volume, if it is enabled
+				if (_ClippingPlaneEnabled == 1)
+				{
+					// Inputs from the application
+					float3 plane_norm = normalize(_ClippingPlaneNormal);		// The global normal of the clipping plane
+					float3 plane_pos = _ClippingPlanePosition + 0.5; 			// The plane position in model space			// ADDING THE 0.5 FIXED THE BUG!
+
+					// Calculate values needed for ray-plane intersection
+					float denominator = dot(plane_norm, ray_dir);
+					float t = dot(plane_norm, plane_pos - ray_start) / denominator;		// t == positive, plane is in front of eye | t == negative, plane is behind eye
+					bool planeFacesForward = denominator > 0.0;
+
+					if ((!planeFacesForward) && (t < 0.0))
+						discard;
+					if ((planeFacesForward) && (t > ray_length))
+						discard;
+					if ((t > 0.0) && (t < ray_length))
+					{
+						if (planeFacesForward)
+						{
+							ray_start = ray_start + ray_dir * t;
+						}
+						else
+						{
+							ray_stop = ray_start + ray_dir * t;
+						}
+						ray_dir = ray_stop - ray_start;
+						ray_pos = ray_start;
+						ray_length = length(ray_dir);
+						ray_dir = normalize(ray_dir);
+					}
+				}
+
 				// Perform the ray march
 				float4 fColor = 0;
 				float4 ray_col = 0;
-				
 				for (int k = 0; k < _Steps; k++)
 				{
 					// Determine the value at this point on the current ray

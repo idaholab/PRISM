@@ -7,9 +7,8 @@ using UnityEngine.UI;
 public class ColorPalette : MonoBehaviour
 {
 
-	// The transfer function panel and its associated script
-	public GameObject transferFunctionPanel;
-	private TransferFunction transferFunction;
+	private TransferFunction transferFunction;              // Reference to the transfer function that is in the volumeController
+	private VolumeController volumeController;              // The main controller used to synchronize data input, user input, and visualization
 
 	// Color palette slider text
 	public Text redValueText;
@@ -32,7 +31,8 @@ public class ColorPalette : MonoBehaviour
 		greenValueText.text = greenSlider.value.ToString();
 		blueValueText.text = blueSlider.value.ToString();
 
-		transferFunction = (TransferFunction)transferFunctionPanel.GetComponent(typeof(TransferFunction));
+		volumeController = (VolumeController)GameObject.Find("VolumeController").GetComponent(typeof(VolumeController));
+		transferFunction = volumeController.getTransferFunction();
 
 		currentColor = new Color(0, 0, 0, 1);
 

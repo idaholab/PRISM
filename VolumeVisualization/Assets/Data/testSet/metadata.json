@@ -1,0 +1,58 @@
+{
+  "minLevel": 64,
+  "maxLevel": 256,
+  "bricks": [
+    {
+      "filename": "0.raw",
+      "size": 256,
+      "position": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "filename": "1.raw",
+      "size": 256,
+      "position": [
+        256,
+        0,
+        0
+      ]
+    },
+    {
+      "filename": "2.raw",
+      "size": 256,
+      "position": [
+        0,
+        256,
+        0
+      ]
+    },
+    {
+      "filename": "3.raw",
+      "size": 256,
+      "position": [
+        256,
+        256,
+        0
+      ]
+    },
+    {
+      "filename": "box.raw",
+      "size": 64,
+      "position": [
+        512,
+        0,
+        0
+      ]
+    },
+  ],
+  "totalBricks": 5,
+  "bytesPerPixel": 1,
+  "globalSize": [
+    576,
+    512,
+    256
+  ]
+}

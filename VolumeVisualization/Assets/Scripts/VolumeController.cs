@@ -1,47 +1,506 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿/* Volume Controller | Marko Sterbentz 7/3/2017
+ * This class is the medium between the data and the volume rendering, and handles requests between the two.
+ */
+using System;
+using System.IO;
 using UnityEngine;
+using SimpleJSON;
+using Vectrosity;
+using System.Collections.Generic;
 
 public class VolumeController : MonoBehaviour {
 
+	private Material volumeMaterial;
+
+	private int maxHzRenderLevel;
 	private Brick[] bricks;
-	//private TransferFunction transferFunction;
+	private TransferFunction transferFunction;
+	private int bitsPerPixel;
+	private int bytesPerPixel;
+	private int totalBricks;
+	private int minLevel;
+	private int maxLevel;
+	private int[] globalSize;
+	private ClippingPlane clippingPlane;
 
-	// Use this for initialization
-	void Start () {
-		
+	public GameObject clippingPlaneCube;
+
+	private VectorLine boundingBoxLine;
+
+	private string dataPath = "Assets/Data/RawBunny/";
+
+	// Use this for initialization. This will ensure that the global variables needed by other objects are initialized first.
+	private void Awake()
+	{
+		// 0. Set the default material
+		Shader hzShader = Shader.Find("Custom/HZVolume");
+		volumeMaterial = new Material(hzShader);
+
+		// 1. Load the volume
+		loadVolume(dataPath, "metadata.json");
+
+		// 2. Set up the transfer function
+		int isovalueRange = calculateIsovalueRange(bitsPerPixel);
+		transferFunction = new TransferFunction(isovalueRange);
+
+		// 3. Set up the clipping plane
+		clippingPlane = new ClippingPlane(new Vector3(0,0,0), new Vector3(1, 0 ,0), false);
+		updateClippingPlaneAll();
+
+		// Creating a wireframe bounding box cube
+		boundingBoxLine = new VectorLine("boundingCube", new List<Vector3>(24), 2.0f);
+		boundingBoxLine.MakeCube(new Vector3(0.5f, 0.5f, 0.5f), 1, 1, 1);               // Note: Places the corner at (0, 0, 0)
+
+		// Create a box for the plane, if debugging
+		clippingPlaneCube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+		clippingPlaneCube.transform.position = clippingPlane.Position;
+		clippingPlaneCube.GetComponent<Renderer>().material = new Material(Shader.Find("Standard"));
+		clippingPlaneCube.transform.position = clippingPlane.Position;
+		clippingPlaneCube.transform.localScale = new Vector3(2.1f, 2.1f, 0.01f);
+		clippingPlaneCube.transform.rotation = Quaternion.LookRotation(clippingPlane.Normal);
 	}
-	
+
 	// Update is called once per frame
-	void Update () {
-		
-	}
-
-	public void loadVolume()
+	private void Update ()
 	{
+		// Draw the 1 x 1 x 1 bounding box for the volume.
+		boundingBoxLine.Draw();
 
-	}
-
-	private void readMetadata()
-	{
+		// TODO: change hz rendering level depending on camera view, z-buffer, etc.
 
 	}
 
-	public Brick generateBrick(string file, Vector3 position)
+	/*****************************************************************************
+	 * VOLUME CREATION METHODS
+	 *****************************************************************************/
+	// Loads in the volume specified by the given metadata file
+	public void loadVolume(string filePath, string metadataFileName)
 	{
-		return new Brick();
+		// 1. Read in the metadata file
+		loadMetadata(filePath, metadataFileName);
+	}
+
+	// Loads the data from the given metadata file path directly to the member variables of VolumeController
+	private void loadMetadata(string filePath, string metadataFileName)
+	{
+		try
+		{
+			// Read the JSON file specified by the path
+			StreamReader reader = new StreamReader(filePath + metadataFileName);
+			string textFromFile = reader.ReadToEnd();
+			reader.Close();
+
+			// Create a dictionary to store the values of the JSON file
+			JSONNode N = JSON.Parse(textFromFile);
+
+			// Assign the data from the file to the member variables of VolumeController
+			minLevel = N["minLevel"].AsInt;
+			maxLevel = N["maxLevel"].AsInt;
+			totalBricks = N["totalBricks"].AsInt;
+			bytesPerPixel = N["bytesPerPixel"].AsInt;
+			bitsPerPixel = bytesPerPixel * 8;
+			globalSize = new int[]{  N["globalSize"][0].AsInt,
+									 N["globalSize"][1].AsInt,
+									 N["globalSize"][2].AsInt };
+			bricks = new Brick[totalBricks];
+
+			// Create and position all of the bricks within a 1 x 1 x 1 cube
+			for (int i = 0; i < bricks.Length; i++)
+			{
+				MetadataBrick newBrickData = new MetadataBrick();
+				newBrickData.filename = filePath + N["bricks"][i]["filename"];
+				newBrickData.size = N["bricks"][i]["size"];
+				newBrickData.position = new Vector3(0, 0, 0);
+				bricks[i] = new Brick(newBrickData, volumeMaterial);
+
+				// Generate boundingVolumeCorner and boundingVolumeCenter in world space
+				float maxGlobalSize = Mathf.Max(globalSize);
+				Vector3 boundingVolumeCenter = new Vector3(maxGlobalSize, maxGlobalSize, maxGlobalSize) / 2.0f;
+				Vector3 boundingVolumeCorner = new Vector3(0, 0, 0);
+				Vector3 b = boundingVolumeCenter - boundingVolumeCorner;
+
+				// Find volumeCenter and volumeCorner in world space
+				Vector3 volumeCenter = new Vector3(globalSize[0], globalSize[1], globalSize[2]) / 2.0f;
+				Vector3 volumeCorner = new Vector3(0, 0, 0);
+				Vector3 c = volumeCenter - volumeCorner;
+
+				// Calculate vector a: the bottom left corner of the volume in world space
+				Vector3 volumeCornerWorldSpace = b - c;
+
+				// p is the position of the brick in pixel space
+				Vector3 p = new Vector3( N["bricks"][i]["position"][0].AsInt, 
+										 N["bricks"][i]["position"][1].AsInt,
+										 N["bricks"][i]["position"][2].AsInt); 
+
+				// pHat is the position of the brick in world space
+				Vector3 pHat = p / maxGlobalSize;
+
+				// Calculate the position for each brick in world space
+				Vector3 brickPosition = volumeCornerWorldSpace + p;
+
+				// Calculate the brick offset
+				Vector3 brickOffset = new Vector3(bricks[i].getSize(), bricks[i].getSize(), bricks[i].getSize()) / 2.0f;
+
+				// Calculate final position for the brick
+				bricks[i].getGameObject().transform.position += (brickPosition + brickOffset) / maxGlobalSize;
+
+				// Scale the bricks to the correct size
+				bricks[i].getGameObject().transform.localScale = new Vector3(bricks[i].getSize(), bricks[i].getSize(), bricks[i].getSize()) / maxGlobalSize;
+			}
+
+			Debug.Log("Metadata read.");	
+		}
+		catch (Exception e)
+		{
+			Debug.Log("Failed to read the metadata file: " + e);
+		}
+	}
+
+	// Generates the isovalue range given the number of bits per pixels (i.e. format of the data)
+	private int calculateIsovalueRange(int bitsPerPixel)
+	{
+		return ((int) Mathf.Pow(2.0f, bitsPerPixel)) - 1;
+	}
+
+	/*****************************************************************************
+	 * SHADER BUFFERING METHODS
+	 *****************************************************************************/
+	public void updateMaterialPropFloat(string propName, float val, int brickIndex)
+	{
+		bricks[brickIndex].getGameObject().GetComponent<Renderer>().material.SetFloat(propName, val);
+	}
+
+	public void updateMaterialPropFloatAll(string propName, float val)
+	{
+		// Update the volumeMaterial
+		volumeMaterial.SetFloat(propName, val);
+
+		// Update the materials in all of the bricks
+		for (int i = 0; i < bricks.Length; i++)
+		{
+			bricks[i].getGameObject().GetComponent<Renderer>().material.SetFloat(propName, val);
+		}
+	}
+
+	public void updateMaterialPropFloat3(string propName, float[] val, int brickIndex)
+	{
+		bricks[brickIndex].getGameObject().GetComponent<Renderer>().material.SetFloatArray(propName, val);
+	}
+
+	public void updateMaterialPropFloat3All(string propName, float[] val)
+	{
+		// Update the volumeMaterial
+		volumeMaterial.SetFloatArray(propName, val);
+
+		// Update the materials in all of the bricks
+		for (int i = 0; i < bricks.Length; i++)
+		{
+			bricks[i].getGameObject().GetComponent<Renderer>().material.SetFloatArray(propName, val);
+		}
+	}
+
+	public void updateMaterialPropInt(string propName, int val, int brickIndex)
+	{
+		bricks[brickIndex].getGameObject().GetComponent<Renderer>().material.SetInt(propName, val);
+	}
+
+	public void updateMaterialPropIntAll(string propName, int val)
+	{
+		// Update the volumeMaterial
+		volumeMaterial.SetInt(propName, val);
+
+		// Update the materials in all of the bricks
+		for (int i = 0; i < bricks.Length; i++)
+		{
+			bricks[i].getGameObject().GetComponent<Renderer>().material.SetInt(propName, val);
+		}
+	}
+
+	public void updateMaterialPropTexture2D(string propName, Texture2D tex, int brickIndex)
+	{
+		bricks[brickIndex].getGameObject().GetComponent<Renderer>().material.SetTexture(propName, tex);
+	}
+
+	public void updateMaterialPropTexture2DAll(string propName, Texture2D tex)
+	{
+		// Update the volumeMaterial
+		volumeMaterial.SetTexture(propName, tex);
+
+		// Update the materials in all of the bricks
+		for (int i = 0; i < bricks.Length; i++)
+		{
+			bricks[i].getGameObject().GetComponent<Renderer>().material.SetTexture(propName, tex);
+		}
+	}
+
+	public void updateMaterialPropTexture3D(string propName, Texture3D tex, int brickIndex)
+	{
+		bricks[brickIndex].getGameObject().GetComponent<Renderer>().material.SetTexture(propName, tex);
+	}
+
+	public void updateMaterialPropTexture3DAll(string propName, Texture3D tex)
+	{
+		// Update the volumeMaterial
+		volumeMaterial.SetTexture(propName, tex);
+
+		// Update the materials in all of the bricks
+		for (int i = 0; i < bricks.Length; i++)
+		{
+			bricks[i].getGameObject().GetComponent<Renderer>().material.SetTexture(propName, tex);
+		}
+	}
+
+	public void updateMaterialPropVector3(string propName, Vector3 val, int brickIndex)
+	{
+		bricks[brickIndex].getGameObject().GetComponent<Renderer>().material.SetVector(propName, val);
+	}
+
+	public void updateMaterialPropVector3All(string propName, Vector3 val)
+	{
+		// Update the volumeMaterial
+		volumeMaterial.SetVector(propName, val);
+
+		// Update the materials in all of the bricks
+		for (int i = 0; i < bricks.Length; i++)
+		{
+			bricks[i].getGameObject().GetComponent<Renderer>().material.SetVector(propName, val);
+		}
+	}
+
+	/*****************************************************************************
+	 * SHADER BUFFERING METHODS WRAPPERS
+	 *****************************************************************************/
+	// Sends the values in the VolumeController's ClippingPlane to all bricks' materials.
+	public void updateClippingPlaneAll()
+	{
+		for (int i = 0; i < bricks.Length; i++)
+		{
+			// Transform the clipping plane from world to local space of the current brick, accounting for scale
+			Vector3 localClippingPlanePosition = bricks[i].getGameObject().transform.InverseTransformPoint(clippingPlane.Position); 
+
+			// Send the transformed clipping plane location to the current brick's material shader
+			updateMaterialPropVector3("_ClippingPlanePosition", localClippingPlanePosition, i);;
+		}
+
+		// Update the clipping plane's normal for all bricks 
+		updateMaterialPropVector3All("_ClippingPlaneNormal", clippingPlane.Normal);
+
+		// Update the clipping plane's enabled status for all bricks
+		updateMaterialPropIntAll("_ClippingPlaneEnabled", Convert.ToInt32(clippingPlane.Enabled));
+	}
+
+	/*****************************************************************************
+	 * ACCESSORS AND MUTATORS
+	 *****************************************************************************/
+	public TransferFunction getTransferFunction()
+	{
+		return transferFunction;
+	}
+
+	public int getMaxHzRenderLevel()
+	{
+		return maxHzRenderLevel;
+	}
+
+	public Material getVolumeMaterial()
+	{
+		return volumeMaterial;
+	}
+
+	public ClippingPlane getClippingPlane()
+	{
+		return clippingPlane;
 	}
 }
 
 public class Brick
 {
-	private int hzRenderLevel;
-	private Material material;
-	private string file;
-	private Vector3 position;
+	private int hzRenderLevel;										// The current hz level at which to render this brick.
+	private FileStream file;										// The FileStream where the data for this brick is stored.
+	private GameObject cube;										// The cube GameObject that is the rendered representation of this brick.
+	private int cubeSize;
 
 	public Brick()
 	{
 
+	}
+
+	public Brick (MetadataBrick brickData, Material mat)
+	{
+		// Initialize a Unity cube to represent the brick
+		cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+
+		// TODO: Calculate the position of the brick in the volume
+		cube.transform.position = new Vector3(brickData.position[0], brickData.position[1], brickData.position[2]);
+
+		// Set the cube's data size
+		cubeSize = brickData.size;
+
+		// Assign the given material to render the cube with
+		setMaterial(mat);
+
+		// Assign a default hzRenderLevel
+		updateHzRenderLevel(0);                                                                 // TODO: Maybe don't bake this value in...
+
+		// Open the data file associated with this brick
+		file = new FileStream(brickData.filename, FileMode.Open);
+
+		readRaw8Into3D();
+	}
+
+	// Updates the hzRenderLevel on this brick and on the shader.
+	public void updateHzRenderLevel(int newHzRenderLevel)
+	{
+		hzRenderLevel = newHzRenderLevel;
+		//cube.GetComponent<Renderer>().material.SetInt("_HZRenderLevel", newHzRenderLevel);
+		getMaterial().SetInt("_HZRenderLevel", newHzRenderLevel);
+	}
+
+	// Sets this brick's material to the given material.
+	public void setMaterial(Material mat)
+	{
+		cube.GetComponent<Renderer>().material = mat;
+	}
+
+	// Returns the Unity game object associated with this brick.
+	public GameObject getGameObject()
+	{
+		return cube;
+	}
+
+	// Returns the material of the Unity game object.
+	public Material getMaterial()
+	{
+		return cube.GetComponent<Renderer>().material;
+	}
+
+	// Returns the size of the brick.
+	public int getSize()
+	{
+		return cubeSize;
+	}
+
+	// The file must already have been opened.
+	public Texture3D readRaw8Into3D()
+	{
+		try
+		{
+			// Read in the bytes
+			BinaryReader reader = new BinaryReader(file);
+			byte[] buffer = new byte[cubeSize * cubeSize * cubeSize];
+			int size = sizeof(byte);
+			reader.Read(buffer, 0, size * buffer.Length);
+			reader.Close();
+
+			// Scale the scalar values to [0, 1]
+			Color[] scalars;
+			scalars = new Color[buffer.Length];
+			for (int i = 0; i < buffer.Length; i++)
+			{
+				scalars[i] = new Color(0, 0, 0, ((float)buffer[i] / byte.MaxValue));
+			}
+
+			// Put the intensity scalar values into the Texture3D
+			Texture3D data = new Texture3D(cubeSize, cubeSize, cubeSize, TextureFormat.Alpha8, false);
+			data.filterMode = FilterMode.Point;
+			data.SetPixels(scalars);
+			data.Apply();
+
+			// Send the intensity scalar values to the shader
+			cube.GetComponent<Renderer>().material.SetTexture("_VolumeDataTexture", data);
+
+			return data;
+		}
+		catch (Exception e)
+		{
+			Debug.Log("Unable to read in the data file into brick: " + e);
+			return null;
+		}
+		
+	}
+}
+
+/* Metadata | Marko Sterbentz 7/5/2017
+ * This class/struct stores the data provided by a metadata file.
+ */ 
+[Serializable]
+public class Metadata
+{
+	public int minLevel;
+	public int maxLevel;
+	public MetadataBrick[] bricks;
+	public int totalBricks;
+	public int bytesPerPixel;
+	public int[] globalSize;
+}
+
+/* Metadata Brick | Marko Sterbentz 7/5/2017
+ * This class/struct acts as an intermediary to store the metadata of a brick.
+ */ 
+[Serializable]
+public class MetadataBrick
+{
+	public string filename;
+	public int size;
+	public Vector3 position;
+}
+
+/* Clipping Plane | Marko Sterbentz 7/11/2017
+ * This class contains the data for a plane that can be used to clip the volume.
+ */ 
+public class ClippingPlane
+{
+	private Vector3 position;
+	private Vector3 normal;
+	private bool enabled;
+
+	public Vector3 Position
+	{
+		get
+		{
+			return position;
+		}
+		set
+		{
+			position = value;
+		}
+	}
+
+	public Vector3 Normal
+	{
+		get
+		{
+			return normal;
+		}
+		set
+		{
+			normal = value;
+		} 
+	}
+
+	public bool Enabled
+	{
+		get
+		{
+			return enabled;
+		}
+		set
+		{
+			enabled = value;
+		}
+	}
+
+	public ClippingPlane()
+	{
+		position = new Vector3(0.5f, 0.5f, 0.5f);
+		normal = new Vector3(1, 0, 0);
+		enabled = false;
+	}
+
+	public ClippingPlane(Vector3 _position, Vector3 _normal, bool _enabled)
+	{
+		position = _position;
+		normal = _normal;
+		enabled = _enabled;
 	}
 }

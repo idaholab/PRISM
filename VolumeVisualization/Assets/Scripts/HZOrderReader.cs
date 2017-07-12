@@ -21,7 +21,7 @@ public class HZOrderReader : MonoBehaviour {
     // Use this for initialization
     void Start () {
         //readRaw8Into2D(path + filename + extension);
-        readRaw8Into3D(path + filename + extension);
+        //readRaw8Into3D(path + filename + extension);
     }
 
     // Update is called once per frame

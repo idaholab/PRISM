@@ -7,8 +7,9 @@ using UnityEngine.EventSystems;
 
 public class ArcBallCamera : MonoBehaviour
 {
-    public Transform target;
-    public float distance = 5.0f;
+	private Vector3 targetPosition;
+
+	public float distance = 5.0f;
     public float xSpeed = 120.0f;
     public float ySpeed = 120.0f;
 
@@ -27,6 +28,7 @@ public class ArcBallCamera : MonoBehaviour
     // Use this for initialization
     void Start()
     {
+		targetPosition = new Vector3(0, 0, 0);
         Vector3 angles = transform.eulerAngles;
         x = angles.y;
         y = angles.x;
@@ -43,8 +45,7 @@ public class ArcBallCamera : MonoBehaviour
 
     void LateUpdate()
     {
-        if (target != null
-            && Input.GetMouseButton(0) 
+		if (Input.GetMouseButton(0) 
             && EventSystem.current.currentSelectedGameObject == null
             && !EventSystem.current.IsPointerOverGameObject())
         {
@@ -58,7 +59,7 @@ public class ArcBallCamera : MonoBehaviour
             distance = Mathf.Clamp(distance - Input.GetAxis("Mouse ScrollWheel") * 5, distanceMin, distanceMax);
 
             Vector3 negDistance = new Vector3(0.0f, 0.0f, -distance);
-            Vector3 position = rotation * negDistance + target.position;
+            Vector3 position = rotation * negDistance + targetPosition;
 
             transform.rotation = rotation;
             transform.position = position;
@@ -73,7 +74,7 @@ public class ArcBallCamera : MonoBehaviour
             distance = Mathf.Clamp(distance - Input.GetAxis("Mouse ScrollWheel") * 5, distanceMin, distanceMax);
 
             Vector3 negDistance = new Vector3(0.0f, 0.0f, -distance);
-            Vector3 position = rotation * negDistance + target.position;
+            Vector3 position = rotation * negDistance + targetPosition;
 
             transform.rotation = rotation;
             transform.position = position;
