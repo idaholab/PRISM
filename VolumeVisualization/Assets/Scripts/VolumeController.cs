@@ -27,7 +27,7 @@ public class VolumeController : MonoBehaviour {
 
 	private VectorLine boundingBoxLine;
 
-	private string dataPath = "Assets/Data/RawBunny/";
+	private string dataPath = "Assets/Data/RawBunny2/";
 
 	// Use this for initialization. This will ensure that the global variables needed by other objects are initialized first.
 	private void Awake()

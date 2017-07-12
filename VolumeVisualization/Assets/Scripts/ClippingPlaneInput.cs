@@ -39,22 +39,22 @@ public class ClippingPlaneInput : MonoBehaviour
 		// Key Press Events
 		if (Input.GetKey("up"))
 		{
-			volumeController.getClippingPlane().Position += new Vector3(0.0f, 0.1f, 0.0f);
+			volumeController.getClippingPlane().Position += new Vector3(0.0f, 0.01f, 0.0f);
 			volumeController.updateClippingPlaneAll();
 		}
 		if (Input.GetKey("down"))
 		{
-			volumeController.getClippingPlane().Position += new Vector3(0.0f, -0.1f, 0.0f);
+			volumeController.getClippingPlane().Position += new Vector3(0.0f, -0.01f, 0.0f);
 			volumeController.updateClippingPlaneAll();
 		}
 		if (Input.GetKey("right"))
 		{
-			volumeController.getClippingPlane().Position += new Vector3(0.1f, 0.0f, 0.0f);
+			volumeController.getClippingPlane().Position += new Vector3(0.01f, 0.0f, 0.0f);
 			volumeController.updateClippingPlaneAll();
 		}
 		if (Input.GetKey("left"))
 		{
-			volumeController.getClippingPlane().Position += new Vector3(-0.1f, 0.0f, 0.0f);
+			volumeController.getClippingPlane().Position += new Vector3(-0.01f, 0.0f, 0.0f);
 			volumeController.updateClippingPlaneAll();
 		}
 		if (Input.GetKey("a"))
