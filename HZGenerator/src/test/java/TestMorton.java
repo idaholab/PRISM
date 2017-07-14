@@ -8,6 +8,7 @@ import static org.jocl.CL.*;
 import org.jocl.*;
 
 import static junit.framework.TestCase.assertEquals;
+import gov.inl.HZGenerator.CLFW;
 
 public class TestMorton extends TestCase {
 	protected void setUp() {

@@ -1,9 +1,12 @@
 {
   "CompileOptions" : "-cl-mad-enable",
   "Sources" : [
-    "KawaseBlur.cl",
-    "Threshold.cl",
-    "Morton.cl",
-    "Scan.cl"
+    "Blurrer.cl",
+    "Compactor.cl",
+    "MortonConverter.cl",
+    "Partitioner.cl",
+    "Reducer.cl",
+    "Scanner.cl",
+    "Thresholder.cl"
   ]
 }

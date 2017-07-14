@@ -17,124 +17,152 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane fx:id="rootPane" minHeight="-Infinity" minWidth="-Infinity" prefHeight="505.0" prefWidth="1080.0" styleClass="background" stylesheets="@HZGeneratorGUI.css" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller">
+<AnchorPane fx:id="rootPane" minHeight="-Infinity" minWidth="-Infinity" prefHeight="517.0" prefWidth="1080.0" styleClass="background" stylesheets="@HZGeneratorGUI.css" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.inl.HZGenerator.Controller">
    <children>
       <HBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="474.0" prefWidth="1080.0" styleClass="rootHBox" stylesheets="@HZGeneratorGUI.css">
          <children>
-            <TabPane fx:id="fileTabPane" prefHeight="474.0" prefWidth="367.0" tabClosingPolicy="UNAVAILABLE">
-              <tabs>
-                <Tab text="TIFF">
-                  <content>
-                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-                           <children>
-                              <GridPane layoutX="3.0" layoutY="2.0" prefHeight="441.0" prefWidth="360.0" styleClass="filePane">
-                                <columnConstraints>
-                                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="244.0" />
-                                </columnConstraints>
-                                <rowConstraints>
-                                  <RowConstraints maxHeight="385.0" minHeight="10.0" prefHeight="42.0" vgrow="SOMETIMES" />
-                                    <RowConstraints maxHeight="385.0" minHeight="0.0" prefHeight="54.0" vgrow="SOMETIMES" />
-                                  <RowConstraints maxHeight="420.0" minHeight="10.0" prefHeight="343.0" vgrow="SOMETIMES" />
-                                </rowConstraints>
+            <VBox prefHeight="474.0" prefWidth="370.0">
+               <children>
+                  <TabPane fx:id="fileTabPane" prefHeight="474.0" prefWidth="145.0" tabClosingPolicy="UNAVAILABLE">
+                    <tabs>
+                      <Tab fx:id="TIFFTab" text="TIFF">
+                        <content>
+                          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="0.0" prefWidth="347.0">
                                  <children>
-                                    <HBox prefHeight="56.0" prefWidth="339.0" spacing="10.0">
+                                    <GridPane layoutX="-5.0" layoutY="14.0" prefHeight="67.0" prefWidth="357.0" styleClass="filePane" vgap="20.0">
+                                      <columnConstraints>
+                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="244.0" />
+                                      </columnConstraints>
+                                      <rowConstraints>
+                                        <RowConstraints maxHeight="385.0" minHeight="10.0" prefHeight="37.0" vgrow="SOMETIMES" />
+                                      </rowConstraints>
                                        <children>
-                                          <Button fx:id="btnOpenTiffVolume" mnemonicParsing="false" onAction="#openVolume" prefHeight="37.0" prefWidth="218.0" text="Choose TIFF directory" />
-                                          <TextField fx:id="txtTiffPath" editable="false" prefHeight="24.0" prefWidth="155.0" />
-                                       </children>
-                                       <opaqueInsets>
-                                          <Insets />
-                                       </opaqueInsets>
-                                       <padding>
-                                          <Insets bottom="10.0" top="10.0" />
-                                       </padding>
-                                    </HBox>
-                                    <HBox prefHeight="100.0" prefWidth="200.0" spacing="10.0" GridPane.rowIndex="1">
-                                       <children>
-                                          <Button mnemonicParsing="false" prefHeight="37.0" prefWidth="224.0" text="Choose destination" />
-                                          <TextField fx:id="txtTiffResultPath" editable="false" prefHeight="28.0" prefWidth="161.0" />
+                                          <HBox prefHeight="92.0" prefWidth="337.0" spacing="10.0">
+                                             <children>
+                                                <Button fx:id="btnOpenTiffVolume" mnemonicParsing="false" onAction="#chooseSource" prefHeight="37.0" prefWidth="218.0" text="Choose TIFF directory" />
+                                                <TextField fx:id="txtTiffPath" editable="false" prefHeight="24.0" prefWidth="155.0" />
+                                             </children>
+                                             <opaqueInsets>
+                                                <Insets />
+                                             </opaqueInsets>
+                                             <padding>
+                                                <Insets bottom="10.0" top="10.0" />
+                                             </padding>
+                                          </HBox>
                                        </children>
                                        <padding>
-                                          <Insets bottom="10.0" top="10.0" />
+                                          <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                                        </padding>
-                                    </HBox>
-                                    <ListView fx:id="tiffImageList" prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2" />
+                                    </GridPane>
                                  </children>
                                  <padding>
-                                    <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                    <Insets top="10.0" />
                                  </padding>
-                              </GridPane>
-                           </children>
-                           <padding>
-                              <Insets top="10.0" />
-                           </padding>
-                        </AnchorPane>
-                  </content>
-                </Tab>
-                  <Tab text="RAW">
-                     <content>
-                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-                           <children>
-                              <GridPane layoutX="3.0" layoutY="2.0" prefHeight="441.0" prefWidth="360.0" styleClass="filePane" vgap="10.0">
-                                 <columnConstraints>
-                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="244.0" />
-                                 </columnConstraints>
-                                 <rowConstraints>
-                                    <RowConstraints maxHeight="385.0" minHeight="10.0" prefHeight="48.0" vgrow="SOMETIMES" />
-                                    <RowConstraints maxHeight="385.0" minHeight="0.0" prefHeight="61.0" vgrow="SOMETIMES" />
-                                    <RowConstraints maxHeight="420.0" minHeight="10.0" prefHeight="45.0" vgrow="SOMETIMES" />
-                                    <RowConstraints maxHeight="420.0" minHeight="10.0" prefHeight="37.0" vgrow="SOMETIMES" />
-                                    <RowConstraints maxHeight="420.0" minHeight="10.0" prefHeight="233.0" vgrow="SOMETIMES" />
-                                 </rowConstraints>
+                              </AnchorPane>
+                        </content>
+                      </Tab>
+                        <Tab fx:id="RAWTab" text="RAW">
+                           <content>
+                              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="151.0" prefWidth="347.0">
                                  <children>
-                                    <HBox prefHeight="56.0" prefWidth="339.0" spacing="10.0">
+                                    <GridPane layoutX="3.0" layoutY="13.0" prefHeight="117.0" prefWidth="340.0" styleClass="filePane" vgap="10.0">
+                                       <columnConstraints>
+                                          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="244.0" />
+                                       </columnConstraints>
+                                       <rowConstraints>
+                                          <RowConstraints maxHeight="385.0" minHeight="10.0" prefHeight="48.0" vgrow="SOMETIMES" />
+                                          <RowConstraints maxHeight="420.0" minHeight="10.0" prefHeight="45.0" vgrow="SOMETIMES" />
+                                          <RowConstraints maxHeight="420.0" minHeight="10.0" prefHeight="45.0" vgrow="SOMETIMES" />
+                                       </rowConstraints>
                                        <children>
-                                          <Button fx:id="btnOpenRawSource" mnemonicParsing="false" onAction="#openVolume" prefHeight="37.0" prefWidth="217.0" text="Choose raw source" />
-                                          <TextField fx:id="txtRawPath" editable="false" prefHeight="24.0" prefWidth="155.0" />
+                                          <HBox prefHeight="45.0" prefWidth="340.0" spacing="10.0">
+                                             <children>
+                                                <Button fx:id="btnOpenRawSource" mnemonicParsing="false" onAction="#chooseSource" prefHeight="37.0" prefWidth="217.0" text="Choose raw source" />
+                                                <TextField fx:id="txtRawPath" editable="false" prefHeight="24.0" prefWidth="155.0" text="C:\Users\BITINK\git\PRISM\VolumeVisualization\Assets\Data\Box.raw" />
+                                             </children>
+                                             <opaqueInsets>
+                                                <Insets />
+                                             </opaqueInsets>
+                                             <padding>
+                                                <Insets bottom="10.0" top="10.0" />
+                                             </padding>
+                                          </HBox>
+                                          <HBox prefHeight="102.0" prefWidth="340.0" spacing="10.0" GridPane.rowIndex="1">
+                                             <children>
+                                                <Label alignment="CENTER" prefHeight="37.0" prefWidth="92.0" text="Size (X, Y, Z)" textAlignment="RIGHT" wrapText="true" />
+                                                <TextField fx:id="txtRawXSize" prefHeight="37.0" prefWidth="76.0" text="8" />
+                                                <TextField fx:id="txtRawYSize" prefHeight="37.0" prefWidth="78.0" text="8" />
+                                                <TextField fx:id="txtRawZSize" prefHeight="37.0" prefWidth="75.0" text="8" />
+                                             </children>
+                                          </HBox>
+                                          <HBox prefHeight="102.0" prefWidth="340.0" spacing="10.0" GridPane.rowIndex="2">
+                                             <children>
+                                                <Label alignment="CENTER" prefHeight="33.0" prefWidth="90.0" text="Bits per pixel" textAlignment="RIGHT" wrapText="true" />
+                                                <ChoiceBox fx:id="rawBitsPerPixel" prefHeight="31.0" prefWidth="71.0" styleClass="drop-down" />
+                                             </children>
+                                          </HBox>
                                        </children>
-                                       <opaqueInsets>
-                                          <Insets />
-                                       </opaqueInsets>
                                        <padding>
-                                          <Insets bottom="10.0" top="10.0" />
+                                          <Insets bottom="10.0" />
                                        </padding>
-                                    </HBox>
-                                    <HBox prefHeight="100.0" prefWidth="200.0" spacing="10.0" GridPane.rowIndex="1">
-                                       <children>
-                                          <Button mnemonicParsing="false" prefHeight="37.0" prefWidth="220.0" text="Choose destination" />
-                                          <TextField fx:id="txtRawResultPath" editable="false" prefHeight="28.0" prefWidth="161.0" />
-                                       </children>
-                                       <padding>
-                                          <Insets bottom="10.0" top="10.0" />
-                                       </padding>
-                                    </HBox>
-                                    <HBox prefHeight="248.0" prefWidth="340.0" spacing="10.0" GridPane.rowIndex="2">
-                                       <children>
-                                          <Label alignment="CENTER" prefHeight="37.0" prefWidth="85.0" text="Size (X, Y, Z)" textAlignment="RIGHT" wrapText="true" />
-                                          <TextField fx:id="txtRawX" prefHeight="37.0" prefWidth="76.0" />
-                                          <TextField fx:id="txtRawY" prefHeight="37.0" prefWidth="78.0" />
-                                          <TextField fx:id="txtRawZ" prefHeight="37.0" prefWidth="82.0" />
-                                       </children>
-                                    </HBox>
-                                    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="3">
-                                       <children>
-                                          <Button layoutY="2.0" mnemonicParsing="false" onAction="#setRawDimension" prefHeight="33.0" prefWidth="340.0" text="Break out images" />
-                                       </children>
-                                    </AnchorPane>
-                                    <ListView fx:id="rawImageList" prefHeight="221.0" prefWidth="340.0" GridPane.rowIndex="4" />
+                                    </GridPane>
                                  </children>
-                                 <padding>
-                                    <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                                 </padding>
-                              </GridPane>
-                           </children>
-                        </AnchorPane>
-                     </content>
-                  </Tab>
-              </tabs>
-            </TabPane>
+                              </AnchorPane>
+                           </content>
+                        </Tab>
+                        <Tab fx:id="RAWTab1" text="PVM">
+                           <content>
+                              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="151.0" prefWidth="347.0">
+                                 <children>
+                                    <GridPane layoutX="3.0" layoutY="13.0" prefHeight="69.0" prefWidth="340.0" styleClass="filePane" vgap="10.0">
+                                       <columnConstraints>
+                                          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="244.0" />
+                                       </columnConstraints>
+                                       <rowConstraints>
+                                          <RowConstraints maxHeight="385.0" minHeight="10.0" prefHeight="48.0" vgrow="SOMETIMES" />
+                                       </rowConstraints>
+                                       <children>
+                                          <HBox prefHeight="45.0" prefWidth="340.0" spacing="10.0">
+                                             <children>
+                                                <Button fx:id="btnOpenRawSource1" mnemonicParsing="false" onAction="#chooseSource" prefHeight="37.0" prefWidth="217.0" text="Choose pvm source" />
+                                                <TextField fx:id="txtRawPath1" editable="false" prefHeight="24.0" prefWidth="155.0" />
+                                             </children>
+                                             <opaqueInsets>
+                                                <Insets />
+                                             </opaqueInsets>
+                                             <padding>
+                                                <Insets bottom="10.0" top="10.0" />
+                                             </padding>
+                                          </HBox>
+                                       </children>
+                                       <padding>
+                                          <Insets bottom="10.0" />
+                                       </padding>
+                                    </GridPane>
+                                 </children>
+                              </AnchorPane>
+                           </content>
+                        </Tab>
+                    </tabs>
+                  </TabPane>
+                  <AnchorPane prefHeight="40.0" prefWidth="347.0">
+                     <children>
+                        <Button layoutX="5.0" layoutY="-2.0" mnemonicParsing="false" onAction="#loadVolume" prefHeight="30.0" prefWidth="337.0" text="Load Volume" />
+                     </children>
+                     <padding>
+                        <Insets bottom="5.0" />
+                     </padding>
+                  </AnchorPane>
+                  <ListView fx:id="sliceList" prefHeight="574.0" prefWidth="347.0" />
+                  <AnchorPane prefHeight="200.0" prefWidth="200.0" />
+               </children>
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" />
+               </padding>
+            </VBox>
             <GridPane prefHeight="472.0" prefWidth="360.0" styleClass="imagePane">
               <columnConstraints>
                 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -159,9 +187,9 @@
                   </TabPane>
                   <GridPane prefHeight="92.0" prefWidth="239.0" GridPane.rowIndex="1">
                     <columnConstraints>
-                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="200.0" minWidth="10.0" prefWidth="130.0" />
-                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="264.0" minWidth="10.0" prefWidth="142.0" />
-                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="264.0" minWidth="10.0" prefWidth="168.0" />
+                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="200.0" minWidth="10.0" prefWidth="131.0" />
+                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="264.0" minWidth="10.0" prefWidth="27.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="264.0" minWidth="10.0" prefWidth="202.0" />
                     </columnConstraints>
                     <rowConstraints>
                       <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
@@ -169,12 +197,9 @@
                       <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                     </rowConstraints>
                      <children>
-                        <Label text="Masked?" />
-                        <Label text="Threshold" GridPane.rowIndex="1" />
-                        <CheckBox fx:id="isMasked" mnemonicParsing="false" onAction="#toggleMask" prefHeight="29.0" prefWidth="1.0" GridPane.columnIndex="1" />
-                        <Slider fx:id="slider" blockIncrement="0.1" disable="true" majorTickUnit="0.2" max="0.5" min="-0.5" minorTickCount="1" prefHeight="14.0" prefWidth="108.0" showTickMarks="true" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-                        <CheckBox fx:id="isMasked1" layoutX="113.0" layoutY="10.0" mnemonicParsing="false" onAction="#toggleMask" prefHeight="29.0" prefWidth="1.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                         <Label fx:id="lblTime" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                        <Label text="Preview Intensity" GridPane.rowIndex="1" />
+                        <Slider fx:id="intensitySlider" blockIncrement="1.0" majorTickUnit="10.0" max="50.0" min="-50.0" minorTickCount="1" prefHeight="14.0" prefWidth="108.0" showTickMarks="true" GridPane.columnIndex="2" GridPane.rowIndex="1" />
                      </children>
                   </GridPane>
                </children>
@@ -190,33 +215,29 @@
                <children>
                   <GridPane prefHeight="84.0" prefWidth="348.0" GridPane.rowIndex="1">
                     <columnConstraints>
-                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="152.0" minWidth="10.0" prefWidth="142.0" />
-                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="257.0" minWidth="10.0" prefWidth="27.0" />
-                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="137.0" minWidth="10.0" prefWidth="114.0" />
+                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="152.0" minWidth="10.0" prefWidth="112.0" />
+                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="257.0" minWidth="10.0" prefWidth="82.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="137.0" minWidth="10.0" prefWidth="87.0" />
                         <ColumnConstraints hgrow="SOMETIMES" maxWidth="137.0" minWidth="10.0" prefWidth="66.0" />
                     </columnConstraints>
                     <rowConstraints>
                       <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                      <RowConstraints maxHeight="17.0" minHeight="5.0" prefHeight="7.0" vgrow="SOMETIMES" />
+                        <RowConstraints maxHeight="39.0" minHeight="10.0" prefHeight="37.0" vgrow="SOMETIMES" />
                     </rowConstraints>
                      <children>
-                        <Label alignment="CENTER" prefHeight="21.0" prefWidth="138.0" text="Num Levels:" />
-                        <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="21.0" prefWidth="144.0" text="Estimated File Size:" GridPane.rowIndex="2" />
                         <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
                            <children>
-                              <Label alignment="CENTER" layoutX="2.0" layoutY="3.0" prefHeight="21.0" prefWidth="114.0" text="Min Dim Width" />
+                              <Label alignment="CENTER" layoutX="2.0" layoutY="3.0" prefHeight="21.0" prefWidth="81.0" text="Min Width" />
                            </children></AnchorPane>
-                        <Label fx:id="lblNumLevels" text="-1" GridPane.columnIndex="1" />
-                        <Label fx:id="lblFileSize" text="-1" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                        <Label alignment="CENTER" layoutX="10.0" layoutY="12.0" prefHeight="21.0" prefWidth="138.0" text="Num Bricks:" GridPane.rowIndex="1" />
-                        <Label fx:id="lblNumBricks" layoutX="146.0" layoutY="63.0" text="-1" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                        <Label alignment="CENTER" prefHeight="21.0" prefWidth="117.0" text="Max Dim Width" GridPane.columnIndex="2" />
+                        <Label alignment="CENTER" prefHeight="21.0" prefWidth="117.0" text="Max Width" GridPane.columnIndex="2" />
                         <ChoiceBox fx:id="maxDimWidthChoice" prefWidth="150.0" styleClass="drop-down" GridPane.columnIndex="3" />
                         <ChoiceBox fx:id="minDimWidthChoice" prefWidth="150.0" styleClass="drop-down" GridPane.columnIndex="3" GridPane.rowIndex="2" />
+                        <Label prefHeight="21.0" prefWidth="101.0" text="Scale to 8 BPP?" />
+                        <CheckBox fx:id="mapTo8BPP" mnemonicParsing="false" onAction="#toggleMapTo8BPP" prefHeight="29.0" prefWidth="1.0" GridPane.columnIndex="1" />
                      </children>
                      <padding>
-                        <Insets bottom="10.0" top="10.0" />
+                        <Insets bottom="10.0" left="10.0" top="10.0" />
                      </padding>
                   </GridPane>
                   <TabPane prefHeight="330.0" prefWidth="347.0" tabClosingPolicy="UNAVAILABLE">
@@ -235,13 +256,19 @@
             </GridPane>
          </children>
       </HBox>
-      <Pane layoutX="1.0" layoutY="472.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="38.0" prefWidth="1080.0">
+      <Pane layoutX="1.0" layoutY="472.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="50.0" prefWidth="1080.0">
          <children>
-            <Button layoutX="965.0" layoutY="-2.0" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#generate" prefHeight="30.0" prefWidth="110.0" styleClass="custom-button" stylesheets="@HZGeneratorGUI.css" text="Generate">
+            <Button layoutX="965.0" layoutY="5.0" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#generate" prefHeight="37.0" prefWidth="110.0" styleClass="custom-button" stylesheets="@HZGeneratorGUI.css" text="Generate">
                <font>
                   <Font size="14.0" />
                </font>
             </Button>
+            <Label alignment="CENTER" layoutX="26.0" layoutY="12.0" prefHeight="21.0" prefWidth="81.0" text="Num Bricks:" />
+            <Label fx:id="lblNumBricks" layoutX="112.0" layoutY="13.0" text="-1" />
+            <Label alignment="CENTER" contentDisplay="CENTER" layoutX="165.0" layoutY="12.0" prefHeight="21.0" prefWidth="67.0" text="File Size:" />
+            <Label fx:id="lblFileSize" layoutX="229.0" layoutY="13.0" text="-1" />
+            <Button fx:id="btnChooseDestination" layoutX="613.0" layoutY="3.0" mnemonicParsing="false" onAction="#chooseDestination" prefHeight="37.0" prefWidth="176.0" text="Choose destination" />
+            <TextField fx:id="txtResultPath" editable="false" layoutX="796.0" layoutY="3.0" prefHeight="0.0" prefWidth="161.0" text="C:\Users\BITINK\git\PRISM\VolumeVisualization\Assets\Data\result" />
          </children>
       </Pane>
    </children>
