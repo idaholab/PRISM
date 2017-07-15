@@ -20,7 +20,7 @@ import java.util.*;
 
 /**
  * Nate Morrical. Summer 2017.
- * The following is an FXML controller, which orchestrates the volume processor and handles FXML events.
+ * The following is an FXML controller, which operates the brick factory through FXML events.
  */
 public class Controller {
 	private BrickFactory brickFactory;
@@ -36,14 +36,10 @@ public class Controller {
 	@FXML private TextField txtResultPath;
 	@FXML private ListView<String> sliceList;
 	@FXML private ImageView preview;
-//	@FXML private Slider slider;
 	@FXML private Slider intensitySlider;
-//	@FXML private CheckBox isMasked;
 	@FXML private CheckBox mapTo8BPP;
 	@FXML private Pane brickPane;
-//	@FXML Label lblTime;
 	@FXML Label lblFileSize;
-//	@FXML Label lblNumLevels;
 	@FXML Label lblNumBricks;
 	@FXML TextField txtRawXSize;
 	@FXML TextField txtRawYSize;
@@ -71,19 +67,19 @@ public class Controller {
 			if (sliceIdx < 0) return;
 //			volumePreview.toggleLayer(sliceIdx, true);
 //			volumePreview.toggleLayer(previousSlice, false);
-			slicePreview.show(brickFactory.getProcessedSlice(sliceIdx));
+			slicePreview.show(brickFactory.volume.getSlice(sliceIdx));
 		});
 
 		/* When the threshold slider changes, update the slice */
 //		slider.valueProperty().addListener((observable, oldValue, newValue) -> {
 //			brickFactory.settings.threshold = newValue.floatValue();
-//			slicePreview.show(brickFactory.getProcessedSlice(sliceIdx));
+//			slicePreview.show(brickFactory.getSlice(sliceIdx));
 //		});
 
 		/* When the preview intensity changes, update the slice*/
 		intensitySlider.valueProperty().addListener((observable, oldValue, newValue) -> {
 			slicePreview.previewIntensity = newValue.floatValue();
-			slicePreview.show(brickFactory.getProcessedSlice(sliceIdx));
+			slicePreview.show(brickFactory.volume.getSlice(sliceIdx));
 		});
 
 		/* For raw volumes, validate the field to take only digits. */
@@ -163,6 +159,7 @@ public class Controller {
 		}
 	}
 
+	/* Creates a dialogue and sets the destination path */
 	@FXML private void chooseDestination(ActionEvent event) throws Exception {
 		File selectedLocation = openFolder();
 		if (selectedLocation != null) {
@@ -244,7 +241,7 @@ public class Controller {
 			for (String s : sliceNames) sliceList.getItems().add(s);
 			sliceIdx = 0;
 			volumePreview.show(brickFactory.volume, brickFactory.getPartitions());
-			slicePreview.show(brickFactory.getProcessedSlice(0));
+			slicePreview.show(brickFactory.volume.getSlice(0));
 
 			lblFileSize.setText(brickFactory.getResultFileSize());
 			lblNumBricks.setText(brickFactory.getPartitions().size() + "");
@@ -254,13 +251,7 @@ public class Controller {
 		}
 	}
 
-	/* When the mask is toggled, we need to let the volumeProcessor know, and toggle some UI stuff*/
-//	@FXML private void toggleMask(ActionEvent event) {
-//		brickFactory.settings.masked = isMasked.isSelected();
-//		slider.setDisable(!brickFactory.settings.masked);
-//		slicePreview.show(brickFactory.getProcessedSlice(sliceIdx));
-//	}
-
+	/* Toggles whether to scale a 16 bit gray to 8 bits before saving */
 	@FXML private void toggleMapTo8BPP(ActionEvent event) {
 		try {
 			brickFactory.settings.mapTo8BPP = mapTo8BPP.isSelected();
@@ -271,6 +262,7 @@ public class Controller {
 		}
 	}
 
+	/* Generates the curved volume, storing at the selected destination */
 	@FXML private void generate(ActionEvent event) throws IOException {
 		if (brickFactory.volume == null) {
 			showAlert(Alert.AlertType.ERROR, "no volume loaded.", "Please load a volume before generating bricks");

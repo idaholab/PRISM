@@ -7,17 +7,14 @@ import java.util.List;
 /**
  * Nate Morrical. Summer 2017
  *
- * The following class orchestrates the construction of a curved volume from various different formats
+ * The following class constructs a curved volume from various different inputs
  */
 public class BrickFactory {
+	/* The currently uncurved volume */
 	public Volume volume;
-	private List<Partition> partitions;
 
 	/* Stores settings used to generate bricks */
 	public BrickFactorySettings settings;
-
-	/* Used to perform image processing per slice */
-	private SliceProcessor sliceProcessor;
 
 	/* Splits up a raw into bricks */
 	private VolumePartitioner volumePartitioner;
@@ -25,9 +22,9 @@ public class BrickFactory {
 	/* Uses the volume and partitions to curve data */
 	private VolumeApportioner volumeApportioner;
 
+	/* Constructor */
 	public BrickFactory() {
 		settings = new BrickFactorySettings();
-		sliceProcessor = new SliceProcessor();
 		volumePartitioner = new VolumePartitioner();
 		volumeApportioner = new VolumeApportioner();
 	}
@@ -52,11 +49,6 @@ public class BrickFactory {
 		return (volume == null) ? null : volume.getSliceList();
 	}
 
-	/* Updates all components to use the new brick factory settings */
-	public void updateSettings(BrickFactorySettings newSettings) {
-		settings = newSettings;
-	}
-
 	/* Processes slices, then curves optimized partitions of the volume. Saves at settings.outputpath */
 	public void generateBricks() {
 		/* Partition the volume data, which can be read using the generated json file*/
@@ -72,11 +64,6 @@ public class BrickFactory {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	}
-
-	/* Returns a slice after it's been ran through the slice processor. */
-	public BufferedImage getProcessedSlice(int sliceIdx) {
-		return SliceProcessor.process(volume.getSlice(sliceIdx), settings);
 	}
 
 	/* Returns the volume partitions */

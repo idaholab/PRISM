@@ -13,11 +13,12 @@ import java.util.List;
 
 /**
  * Nathan Morrical. Summer 2017.
+ * A raw volume is a single file volume who's width, height, depth, and bits per pixel must be provided for interpreting
  */
 public class RawVolume extends Volume {
 	File rawFile;
-	int bytesPerPixel;
 
+	/* Constructor */
 	public RawVolume(String path, int width, int height, int depth, int bitsPerPixel) throws Exception {
 		rawFile = new File(path);
 		if (rawFile == null) throw new Exception("invalid raw path provided");
@@ -31,8 +32,8 @@ public class RawVolume extends Volume {
 		this.bytesPerPixel = bitsPerPixel / 8;
 	}
 
-	@Override
-	public BufferedImage getSlice(int i) {
+	/* Seeks to an offset dependent on width and height, and then reads either shorts or bytes to a buffered image */
+	@Override public BufferedImage getSlice(int i) {
 		try {
 			int zOffset = (i * width * height) * bytesPerPixel;
 			int type = (bytesPerPixel == 1) ? BufferedImage.TYPE_BYTE_GRAY : BufferedImage.TYPE_USHORT_GRAY;
@@ -62,18 +63,12 @@ public class RawVolume extends Volume {
 		return null;
 	}
 
-	@Override
-	public List<String> getSliceList() {
+	/* Just a list of numbers, each number referring to a slice */
+	@Override public List<String> getSliceList() {
 		List<String> names = new ArrayList<>();
 		for (int i = 0; i < depth; ++i) {
 			names.add("Slice #" + Integer.toString(i));
 		}
 		return names;
-	}
-
-	@Override
-	public long getBytesPerPixel() {
-		/* ASSUMES ALL RAW ARE BYTE_GREY !!!*/
-		return bytesPerPixel;
 	}
 }

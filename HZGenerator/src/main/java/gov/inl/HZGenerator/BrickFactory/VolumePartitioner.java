@@ -12,7 +12,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Created by BITINK on 6/27/2017.
+ * Nathan Morrical. Summer 2017.
+ * The following class is used to analyze a volume in parallel, quickly obtaining a list of cubic partitions whose
+ * 	width is a power of two. This allows each partition to be curved using HZ Ordering, while adding minimal padding.
  */
 public class VolumePartitioner {
 	public List<Partition> partitions;
@@ -20,10 +22,12 @@ public class VolumePartitioner {
 	int minBrickSize, maxBrickSize = 0;
 	public PartitionerResult pr = null;
 
+	/* Constructor */
 	public VolumePartitioner() {
 		partitions = new ArrayList<>();
 	}
 
+	/* This method uses the GPU to accelerate partitioning, returning a list of partitions */
 	public List<Partition> partition(Volume volume, BrickFactorySettings settings) {
 		/* If the volume/settings haven't changed since last time, just return the previously created
 		* partitions. */
@@ -46,10 +50,11 @@ public class VolumePartitioner {
 		return partitions;
 	}
 
+	/* Saves partition data for later visualization */
 	public void saveJson(String outputPath) throws IOException {
 		try {
 			JSONObject json = new JSONObject();
-			json.put("bytesPerPixel", lastVolume.getBytesPerPixel());
+			json.put("bitsPerPixel", lastVolume.getBytesPerPixel());
 			json.put("totalBricks", partitions.size());
 
 			int gx = roundUp(lastVolume.getWidth(), minBrickSize);
@@ -70,9 +75,9 @@ public class VolumePartitioner {
 				brick.put("filename", i + ".raw");
 				brick.put("size", partitions.get(i).size);
 				JSONArray position = new JSONArray();
-				position.put(partitions.get(i).pos.x);
-				position.put(partitions.get(i).pos.y);
-				position.put(partitions.get(i).pos.z);
+				position.put(partitions.get(i).position.x);
+				position.put(partitions.get(i).position.y);
+				position.put(partitions.get(i).position.z);
 				brick.put("position", position);
 				bricks.put(brick);
 			}
@@ -89,6 +94,7 @@ public class VolumePartitioner {
 			e.printStackTrace();
 		}
 	}
+
 
 	int roundUp(int numToRound, int multiple)
 	{

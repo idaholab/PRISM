@@ -168,28 +168,28 @@ __kernel void curveLayer(
     zidx |= last_bit_mask;
     zidx /= zidx & -zidx;
     zidx >>= 1;
-//    if (gid.x == 0 && gid.y == 1) {
-        uint c = zidx;
-
-        // Add back rightmost one.
-        c = (c << 1) | 1;
-
-        // Determine highest bit
-        int i = c;
-        i |= (i >>  1);
-        i |= (i >>  2);
-        i |= (i >>  4);
-        i |= (i >>  8);
-        i |= (i >> 16);
-        i = i - (i >> 1);
-
-        // Shift left by max bits - highest bit index.
-        c = c * (last_bit_mask / i);
-
-        // Mask the number to remove added 1.
-        c &= ~last_bit_mask;
-
-        uint3 point = (uint3)(DecodeMorton3X(c), DecodeMorton3Y(c),DecodeMorton3Z(c) );
+////    if (gid.x == 0 && gid.y == 1) {
+//        uint c = zidx;
+//
+//        // Add back rightmost one.
+//        c = (c << 1) | 1;
+//
+//        // Determine highest bit
+//        int i = c;
+//        i |= (i >>  1);
+//        i |= (i >>  2);
+//        i |= (i >>  4);
+//        i |= (i >>  8);
+//        i |= (i >> 16);
+//        i = i - (i >> 1);
+//
+//        // Shift left by max bits - highest bit index.
+//        c = c * (last_bit_mask / i);
+//
+//        // Mask the number to remove added 1.
+//        c &= ~last_bit_mask;
+//
+//        uint3 point = (uint3)(DecodeMorton3X(c), DecodeMorton3Y(c),DecodeMorton3Z(c) );
 //
 //        printf("%d %d %d\n", position.x, position.y, position.z);
 //        printf("%d %d %d\n", point.x, point.y, point.z);
