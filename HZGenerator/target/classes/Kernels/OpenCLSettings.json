@@ -1,0 +1,12 @@
+{
+  "CompileOptions" : "-cl-mad-enable",
+  "Sources" : [
+    "Blurrer.cl",
+    "Compactor.cl",
+    "MortonConverter.cl",
+    "Partitioner.cl",
+    "Reducer.cl",
+    "Scanner.cl",
+    "Thresholder.cl"
+  ]
+}
