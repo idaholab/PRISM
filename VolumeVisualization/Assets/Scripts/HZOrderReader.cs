@@ -20,8 +20,10 @@ public class HZOrderReader : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
-        //readRaw8Into2D(path + filename + extension);
-        //readRaw8Into3D(path + filename + extension);
+		//readRaw8Into2D(path + filename + extension);
+		//readRaw8Into3D(path + filename + extension);
+		bool result = testLastBitMask();
+		Debug.Log("Last bit mask test result: " + result);
     }
 
     // Update is called once per frame
@@ -147,6 +149,17 @@ public class HZOrderReader : MonoBehaviour {
             return false;
         }
     }
+
+	bool testLastBitMask()
+	{
+		uint[] size = { 127, 127, 127 };
+
+		uint zIndex = morton3D(size);
+		uint hzIndex = getHZIndex(zIndex);
+		uint[] decodedSize = decode(hzIndex);
+
+		return (size[0] == decodedSize[0] && size[1] == decodedSize[1] && size[2] == decodedSize[2]);
+	}
 
     bool curveRaw8File(string inputFileLoc, string outputFileLoc)
     {

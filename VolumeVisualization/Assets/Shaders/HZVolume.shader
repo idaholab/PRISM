@@ -4,16 +4,19 @@ Shader "Custom/HZVolume"
 {
 	Properties
 	{
-		_MainTex("Texture", 2D) = "white" {}								// An array of bytes that is the 8-bit raw data. It is essentially a 1D array/texture.
+		_MainTex("Texture", 2D) = "white" {}											// An array of bytes that is the 8-bit raw data. It is essentially a 1D array/texture.
 		_VolumeDataTexture("3D Data Texture", 3D) = "" {}
-		_Axis("Axes Order", Vector) = (1, 2, 3)								// coordinate i = 0,1,2 in Unity corresponds to coordinate _Axis[i]-1 in the data
+		_Axis("Axes Order", Vector) = (1, 2, 3)											// coordinate i = 0,1,2 in Unity corresponds to coordinate _Axis[i]-1 in the data
 		_NormPerRay("Intensity Normalization per Ray" , Float) = 1
 		_Steps("Max Number of Steps", Range(1,1024)) = 512
-		_HZRenderLevel("HZ Render Level", Int) = 1
 		_TransferFunctionTex("Transfer Function", 2D) = "white" {}
 		_ClippingPlaneNormal("Clipping Plane Normal", Vector) = (1, 0, 0)
 		_ClippingPlanePosition("Clipping Plane Position", Vector) = (0.5, 0.5, 0.5)
-		_ClippingPlaneEnabled("Clipping Plane Enabled", Int) = 0				// A "boolean" for whether the clipping plane is active or not. 0 == false, 1 == true
+		_ClippingPlaneEnabled("Clipping Plane Enabled", Int) = 0						// A "boolean" for whether the clipping plane is active or not. 0 == false, 1 == true
+		_BrickSize("Brick Size", Int) = 0
+		_CurrentHzLevel("Current HZ Render Level", Int) = 0
+		_MaxHzLevel("Max HZ Render Level", Int) = 0
+		_LastBitMask("Last Bit Mask", Int) = 0
 	}
 
 	SubShader
@@ -44,12 +47,15 @@ Shader "Custom/HZVolume"
 			float3 _Axis;
 			float _NormPerRay;
 			float _Steps;
-			int _HZRenderLevel;
 			float3 _ClippingPlaneNormal;
 			float3 _ClippingPlanePosition;
 			int _ClippingPlaneEnabled;
+			int _BrickSize;
+			int _CurrentHzLevel;
+			int _MaxHzLevel;
+			int _LastBitMask;
 
-			static uint LAST_BIT_MASK = (1 << 24);
+			//static uint LAST_BIT_MASK = (1 << 24);
 
 			/******************** STRUCTS ********************/
 
@@ -141,8 +147,8 @@ Shader "Custom/HZVolume"
 
 				i -= i >> 1;
 
-				c *= LAST_BIT_MASK / i;
-				c &= (~LAST_BIT_MASK);
+				c *= _LastBitMask / i;
+				c &= (~_LastBitMask);
 				cartEquiv.x = DecodeMorton3X(c);
 				cartEquiv.y = DecodeMorton3Y(c);
 				cartEquiv.z = DecodeMorton3Z(c);
@@ -167,29 +173,29 @@ Shader "Custom/HZVolume"
 			uint morton3D(float3 pos)
 			{
 				// Quantize to the correct resolution
-				pos.x = min(max(pos.x * 256.0f, 0.0f), 255.0f);
-				pos.y = min(max(pos.y * 256.0f, 0.0f), 255.0f);
-				pos.z = min(max(pos.z * 256.0f, 0.0f), 255.0f);
+				pos.x = min(max(pos.x * (float) _BrickSize, 0.0f), (float) _BrickSize - 1);
+				pos.y = min(max(pos.y * (float)_BrickSize, 0.0f), (float)_BrickSize - 1);
+				pos.z = min(max(pos.z * (float)_BrickSize, 0.0f), (float)_BrickSize - 1);
 
 				// Interlace the bits
 				uint xx = Part1By2((uint) pos.x);
 				uint yy = Part1By2((uint) pos.y);
 				uint zz = Part1By2((uint) pos.z);
 
-				return xx << 2 | yy << 1 | zz;
+				return zz << 2 | yy << 1 | xx;
 			}
 
 			// Return the index into the hz-ordered array of data given a quantized point within the volume
 			uint getHZIndex(uint zIndex)
 			{
-				uint hzIndex = (zIndex | LAST_BIT_MASK);	// set leftmost one
+				uint hzIndex = (zIndex | _LastBitMask);		// set leftmost one
 				hzIndex /= hzIndex & -hzIndex;				// remove trailing zeros
 				return (hzIndex >> 1);						// remove rightmost one
 			}
 
 			// Returns the texture coordinate of the hzIndex into a texture of the given size
 			// Assumption: Texture2D has (0,0) in bottom left, (1,1) in top right.
-			float2 textureCoordFromHzIndex(uint hzIndex, uint texWidth, uint texHeight)
+			float2 textureCoord2DFromHzIndex(uint hzIndex, uint texWidth, uint texHeight)
 			{
 				float2 texCoord = float2(
 					hzIndex % texWidth,				// x coord
@@ -219,6 +225,14 @@ Shader "Custom/HZVolume"
 				return texCoord;
 			}
 
+			// Returns the masked z index, allowing for the the data to be quantized to a level of detail specified by the _CurrentHzLevel.
+			uint computeMaskedZIndex(uint zIndex)
+			{
+				int zBits = _MaxHzLevel * 3;
+				uint zMask = -1 >> (zBits - 3 * _CurrentHzLevel) << (zBits - 3 * _CurrentHzLevel);
+				return zIndex & zMask;
+			}
+
 			/***************************************** END HZ CURVING CODE ************************************************/
 
 			float sampleIntensityHz2D(float3 pos) 
@@ -227,7 +241,7 @@ Shader "Custom/HZVolume"
 				uint zIndex = morton3D(pos);										// Get the Z order index
 				//uint newIndex = zIndex & (~511);									// Used for rendering different levels
 				uint hzIndex = getHZIndex(zIndex);									// Find the hz order index	
-				float2 texCoord = textureCoordFromHzIndex(hzIndex, 4096, 4096);		// Convert the index to the right texture coordinate for sampling in the 4096 x 4096 texture
+				float2 texCoord = textureCoord2DFromHzIndex(hzIndex, 4096, 4096);		// Convert the index to the right texture coordinate for sampling in the 4096 x 4096 texture
 				float data = tex2Dlod(_MainTex, float4(texCoord.xy, 0, 0)).a;		// Sample the color from the main texture that holds the data
 				return data;
 			}
@@ -235,9 +249,10 @@ Shader "Custom/HZVolume"
 			float sampleIntensityHz3D(float3 pos)
 			{
 				/********* SAMPLING 3D HZ CURVED RAW DATA WITH TEXTURE COORD CALCULATION **********/
-				uint zIndex = morton3D(pos); // Get the Z order index				
-				uint hzIndex = getHZIndex(zIndex); // Find the hz order index
-				float3 texCoord = texCoord3DFromHzIndex(hzIndex, 256, 256, 256);
+				uint zIndex = morton3D(pos);										// Get the Z order index		
+				uint maskedZIndex = computeMaskedZIndex(zIndex);					// Get the masked Z index
+				uint hzIndex = getHZIndex(maskedZIndex);							// Find the hz order index
+				float3 texCoord = texCoord3DFromHzIndex(hzIndex, _BrickSize, _BrickSize, _BrickSize);
 				float data = tex3Dlod(_VolumeDataTexture, float4(texCoord, 0)).a;
 				return data;
 			}
@@ -256,8 +271,8 @@ Shader "Custom/HZVolume"
 			// Note: pos is normalized in [0, 1]
 			float4 sampleIntensity(float3 pos) {
 				//float data = sampleIntensityHz2D(pos);
-				//float data = sampleIntensityHz3D(pos);
-				float data = sampleIntensityRaw3D(pos);
+				float data = sampleIntensityHz3D(pos);
+				//float data = sampleIntensityRaw3D(pos);
 				return float4(data, data, data, data);
 			}
 
@@ -297,21 +312,28 @@ Shader "Custom/HZVolume"
 				ray_dir = normalize(ray_stop - ray_start);					// The direction of the ray (normalized)
 
 				//float3 ray_step = ray_dir * sqrt(3) / _Steps;				// The step size of the ray-march (OLD)
-				float3 ray_step = ray_dir * (ray_length / (float) _Steps);	// The step size of the ray-march (NEW)
-
-				//return float4(abs(ray_dir), 1);
-				//return float4(length(ray_dir), length(ray_dir), length(ray_dir), 1);
+				float step_size = ray_length / (float)_Steps;
+				//float step_size = 0.005;
+				float3 ray_step = ray_dir * step_size;
+				//float3 ray_step = ray_dir * (ray_length / (float) _Steps);	// The step size of the ray-march (NEW)
+				//return float4(abs(ray_stop - ray_start), 1);
+				//return float4(ray_length, ray_length, ray_length, 1);
 
 				// Use the clipping plane to clip the volume, if it is enabled
 				if (_ClippingPlaneEnabled == 1)
 				{
 					// Inputs from the application
 					float3 plane_norm = normalize(_ClippingPlaneNormal);		// The global normal of the clipping plane
-					float3 plane_pos = _ClippingPlanePosition + 0.5; 			// The plane position in model space			// ADDING THE 0.5 FIXED THE BUG!
+					float3 plane_pos = _ClippingPlanePosition + 0.5; 			// The plane position in model space / texture space
 
 					// Calculate values needed for ray-plane intersection
 					float denominator = dot(plane_norm, ray_dir);
-					float t = dot(plane_norm, plane_pos - ray_start) / denominator;		// t == positive, plane is in front of eye | t == negative, plane is behind eye
+					float t = 0.0;
+					if (denominator != 0.0)
+					{
+						t = dot(plane_norm, plane_pos - ray_start) / denominator;		// t == positive, plane is in front of eye | t == negative, plane is behind eye
+					}
+					
 					bool planeFacesForward = denominator > 0.0;
 
 					if ((!planeFacesForward) && (t < 0.0))
@@ -337,7 +359,6 @@ Shader "Custom/HZVolume"
 
 				// Perform the ray march
 				float4 fColor = 0;
-				float4 ray_col = 0;
 				for (int k = 0; k < _Steps; k++)
 				{
 					// Determine the value at this point on the current ray
@@ -356,6 +377,9 @@ Shader "Custom/HZVolume"
 					// Check if we have marched out of the cube
 					if (ray_pos.x < 0 || ray_pos.y < 0 || ray_pos.z < 0) break;
 					if (ray_pos.x > 1 || ray_pos.y > 1 || ray_pos.z > 1) break;
+
+					// Check if accumulated alpha is greater than 1.0
+					//if (fColor.a > 1.0) break;
 				}
 
 				return fColor * _NormPerRay;

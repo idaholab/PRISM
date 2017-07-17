@@ -12,7 +12,6 @@ public class VolumeController : MonoBehaviour {
 
 	private Material volumeMaterial;
 
-	private int maxHzRenderLevel;
 	private Brick[] bricks;
 	private TransferFunction transferFunction;
 	private int bitsPerPixel;
@@ -27,7 +26,7 @@ public class VolumeController : MonoBehaviour {
 
 	private VectorLine boundingBoxLine;
 
-	private string dataPath = "Assets/Data/RawBunny2/";
+	private string dataPath = "Assets/Data/VisMaleHz2/";
 
 	// Use this for initialization. This will ensure that the global variables needed by other objects are initialized first.
 	private void Awake()
@@ -78,6 +77,7 @@ public class VolumeController : MonoBehaviour {
 	{
 		// 1. Read in the metadata file
 		loadMetadata(filePath, metadataFileName);
+		
 	}
 
 	// Loads the data from the given metadata file path directly to the member variables of VolumeController
@@ -119,7 +119,7 @@ public class VolumeController : MonoBehaviour {
 				Vector3 boundingVolumeCorner = new Vector3(0, 0, 0);
 				Vector3 b = boundingVolumeCenter - boundingVolumeCorner;
 
-				// Find volumeCenter and volumeCorner in world space
+				// Find volumeCenter and volumeCorner of the data in world space
 				Vector3 volumeCenter = new Vector3(globalSize[0], globalSize[1], globalSize[2]) / 2.0f;
 				Vector3 volumeCorner = new Vector3(0, 0, 0);
 				Vector3 c = volumeCenter - volumeCorner;
@@ -297,11 +297,6 @@ public class VolumeController : MonoBehaviour {
 		return transferFunction;
 	}
 
-	public int getMaxHzRenderLevel()
-	{
-		return maxHzRenderLevel;
-	}
-
 	public Material getVolumeMaterial()
 	{
 		return volumeMaterial;
@@ -313,12 +308,17 @@ public class VolumeController : MonoBehaviour {
 	}
 }
 
+/* Brick | Marko Sterbentz 7/3/2017
+ * This class holds the data associated with a single brick of the volume to be rendered.
+ */ 
 public class Brick
 {
-	private int hzRenderLevel;										// The current hz level at which to render this brick.
 	private FileStream file;										// The FileStream where the data for this brick is stored.
 	private GameObject cube;										// The cube GameObject that is the rendered representation of this brick.
-	private int cubeSize;
+	private int size;												// The dimensions of the data in voxel space. Size is assumed to be a power of 2.
+	private int maxHzLevel;                                         // The max number of HZ-Order levels this brick has.
+	private int currentHzLevel;                                     // The current HZ-Order rendering level for this brick.
+	private uint lastBitMask;										// The last bit mask used for accessing the data.
 
 	public Brick()
 	{
@@ -330,54 +330,55 @@ public class Brick
 		// Initialize a Unity cube to represent the brick
 		cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
 
-		// TODO: Calculate the position of the brick in the volume
+		// Set the position of the 
 		cube.transform.position = new Vector3(brickData.position[0], brickData.position[1], brickData.position[2]);
-
-		// Set the cube's data size
-		cubeSize = brickData.size;
 
 		// Assign the given material to render the cube with
 		setMaterial(mat);
 
-		// Assign a default hzRenderLevel
-		updateHzRenderLevel(0);                                                                 // TODO: Maybe don't bake this value in...
+		// Set the cube's data size
+		updateBrickSize(brickData.size);
+
+		// Set the maximum hz level
+		updateMaxHzLevel(calculateMaxLevels());
+
+		// Set the last bit mask this brick uses
+		updateLastBitMask(calculateLastBitMask());
+
+		// Set the current level of detail that this brick renders to
+		//updateCurrentHzLevel(maxHzLevel);																// TODO: Set it to another default value
+		updateCurrentHzLevel(4);
 
 		// Open the data file associated with this brick
 		file = new FileStream(brickData.filename, FileMode.Open);
 
+		// Read the data into the texture on the shader
 		readRaw8Into3D();
 	}
 
-	// Updates the hzRenderLevel on this brick and on the shader.
-	public void updateHzRenderLevel(int newHzRenderLevel)
+	/*****************************************************************************
+	 * UTILITY FUNCTIONS
+	 *****************************************************************************/
+	// Returns the computed maximum number of hz levels this brick can render to.
+	public int calculateMaxLevels()
 	{
-		hzRenderLevel = newHzRenderLevel;
-		//cube.GetComponent<Renderer>().material.SetInt("_HZRenderLevel", newHzRenderLevel);
-		getMaterial().SetInt("_HZRenderLevel", newHzRenderLevel);
+		int totalLevels = 0;																			// NOTE: Starting at 0, instead of -1
+		int tempBrickSize = size;
+
+		while(Convert.ToBoolean(tempBrickSize >>= 1))
+		{
+			totalLevels++;
+		}
+
+		return totalLevels;
 	}
 
-	// Sets this brick's material to the given material.
-	public void setMaterial(Material mat)
+	// Returns the computed last bit mask for this brick.
+	public uint calculateLastBitMask()
 	{
-		cube.GetComponent<Renderer>().material = mat;
-	}
-
-	// Returns the Unity game object associated with this brick.
-	public GameObject getGameObject()
-	{
-		return cube;
-	}
-
-	// Returns the material of the Unity game object.
-	public Material getMaterial()
-	{
-		return cube.GetComponent<Renderer>().material;
-	}
-
-	// Returns the size of the brick.
-	public int getSize()
-	{
-		return cubeSize;
+		int zBits = maxHzLevel * 3;
+		uint lbm = (uint)1 << zBits;
+		return lbm;
 	}
 
 	// The file must already have been opened.
@@ -387,9 +388,8 @@ public class Brick
 		{
 			// Read in the bytes
 			BinaryReader reader = new BinaryReader(file);
-			byte[] buffer = new byte[cubeSize * cubeSize * cubeSize];
-			int size = sizeof(byte);
-			reader.Read(buffer, 0, size * buffer.Length);
+			byte[] buffer = new byte[size * size * size];
+			reader.Read(buffer, 0, sizeof(byte) * buffer.Length);
 			reader.Close();
 
 			// Scale the scalar values to [0, 1]
@@ -401,7 +401,7 @@ public class Brick
 			}
 
 			// Put the intensity scalar values into the Texture3D
-			Texture3D data = new Texture3D(cubeSize, cubeSize, cubeSize, TextureFormat.Alpha8, false);
+			Texture3D data = new Texture3D(size, size, size, TextureFormat.Alpha8, false);
 			data.filterMode = FilterMode.Point;
 			data.SetPixels(scalars);
 			data.Apply();
@@ -418,11 +418,84 @@ public class Brick
 		}
 		
 	}
+
+	/*****************************************************************************
+	 * ACCESSORS
+	 *****************************************************************************/
+	// Returns the Unity game object associated with this brick.
+	public GameObject getGameObject()
+	{
+		return cube;
+	}
+
+	// Returns the material of the Unity game object.
+	public Material getMaterial()
+	{
+		return cube.GetComponent<Renderer>().material;
+	}
+
+	// Returns the size of the brick.
+	public int getSize()
+	{
+		return size;
+	}
+
+	// Returns the maximum number of hz levels this brick can render to.
+	public int getMaxHzLevel()
+	{
+		return maxHzLevel;
+	}
+
+	// Returns the current hz level that the brick is rendering to.
+	public int getCurrentHzLevel()
+	{
+		return currentHzLevel;
+	}
+
+	// Returns the last bit mask used to access data in hz curve of this brick.
+	public uint getLastBitMask()
+	{
+		return lastBitMask;
+	}
+
+	/*****************************************************************************
+	 * MUTATOR AND SHADER BUFFERING METHODS
+	 *****************************************************************************/
+	// Sets this brick's material to the given material.
+	public void setMaterial(Material mat)
+	{
+		cube.GetComponent<Renderer>().material = mat;
+	}
+
+	public void updateBrickSize(int _size)
+	{
+		size = _size;
+		cube.GetComponent<Renderer>().material.SetInt("_BrickSize", size);
+	}
+
+	// Sets the variable Updates the hzRenderLevel on this brick and on the shader.
+	public void updateCurrentHzLevel(int _currentHzLevel)
+	{
+		currentHzLevel = _currentHzLevel;
+		cube.GetComponent<Renderer>().material.SetInt("_CurrentHzLevel", currentHzLevel);
+	}
+
+	public void updateMaxHzLevel(int _maxHzLevel)
+	{
+		maxHzLevel = _maxHzLevel;
+		cube.GetComponent<Renderer>().material.SetInt("_MaxHzLevel", maxHzLevel);
+	}
+
+	public void updateLastBitMask(uint _lastBitMask)
+	{
+		lastBitMask = _lastBitMask;
+		cube.GetComponent<Renderer>().material.SetInt("_LastBitMask", (int)lastBitMask);
+	}
 }
 
 /* Metadata | Marko Sterbentz 7/5/2017
  * This class/struct stores the data provided by a metadata file.
- */ 
+ */
 [Serializable]
 public class Metadata
 {
@@ -450,10 +523,12 @@ public class MetadataBrick
  */ 
 public class ClippingPlane
 {
+	/* Member variables */
 	private Vector3 position;
 	private Vector3 normal;
 	private bool enabled;
 
+	/* Properties */
 	public Vector3 Position
 	{
 		get
@@ -490,6 +565,7 @@ public class ClippingPlane
 		}
 	}
 
+	/* Constructors */
 	public ClippingPlane()
 	{
 		position = new Vector3(0.5f, 0.5f, 0.5f);
