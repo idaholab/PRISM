@@ -10,23 +10,37 @@ using System.Collections.Generic;
 
 public class VolumeController : MonoBehaviour {
 
+	// The material the bricks render with
 	private Material volumeMaterial;
 
-	private Brick[] bricks;
+	// Transfer function for modifying visuals
 	private TransferFunction transferFunction;
+
+	// Brick data
+	private Brick[] bricks;
 	private int bitsPerPixel;
 	private int bytesPerPixel;
 	private int totalBricks;
 	private int minLevel;
 	private int maxLevel;
 	private int[] globalSize;
+
+	// Clipping plane
 	private ClippingPlane clippingPlane;
 
-	public GameObject clippingPlaneCube;
+	// Brick Analysis compute shader
+	public ComputeShader brickAnalysisShader;
+	int analysisKernelID;
 
+	// Main camera
+	public Camera mainCamera;
+
+	// Objects to draw for debugging purposes
+	public GameObject clippingPlaneCube;
 	private VectorLine boundingBoxLine;
 
-	private string dataPath = "Assets/Data/VisMaleHz2/";
+	// The data to be loaded into the renderer
+	private string dataPath = "Assets/Data/4Bricks/VisMaleHz2/";
 
 	// Use this for initialization. This will ensure that the global variables needed by other objects are initialized first.
 	private void Awake()
@@ -57,6 +71,9 @@ public class VolumeController : MonoBehaviour {
 		clippingPlaneCube.transform.position = clippingPlane.Position;
 		clippingPlaneCube.transform.localScale = new Vector3(2.1f, 2.1f, 0.01f);
 		clippingPlaneCube.transform.rotation = Quaternion.LookRotation(clippingPlane.Normal);
+
+		// Load the compute shader kernel
+		analysisKernelID = brickAnalysisShader.FindKernel("BrickAnalysis");
 	}
 
 	// Update is called once per frame
@@ -65,8 +82,110 @@ public class VolumeController : MonoBehaviour {
 		// Draw the 1 x 1 x 1 bounding box for the volume.
 		boundingBoxLine.Draw();
 
-		// TODO: change hz rendering level depending on camera view, z-buffer, etc.
+		// TESTING: Running brickAnalysis compute shader
 
+		// TODO: change z rendering level depending on camera view, z-buffer, etc.
+		//BrickData[] analyzedData = runBrickAnalysis();
+
+		//// Use the analyzed data
+		//for (int i = 0; i < analyzedData.Length; i++)
+		//{
+		//	Debug.Log("Size: " + analyzedData[i].size);
+		//	Debug.Log("Position: " + analyzedData[i].position);
+		//	Debug.Log("MaxZLevel: " + analyzedData[i].maxZLevel);
+		//	Debug.Log("CurrentZLevel: " + analyzedData[i].currentZLevel);
+		//	Debug.Log("Update Data: " + analyzedData[i].updateData);
+		//}
+
+		// END TESTING
+
+		// TESTING: Code for changing the z render level with the number keys
+		if (Input.GetKeyDown("0"))
+		{
+			for (int i = 0; i < bricks.Length; i++)
+				bricks[i].updateCurrentZLevel(0);
+		}
+		if (Input.GetKeyDown("1"))
+		{
+			for (int i = 0; i < bricks.Length; i++)
+				bricks[i].updateCurrentZLevel(1);
+		}
+		if (Input.GetKeyDown("2"))
+		{
+			for (int i = 0; i < bricks.Length; i++)
+				bricks[i].updateCurrentZLevel(2);
+		}
+		if (Input.GetKeyDown("3"))
+		{
+			for (int i = 0; i < bricks.Length; i++)
+				bricks[i].updateCurrentZLevel(3);
+		}
+		if (Input.GetKeyDown("4"))
+		{
+			for (int i = 0; i < bricks.Length; i++)
+				bricks[i].updateCurrentZLevel(4);
+		}
+		if (Input.GetKeyDown("5"))
+		{
+			for (int i = 0; i < bricks.Length; i++)
+				bricks[i].updateCurrentZLevel(5);
+		}
+		if (Input.GetKeyDown("6"))
+		{
+			for (int i = 0; i < bricks.Length; i++)
+				bricks[i].updateCurrentZLevel(6);
+		}
+		if (Input.GetKeyDown("7"))
+		{
+			for (int i = 0; i < bricks.Length; i++)
+				bricks[i].updateCurrentZLevel(7);
+		}
+		if (Input.GetKeyDown("8"))
+		{
+			for (int i = 0; i < bricks.Length; i++)
+				bricks[i].updateCurrentZLevel(8);
+		}
+		if (Input.GetKeyDown("9"))
+		{
+			for (int i = 0; i < bricks.Length; i++)
+				bricks[i].updateCurrentZLevel(9);
+		}
+
+		// END TESTING
+	}
+
+	/*****************************************************************************
+	 * COMPUTE METHODS
+	 *****************************************************************************/
+	public BrickData[] runBrickAnalysis()
+	{
+		// Create the brick data
+		BrickData[] computeData = new BrickData[bricks.Length];
+		for (int i = 0; i < bricks.Length; i++)
+		{
+			computeData[i] = bricks[i].getBrickData();
+		}
+
+		// Put the brick data into a compute buffer
+		ComputeBuffer buffer = new ComputeBuffer(computeData.Length, 28);                                                                           // TODO: Stop hardcoding the struct size?
+		buffer.SetData(computeData);
+
+		// Send the compute buffer data to the GPU
+		brickAnalysisShader.SetBuffer(analysisKernelID, "dataBuffer", buffer);
+
+		// Send the camera's position to the GPU
+		brickAnalysisShader.SetVector("cameraPosition", new Vector4(mainCamera.transform.position.x, mainCamera.transform.position.y, mainCamera.transform.position.z, 0.0f));
+
+		// Run the kernel
+		brickAnalysisShader.Dispatch(analysisKernelID, computeData.Length, 1, 1);
+
+		// Retrieve the data
+		BrickData[] analyzedData = new BrickData[bricks.Length];
+		buffer.GetData(analyzedData);
+		buffer.Dispose();
+
+		// Return the analyzed data
+		return analyzedData;
 	}
 
 	/*****************************************************************************
@@ -313,12 +432,13 @@ public class VolumeController : MonoBehaviour {
  */ 
 public class Brick
 {
-	private FileStream file;										// The FileStream where the data for this brick is stored.
+	//private FileStream file;										// The FileStream where the data for this brick is stored.
 	private GameObject cube;										// The cube GameObject that is the rendered representation of this brick.
 	private int size;												// The dimensions of the data in voxel space. Size is assumed to be a power of 2.
-	private int maxHzLevel;                                         // The max number of HZ-Order levels this brick has.
-	private int currentHzLevel;                                     // The current HZ-Order rendering level for this brick.
-	private uint lastBitMask;										// The last bit mask used for accessing the data.
+	private int maxZLevel;                                         // The max number of Z-Order levels this brick has.
+	private int currentZLevel;                                     // The current Z-Order rendering level for this brick.
+	private uint lastBitMask;                                       // The last bit mask used for accessing the data.
+	private string filename;
 
 	public Brick()
 	{
@@ -327,6 +447,10 @@ public class Brick
 
 	public Brick (MetadataBrick brickData, Material mat)
 	{
+		// Open the data file associated with this brick
+		//file = new FileStream(brickData.filename, FileMode.Open);
+		filename = brickData.filename;
+
 		// Initialize a Unity cube to represent the brick
 		cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
 
@@ -339,27 +463,21 @@ public class Brick
 		// Set the cube's data size
 		updateBrickSize(brickData.size);
 
-		// Set the maximum hz level
-		updateMaxHzLevel(calculateMaxLevels());
+		// Set the maximum z level
+		updateMaxZLevel(calculateMaxLevels());
 
 		// Set the last bit mask this brick uses
 		updateLastBitMask(calculateLastBitMask());
 
 		// Set the current level of detail that this brick renders to
-		//updateCurrentHzLevel(maxHzLevel);																// TODO: Set it to another default value
-		updateCurrentHzLevel(4);
-
-		// Open the data file associated with this brick
-		file = new FileStream(brickData.filename, FileMode.Open);
-
-		// Read the data into the texture on the shader
-		readRaw8Into3D();
+		//updateCurrentZLevel(maxZLevel);                                                               // TODO: Set it to another default value
+		updateCurrentZLevel(0);
 	}
 
 	/*****************************************************************************
 	 * UTILITY FUNCTIONS
 	 *****************************************************************************/
-	// Returns the computed maximum number of hz levels this brick can render to.
+	// Returns the computed maximum number of z levels this brick can render to.
 	public int calculateMaxLevels()
 	{
 		int totalLevels = 0;																			// NOTE: Starting at 0, instead of -1
@@ -376,7 +494,7 @@ public class Brick
 	// Returns the computed last bit mask for this brick.
 	public uint calculateLastBitMask()
 	{
-		int zBits = maxHzLevel * 3;
+		int zBits = maxZLevel * 3;
 		uint lbm = (uint)1 << zBits;
 		return lbm;
 	}
@@ -386,6 +504,9 @@ public class Brick
 	{
 		try
 		{
+			// Open the file associated with this brick
+			FileStream file = new FileStream(filename, FileMode.Open);
+
 			// Read in the bytes
 			BinaryReader reader = new BinaryReader(file);
 			byte[] buffer = new byte[size * size * size];
@@ -419,6 +540,63 @@ public class Brick
 		
 	}
 
+	// The file must already have been opened.
+	public Texture3D readRaw8Into3DZLevel()
+	{
+		try
+		{
+			// Get the size of the data based on the currentZLevel rendering level
+			int dataSize = 1 << currentZLevel; // equivalent to 2^currentZLevel
+			
+			// Read in the bytes
+			BinaryReader reader = new BinaryReader(new FileStream(filename, FileMode.Open));
+			
+			byte[] buffer = new byte[dataSize * dataSize * dataSize];
+			reader.Read(buffer, 0, sizeof(byte) * buffer.Length);
+			reader.Close();
+
+			// Scale the scalar values to [0, 1]
+			Color[] scalars;
+			scalars = new Color[buffer.Length];
+			for (int i = 0; i < buffer.Length; i++)
+			{
+				scalars[i] = new Color(0, 0, 0, ((float)buffer[i] / byte.MaxValue));
+			}
+
+			// Put the intensity scalar values into the Texture3D
+			Texture3D data = new Texture3D(dataSize, dataSize, dataSize, TextureFormat.Alpha8, false);
+			data.filterMode = FilterMode.Point;
+			data.SetPixels(scalars);
+			data.Apply();
+
+			// Send the intensity scalar values to the shader
+			cube.GetComponent<Renderer>().material.SetTexture("_VolumeDataTexture", data);
+
+			return data;
+		}
+		catch (Exception e)
+		{
+			Debug.Log("Unable to read in the data file into brick: " + e);
+			return null;
+		}
+
+	}
+
+
+	// Generates a struct of the bricks data that can be analyzed in the compute shader.
+	public BrickData getBrickData()
+	{
+		BrickData newData;
+
+		newData.size = size;
+		newData.position = cube.transform.position;
+		newData.maxZLevel = maxZLevel;
+		newData.currentZLevel = currentZLevel;
+		newData.updateData = false;
+
+		return newData;
+}
+
 	/*****************************************************************************
 	 * ACCESSORS
 	 *****************************************************************************/
@@ -440,16 +618,16 @@ public class Brick
 		return size;
 	}
 
-	// Returns the maximum number of hz levels this brick can render to.
-	public int getMaxHzLevel()
+	// Returns the maximum number of zz levels this brick can render to.
+	public int getMaxZLevel()
 	{
-		return maxHzLevel;
+		return maxZLevel;
 	}
 
-	// Returns the current hz level that the brick is rendering to.
-	public int getCurrentHzLevel()
+	// Returns the current zz level that the brick is rendering to.
+	public int getCurrentZLevel()
 	{
-		return currentHzLevel;
+		return currentZLevel;
 	}
 
 	// Returns the last bit mask used to access data in hz curve of this brick.
@@ -473,17 +651,21 @@ public class Brick
 		cube.GetComponent<Renderer>().material.SetInt("_BrickSize", size);
 	}
 
-	// Sets the variable Updates the hzRenderLevel on this brick and on the shader.
-	public void updateCurrentHzLevel(int _currentHzLevel)
+	// Sets the variable Updates the zRenderLevel on this brick and on the shader.
+	public void updateCurrentZLevel(int _currentZlevel)
 	{
-		currentHzLevel = _currentHzLevel;
-		cube.GetComponent<Renderer>().material.SetInt("_CurrentHzLevel", currentHzLevel);
+		// Clamp the input level to be between 0 and maxZLevel, inclusive
+		currentZLevel = Math.Min(Math.Max(_currentZlevel, 0), maxZLevel);
+		cube.GetComponent<Renderer>().material.SetInt("_CurrentZLevel", currentZLevel);
+
+		// Read in the appropriate amount of data dependent on the current z level to render to
+		readRaw8Into3DZLevel();
 	}
 
-	public void updateMaxHzLevel(int _maxHzLevel)
+	public void updateMaxZLevel(int _maxZLevel)
 	{
-		maxHzLevel = _maxHzLevel;
-		cube.GetComponent<Renderer>().material.SetInt("_MaxHzLevel", maxHzLevel);
+		maxZLevel = _maxZLevel;
+		cube.GetComponent<Renderer>().material.SetInt("_MaxZLevel", maxZLevel);
 	}
 
 	public void updateLastBitMask(uint _lastBitMask)
@@ -518,6 +700,18 @@ public class MetadataBrick
 	public Vector3 position;
 }
 
+/* BrickData | Marko Sterbentz 7/18/2017
+ * This struct mirrors the struct in use by the BrickAnalysis compute shader.
+ * Note: Is 28 bytes in size.
+ */ 
+public struct BrickData
+{
+	public int size;					// 4 bytes							
+	public Vector3 position;			// 4 x 3 = 12 bytes
+	public int maxZLevel;				// 4 bytes
+	public int currentZLevel;			// 4 bytes
+	public bool updateData;				// 4 bytes
+}
 /* Clipping Plane | Marko Sterbentz 7/11/2017
  * This class contains the data for a plane that can be used to clip the volume.
  */ 

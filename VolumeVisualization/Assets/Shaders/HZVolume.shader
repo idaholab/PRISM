@@ -14,8 +14,8 @@ Shader "Custom/HZVolume"
 		_ClippingPlanePosition("Clipping Plane Position", Vector) = (0.5, 0.5, 0.5)
 		_ClippingPlaneEnabled("Clipping Plane Enabled", Int) = 0						// A "boolean" for whether the clipping plane is active or not. 0 == false, 1 == true
 		_BrickSize("Brick Size", Int) = 0
-		_CurrentHzLevel("Current HZ Render Level", Int) = 0
-		_MaxHzLevel("Max HZ Render Level", Int) = 0
+		_CurrentZLevel("Current Z Render Level", Int) = 0
+		_MaxZLevel("Max Z Render Level", Int) = 0
 		_LastBitMask("Last Bit Mask", Int) = 0
 	}
 
@@ -51,8 +51,8 @@ Shader "Custom/HZVolume"
 			float3 _ClippingPlanePosition;
 			int _ClippingPlaneEnabled;
 			int _BrickSize;
-			int _CurrentHzLevel;
-			int _MaxHzLevel;
+			int _CurrentZLevel;
+			int _MaxZLevel;
 			int _LastBitMask;
 
 			//static uint LAST_BIT_MASK = (1 << 24);
@@ -193,22 +193,6 @@ Shader "Custom/HZVolume"
 				return (hzIndex >> 1);						// remove rightmost one
 			}
 
-			// Returns the texture coordinate of the hzIndex into a texture of the given size
-			// Assumption: Texture2D has (0,0) in bottom left, (1,1) in top right.
-			float2 textureCoord2DFromHzIndex(uint hzIndex, uint texWidth, uint texHeight)
-			{
-				float2 texCoord = float2(
-					hzIndex % texWidth,				// x coord
-					hzIndex / (float) texWidth		// y coord
-					);
-
-				// Convert to texture coordinates in [0, 1]
-				texCoord.x = texCoord.x / (float) texWidth;
-				texCoord.y = texCoord.y / (float) texHeight;
-
-				return texCoord;
-			}
-
 			float3 texCoord3DFromHzIndex(uint hzIndex, uint texWidth, uint texHeight, uint texDepth)
 			{
 				float3 texCoord = float3(0,0,0);
@@ -225,34 +209,23 @@ Shader "Custom/HZVolume"
 				return texCoord;
 			}
 
-			// Returns the masked z index, allowing for the the data to be quantized to a level of detail specified by the _CurrentHzLevel.
+			// Returns the masked z index, allowing for the the data to be quantized to a level of detail specified by the _CurrentZLevel.
 			uint computeMaskedZIndex(uint zIndex)
 			{
-				int zBits = _MaxHzLevel * 3;
-				uint zMask = -1 >> (zBits - 3 * _CurrentHzLevel) << (zBits - 3 * _CurrentHzLevel);
+				int zBits = _MaxZLevel * 3;
+				uint zMask = -1 >> (zBits - 3 * _CurrentZLevel) << (zBits - 3 * _CurrentZLevel);
 				return zIndex & zMask;
 			}
 
 			/***************************************** END HZ CURVING CODE ************************************************/
-
-			float sampleIntensityHz2D(float3 pos) 
-			{
-				/******** SAMPLING 2D HZ CURVED RAW DATA ***********/
-				uint zIndex = morton3D(pos);										// Get the Z order index
-				//uint newIndex = zIndex & (~511);									// Used for rendering different levels
-				uint hzIndex = getHZIndex(zIndex);									// Find the hz order index	
-				float2 texCoord = textureCoord2DFromHzIndex(hzIndex, 4096, 4096);		// Convert the index to the right texture coordinate for sampling in the 4096 x 4096 texture
-				float data = tex2Dlod(_MainTex, float4(texCoord.xy, 0, 0)).a;		// Sample the color from the main texture that holds the data
-				return data;
-			}
-
 			float sampleIntensityHz3D(float3 pos)
 			{
 				/********* SAMPLING 3D HZ CURVED RAW DATA WITH TEXTURE COORD CALCULATION **********/
 				uint zIndex = morton3D(pos);										// Get the Z order index		
 				uint maskedZIndex = computeMaskedZIndex(zIndex);					// Get the masked Z index
 				uint hzIndex = getHZIndex(maskedZIndex);							// Find the hz order index
-				float3 texCoord = texCoord3DFromHzIndex(hzIndex, _BrickSize, _BrickSize, _BrickSize);
+				uint dataCubeDimension = 1 << _CurrentZLevel;						// The dimension of the data brick using the current hz level.
+				float3 texCoord = texCoord3DFromHzIndex(hzIndex, dataCubeDimension, dataCubeDimension, dataCubeDimension);			// THE DIMENSIONS NEED TO BE THE DATA BRICK SIZE, not the full level _BrickSize
 				float data = tex3Dlod(_VolumeDataTexture, float4(texCoord, 0)).a;
 				return data;
 			}
@@ -270,7 +243,6 @@ Shader "Custom/HZVolume"
 			// Note: This is a wrapper for the other sampling methods.
 			// Note: pos is normalized in [0, 1]
 			float4 sampleIntensity(float3 pos) {
-				//float data = sampleIntensityHz2D(pos);
 				float data = sampleIntensityHz3D(pos);
 				//float data = sampleIntensityRaw3D(pos);
 				return float4(data, data, data, data);
