@@ -28,7 +28,7 @@ public class ArcBallCamera : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-		targetPosition = new Vector3(0, 0, 0);
+		targetPosition = new Vector3(0.5f, 0.5f, 0.5f);
         Vector3 angles = transform.eulerAngles;
         x = angles.y;
         y = angles.x;

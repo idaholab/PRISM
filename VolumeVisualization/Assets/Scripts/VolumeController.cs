@@ -40,7 +40,9 @@ public class VolumeController : MonoBehaviour {
 	private VectorLine boundingBoxLine;
 
 	// The data to be loaded into the renderer
-	private string dataPath = "Assets/Data/4Bricks/VisMaleHz2/";
+	//private string dataPath = "Assets/Data/VisMaleHz2/";
+	//private string dataPath = "Assets/Data/fourSkullHz/";
+	private string dataPath = "Assets/Data/BoxHz/";
 
 	// Use this for initialization. This will ensure that the global variables needed by other objects are initialized first.
 	private void Awake()
@@ -65,12 +67,12 @@ public class VolumeController : MonoBehaviour {
 		boundingBoxLine.MakeCube(new Vector3(0.5f, 0.5f, 0.5f), 1, 1, 1);               // Note: Places the corner at (0, 0, 0)
 
 		// Create a box for the plane, if debugging
-		clippingPlaneCube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-		clippingPlaneCube.transform.position = clippingPlane.Position;
-		clippingPlaneCube.GetComponent<Renderer>().material = new Material(Shader.Find("Standard"));
-		clippingPlaneCube.transform.position = clippingPlane.Position;
-		clippingPlaneCube.transform.localScale = new Vector3(2.1f, 2.1f, 0.01f);
-		clippingPlaneCube.transform.rotation = Quaternion.LookRotation(clippingPlane.Normal);
+		//clippingPlaneCube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+		//clippingPlaneCube.transform.position = clippingPlane.Position;
+		//clippingPlaneCube.GetComponent<Renderer>().material = new Material(Shader.Find("Standard"));
+		//clippingPlaneCube.transform.position = clippingPlane.Position;
+		//clippingPlaneCube.transform.localScale = new Vector3(2.1f, 2.1f, 0.01f);
+		//clippingPlaneCube.transform.rotation = Quaternion.LookRotation(clippingPlane.Normal);
 
 		// Load the compute shader kernel
 		analysisKernelID = brickAnalysisShader.FindKernel("BrickAnalysis");
@@ -80,12 +82,12 @@ public class VolumeController : MonoBehaviour {
 	private void Update ()
 	{
 		// Draw the 1 x 1 x 1 bounding box for the volume.
-		boundingBoxLine.Draw();
+		//boundingBoxLine.Draw();
 
 		// TESTING: Running brickAnalysis compute shader
 
 		// TODO: change z rendering level depending on camera view, z-buffer, etc.
-		//BrickData[] analyzedData = runBrickAnalysis();
+		// BrickData[] analyzedData = runBrickAnalysis();
 
 		//// Use the analyzed data
 		//for (int i = 0; i < analyzedData.Length; i++)
