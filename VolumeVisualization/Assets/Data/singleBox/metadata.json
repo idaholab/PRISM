@@ -1,0 +1,22 @@
+{
+  "minLevel": 64,
+  "maxLevel": 64,
+  "bricks": [
+    {
+      "filename": "box.raw",
+      "size": 64,
+      "position": [
+        0,
+        0,
+        0
+      ]
+    },
+  ],
+  "totalBricks": 1,
+  "bytesPerPixel": 1,
+  "globalSize": [
+    64,
+    64,
+    64
+  ]
+}

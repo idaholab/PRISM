@@ -1,0 +1,29 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel BrickAnalysis
+
+struct BrickData
+{
+	int size;
+	float3 position;
+	int maxZLevel;
+	int currentZLevel;
+	bool updateData;
+};
+
+// Set up the data buffer
+RWStructuredBuffer<BrickData> dataBuffer;
+float4 cameraPosition;
+
+[numthreads(64,1,1)]
+void BrickAnalysis (uint3 id : SV_DispatchThreadID)
+{
+	// Compute the distance from the current brick to the camera
+	float3 cameraToBrick = dataBuffer[id.x].position - cameraPosition.xyz;
+	float distanceFromCamera = length(cameraToBrick);
+
+	dataBuffer[id.x].size = 3;
+	dataBuffer[id.x].position = float3(distanceFromCamera, distanceFromCamera, distanceFromCamera);// cameraPosition.xyz; // float3(1024, 1024, 1024);
+	dataBuffer[id.x].maxZLevel = 800;
+	dataBuffer[id.x].currentZLevel = 900;
+	dataBuffer[id.x].updateData = true;
+}

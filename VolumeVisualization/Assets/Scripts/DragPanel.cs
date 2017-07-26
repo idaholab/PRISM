@@ -1,9 +1,10 @@
-﻿// Code taken from the tutorial at: https://unity3d.com/learn/tutorials/modules/intermediate/live-training-archive/panels-panes-windows?playlist=17111
+﻿/* Drag Panel | Marko Sterbentz 6/6/2017
+ * This script allows the panel to which it is attached to be dragged on click.
+ * Note: Code taken from the tutorial at: https://unity3d.com/learn/tutorials/modules/intermediate/live-training-archive/panels-panes-windows?playlist=17111
+ */
 
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.EventSystems;
-using System.Collections;
 
 public class DragPanel : MonoBehaviour, IPointerDownHandler, IDragHandler
 {
