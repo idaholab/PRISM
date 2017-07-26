@@ -12,8 +12,7 @@ import gov.inl.HZGenerator.CLFW;
 
 public class TestMorton extends TestCase {
 	protected void setUp() {
-		File openCLSettings = new File(getClass().getClassLoader().getResource("Kernels/OpenCLSettings.json").getPath());
-		assertEquals(CLFW.Initialize(openCLSettings), CL_SUCCESS);
+		assertEquals(CLFW.Initialize("Kernels/OpenCLSettings.json", "Kernels"), CL_SUCCESS);
 	}
 
 	int Part1By2(int x)

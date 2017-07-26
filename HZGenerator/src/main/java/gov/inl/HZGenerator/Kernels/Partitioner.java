@@ -1,6 +1,6 @@
 package gov.inl.HZGenerator.Kernels;
 
-import gov.inl.HZGenerator.BrickFactory.Partition;
+import gov.inl.HZGenerator.BrickFactory.Brick;
 import org.jocl.*;
 import static org.jocl.CL.*;
 
@@ -18,7 +18,7 @@ public class Partitioner {
 	// min and max dim size should be a power of two
 	// width, height, and depth are in pixels
 	public static int CombineBricks( int width, int height, int depth, int minDimSize, int maxDimSize,
-									 List<Partition> partitions) {
+									 List<Brick> partitions) {
 		numBricks = -1;
 		int[] error = {0};
 
@@ -72,7 +72,7 @@ public class Partitioner {
 		/* Scanner the predication to compute densifying addresses */
 		Scanner.StreamScan(predication, tensorSize, addresses);
 
-		/* The last element in the scan indicates the total number of partitions */
+		/* The last element in the scan indicates the total number of bricks */
 		int[] totalBricks = {-1};
 		clEnqueueReadBuffer(queue, addresses, CL_TRUE, (tensorSize - 1) * Sizeof.cl_int, Sizeof.cl_int,
 				Pointer.to(totalBricks), 0, null, null);
@@ -94,9 +94,9 @@ public class Partitioner {
 		error[0] |= clEnqueueReadBuffer(queue, denseSizes, CL_TRUE, 0, totalBricks[0] * Sizeof.cl_int,
 				Pointer.to(sizes), 0, null, null);
 
-		/* Append partitions to the list */
+		/* Append bricks to the list */
 		for (int i = 0; i < totalBricks[0]; ++i) {
-			Partition p = new Partition();
+			Brick p = new Brick();
 			p.setPosition(locations[4 * i], locations[(4 * i) + 1], locations[(4 * i) + 2]);
 			p.setSize(sizes[i]);
 			partitions.add(p);
@@ -171,7 +171,7 @@ public class Partitioner {
 		/* Scanner the predication to compute densifying addresses */
 		Scanner.StreamScan(pr.predication, pr.tensorSize, pr.addresses);
 
-		/* The last element in the scan indicates the total number of partitions */
+		/* The last element in the scan indicates the total number of bricks */
 		int[] totalBricks = {-1};
 		clEnqueueReadBuffer(queue, pr.addresses, CL_TRUE, (pr.tensorSize - 1) * Sizeof.cl_int, Sizeof.cl_int,
 				Pointer.to(totalBricks), 0, null, null);
@@ -193,9 +193,9 @@ public class Partitioner {
 		error[0] |= clEnqueueReadBuffer(queue, pr.denseSizes, CL_TRUE, 0, totalBricks[0] * Sizeof.cl_int,
 				Pointer.to(sizes), 0, null, null);
 
-		/* Append partitions to the list */
+		/* Append bricks to the list */
 		for (int i = 0; i < totalBricks[0]; ++i) {
-			Partition p = new Partition();
+			Brick p = new Brick();
 			p.setPosition(locations[4 * i], locations[(4 * i) + 1], locations[(4 * i) + 2]);
 			p.setSize(sizes[i]);
 			pr.partitions.add(p);

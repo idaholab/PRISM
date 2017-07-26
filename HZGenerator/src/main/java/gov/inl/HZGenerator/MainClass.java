@@ -27,8 +27,8 @@ public class MainClass extends Application {
 	/* Initializes OpenCL and FXML GUI */
 	@Override public void start(Stage stage) throws Exception {
 		// Initialize OpenCL
-		File openCLSettings = new File(getClass().getClassLoader().getResource("Kernels/OpenCLSettings.json").getPath());
-		if (CLFW.Initialize(openCLSettings) != CL_SUCCESS) {
+//		File openCLSettings = new File(getClass().getClassLoader().getResource("Kernels/OpenCLSettings.json").getPath().substring(5));
+		if (CLFW.Initialize("Kernels/OpenCLSettings.json", "Kernels") != CL_SUCCESS) {
 			System.out.println("OpenCL failed to initialize.");
 			return;
 		}

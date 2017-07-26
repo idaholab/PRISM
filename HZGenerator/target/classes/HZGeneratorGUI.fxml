@@ -258,7 +258,7 @@
       </HBox>
       <Pane layoutX="1.0" layoutY="472.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="50.0" prefWidth="1080.0">
          <children>
-            <Button layoutX="965.0" layoutY="5.0" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#generate" prefHeight="37.0" prefWidth="110.0" styleClass="custom-button" stylesheets="@HZGeneratorGUI.css" text="Generate">
+            <Button fx:id="btnGenerate" layoutX="965.0" layoutY="5.0" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#generate" prefHeight="37.0" prefWidth="110.0" styleClass="custom-button" stylesheets="@HZGeneratorGUI.css" text="Generate">
                <font>
                   <Font size="14.0" />
                </font>

@@ -1,3 +1,6 @@
+/* Check out the following: https://fgiesen.wordpress.com/2009/12/13/decoding-morton-codes/ */
+/* Check out page 7 of this: http://www.pascucci.org/pdf-papers/chapter-thaoe.pdf */
+
 // "Insert" two 0 bits after each of the 10 low bits of x
 inline unsigned int Part1By2(unsigned int x)
 {
@@ -40,6 +43,14 @@ inline unsigned int DecodeMorton3Z(unsigned int  code)
   return Compact1By2(code >> 2);
 }
 
+inline unsigned int getHZAddress(unsigned int x, unsigned int y, unsigned int z, unsigned int lastBitMask) {
+        unsigned int zidx = EncodeMorton3(x, y, z);
+        zidx |= lastBitMask;
+        zidx /= zidx & -zidx;
+        zidx >>= 1;
+        return zidx;
+}
+
 __kernel void XYZ2Z (
     __global uint3* points,
     __global uint* zs
@@ -75,6 +86,7 @@ __kernel void XYZ2HZ (
     hzs[gid] = z;
 }
 
+/* Novel backwards conversion */
 __kernel void HZ2XYZ (
     __global uint* hzs,
     __global uint3* points,
@@ -105,107 +117,62 @@ __kernel void HZ2XYZ (
     points[gid] = point;
 }
 
-/*
-    brickAddresses is a texture where each pixel is a brick index.
-        Each pixel corresponds to a uniform grid where each unit is the minimum brick size.
-        To access, take gid / minimumBrickSize
-    brickPositions contains an offset for each brick
-*/
-__kernel void curveLayer(
-    __global int* brickAddresses,
-    __global int4* brickPositions,
-    __global int* brickSizes,
-    int minimumBrickSize,
-    int z, int width, int height,
-    __global int* result,
-    __global int* brick
+__kernel void curveByteVolume(
+    __global unsigned char* rawVolume,
+    __global unsigned char* curvedVolume,
+    unsigned int brickWidth, unsigned int lastBitMask
 ) {
-    int3 gid = (int3)(get_global_id(0), get_global_id(1), z);
-    int3 tensorIdx = gid / minimumBrickSize;
-    int tensorAddress = tensorIdx.x
-                      + tensorIdx.y * (width / minimumBrickSize)
-                      + tensorIdx.z * (width / minimumBrickSize) * (height / minimumBrickSize);
-//    if (gid.x == 0 && gid.y == 4 && gid.z == 0) {
-//        printf("gid: %d %d %d bid %d bs: %d levels %d bits: %d lbm: %d pos %d %d %d reverted %d %d %d \n",
-//                    gid.x, gid.y, gid.z, brickNumber, brickSize_, levels,
-//                    bits, last_bit_mask, position.x, position.y, position.z, point.x, point.y, point.z);
-//
-//        printf("tensorIdx %d %d %d \n", tensorIdx.x, tensorIdx.y, tensorIdx.z);
-//    }
-    int brickSize = brickSizes[tensorAddress];
-    int brickSize_ = brickSize;
-    int3 tensorOffset = (tensorIdx% (brickSize / minimumBrickSize));
-    //printf("gid: %d %d %d tensorIdx %d %d %d tensorOffset %d %d %d\n",
-      //  gid.x, gid.y, gid.z, tensorIdx.x, tensorIdx.y, tensorIdx.z,
-        //tensorOffset.x, tensorOffset.y, tensorOffset.z);
-    tensorIdx = tensorIdx - tensorOffset;
+    /* Read original pixel */
+    int3 gid = (int3)(get_global_id(0), get_global_id(1), get_global_id(2));
+    int gAddress = gid.x
+                 + gid.y * brickWidth
+                 + gid.z * brickWidth * brickWidth;
 
+    unsigned char data = rawVolume[gAddress];
 
+    /* Calculate the new address */
+    unsigned int zidx = getHZAddress(gid.x, gid.y, gid.z, lastBitMask);
 
-    tensorAddress = tensorIdx.x
-                  + tensorIdx.y * (width / minimumBrickSize)
-                  + tensorIdx.z * (width / minimumBrickSize) * (height / minimumBrickSize);
+    /* Shuffle element */
+    curvedVolume[zidx] = data;
+}
 
-    int brickNumber = brickAddresses[tensorAddress] - 1;
+__kernel void curveShortVolume(
+    __global unsigned short* rawVolume,
+    __global unsigned short* curvedVolume,
+    unsigned int brickWidth, unsigned int lastBitMask
+) {
+    /* Read original pixel */
+    int3 gid = (int3)(get_global_id(0), get_global_id(1), get_global_id(2));
+    int gAddress = gid.x
+                 + gid.y * brickWidth
+                 + gid.z * brickWidth * brickWidth;
+    unsigned short data = rawVolume[gAddress];
 
-    int4 offset = brickPositions[brickNumber];
-//    int levels =(int)(ceil(log2((double)brickSize))) + 1;
+    /* Calculate the new address */
+    unsigned int zidx = getHZAddress(gid.x, gid.y, gid.z, lastBitMask);
 
+    /* Shuffle element */
+    curvedVolume[zidx] = data;
+}
 
-    int levels = 0;
-    while (brickSize > 0) {
-        brickSize >>= 1;
-        ++levels;
-    }
-    levels -= 1;
+__kernel void curveShortToByteVolume(
+    __global unsigned short* rawVolume,
+    __global unsigned char* curvedVolume,
+    int brickWidth, int lastBitMask
+) {
+    /* Read original pixel */
+    int3 gid = (int3)(get_global_id(0), get_global_id(1), get_global_id(2));
+    int gAddress = gid.x
+                 + gid.y * brickWidth
+                 + gid.z * brickWidth * brickWidth;
+    unsigned short data = rawVolume[gAddress];
 
-    int bits =  levels * 3;
-    int last_bit_mask = 1 << bits;
-    int3 position = gid - (int3)(offset.x, offset.y, offset.z);
+    unsigned char scaled = (unsigned char)((((double)data) / 65535.0) * 255.0); // remap to 0-255
 
-    int zidx = EncodeMorton3(position.x, position.y, position.z);
-    int zidx_ = zidx;
-    zidx |= last_bit_mask;
-    zidx /= zidx & -zidx;
-    zidx >>= 1;
-////    if (gid.x == 0 && gid.y == 1) {
-//        uint c = zidx;
-//
-//        // Add back rightmost one.
-//        c = (c << 1) | 1;
-//
-//        // Determine highest bit
-//        int i = c;
-//        i |= (i >>  1);
-//        i |= (i >>  2);
-//        i |= (i >>  4);
-//        i |= (i >>  8);
-//        i |= (i >> 16);
-//        i = i - (i >> 1);
-//
-//        // Shift left by max bits - highest bit index.
-//        c = c * (last_bit_mask / i);
-//
-//        // Mask the number to remove added 1.
-//        c &= ~last_bit_mask;
-//
-//        uint3 point = (uint3)(DecodeMorton3X(c), DecodeMorton3Y(c),DecodeMorton3Z(c) );
-//
-//        printf("%d %d %d\n", position.x, position.y, position.z);
-//        printf("%d %d %d\n", point.x, point.y, point.z);
-//        printf("lbm %d\n", last_bit_mask);
-//    }
-//    if (position.x != point.x ||
-//        position.y != point.y ||
-//        position.z != point.z ||
-//        (gid.x == 0 && gid.y == 128 && gid.z == 0)) {
-      //  printf("gid: %d %d %d bid %d bs: %d levels %d bits: %d lbm: %d pos %d %d %d reverted %d %d %d \n",
-        //    gid.x, gid.y, gid.z, brickNumber, brickSize_, levels,
-          //  bits, last_bit_mask, position.x, position.y, position.z, point.x, point.y, point.z);
-//    }
+    /* Calculate the new address */
+    unsigned int zidx = getHZAddress(gid.x, gid.y, gid.z, lastBitMask);
 
-
-    //curve position.
-    result[gid.x + gid.y * width] = zidx;
-    brick[gid.x + gid.y * width] = brickNumber;
+    /* Shuffle element */
+    curvedVolume[zidx] = scaled;
 }
