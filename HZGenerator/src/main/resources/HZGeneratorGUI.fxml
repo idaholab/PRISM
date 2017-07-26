@@ -81,7 +81,7 @@
                                           <HBox prefHeight="45.0" prefWidth="340.0" spacing="10.0">
                                              <children>
                                                 <Button fx:id="btnOpenRawSource" mnemonicParsing="false" onAction="#chooseSource" prefHeight="37.0" prefWidth="217.0" text="Choose raw source" />
-                                                <TextField fx:id="txtRawPath" editable="false" prefHeight="24.0" prefWidth="155.0" text="C:\Users\BITINK\git\PRISM\VolumeVisualization\Assets\Data\Box.raw" />
+                                                <TextField fx:id="txtRawPath" editable="false" prefHeight="24.0" prefWidth="155.0" />
                                              </children>
                                              <opaqueInsets>
                                                 <Insets />
@@ -93,9 +93,9 @@
                                           <HBox prefHeight="102.0" prefWidth="340.0" spacing="10.0" GridPane.rowIndex="1">
                                              <children>
                                                 <Label alignment="CENTER" prefHeight="37.0" prefWidth="92.0" text="Size (X, Y, Z)" textAlignment="RIGHT" wrapText="true" />
-                                                <TextField fx:id="txtRawXSize" prefHeight="37.0" prefWidth="76.0" text="8" />
-                                                <TextField fx:id="txtRawYSize" prefHeight="37.0" prefWidth="78.0" text="8" />
-                                                <TextField fx:id="txtRawZSize" prefHeight="37.0" prefWidth="75.0" text="8" />
+                                                <TextField fx:id="txtRawXSize" prefHeight="37.0" prefWidth="76.0" />
+                                                <TextField fx:id="txtRawYSize" prefHeight="37.0" prefWidth="78.0" />
+                                                <TextField fx:id="txtRawZSize" prefHeight="37.0" prefWidth="75.0" />
                                              </children>
                                           </HBox>
                                           <HBox prefHeight="102.0" prefWidth="340.0" spacing="10.0" GridPane.rowIndex="2">
@@ -199,7 +199,7 @@
                      <children>
                         <Label fx:id="lblTime" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                         <Label text="Preview Intensity" GridPane.rowIndex="1" />
-                        <Slider fx:id="intensitySlider" blockIncrement="1.0" majorTickUnit="10.0" max="50.0" min="-50.0" minorTickCount="1" prefHeight="14.0" prefWidth="108.0" showTickMarks="true" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                        <Slider fx:id="intensitySlider" blockIncrement="1.0" majorTickUnit="10.0" max="50.0" min="-50.0" minorTickCount="1" prefHeight="14.0" prefWidth="108.0" showTickMarks="true" value="1.0" GridPane.columnIndex="2" GridPane.rowIndex="1" />
                      </children>
                   </GridPane>
                </children>
@@ -258,7 +258,7 @@
       </HBox>
       <Pane layoutX="1.0" layoutY="472.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="50.0" prefWidth="1080.0">
          <children>
-            <Button fx:id="btnGenerate" layoutX="965.0" layoutY="5.0" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#generate" prefHeight="37.0" prefWidth="110.0" styleClass="custom-button" stylesheets="@HZGeneratorGUI.css" text="Generate">
+            <Button fx:id="btnGenerate" layoutX="922.0" layoutY="5.0" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#generate" prefHeight="37.0" prefWidth="153.0" styleClass="custom-button" stylesheets="@HZGeneratorGUI.css" text="Generate">
                <font>
                   <Font size="14.0" />
                </font>
@@ -267,8 +267,8 @@
             <Label fx:id="lblNumBricks" layoutX="112.0" layoutY="13.0" text="-1" />
             <Label alignment="CENTER" contentDisplay="CENTER" layoutX="165.0" layoutY="12.0" prefHeight="21.0" prefWidth="67.0" text="File Size:" />
             <Label fx:id="lblFileSize" layoutX="229.0" layoutY="13.0" text="-1" />
-            <Button fx:id="btnChooseDestination" layoutX="613.0" layoutY="3.0" mnemonicParsing="false" onAction="#chooseDestination" prefHeight="37.0" prefWidth="176.0" text="Choose destination" />
-            <TextField fx:id="txtResultPath" editable="false" layoutX="796.0" layoutY="3.0" prefHeight="0.0" prefWidth="161.0" text="C:\Users\BITINK\git\PRISM\VolumeVisualization\Assets\Data\result" />
+            <Button fx:id="btnChooseDestination" layoutX="455.0" layoutY="5.0" mnemonicParsing="false" onAction="#chooseDestination" prefHeight="37.0" prefWidth="239.0" text="Choose destination" />
+            <TextField fx:id="txtResultPath" editable="false" layoutX="694.0" layoutY="5.0" prefHeight="37.0" prefWidth="219.0" />
          </children>
       </Pane>
    </children>

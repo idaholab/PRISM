@@ -2,84 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="f8c84ed3-67bb-48db-bf6f-0f3ae124f038" name="Default" comment="Added Parallel Scan and Curving kernels. Added unit tests.">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__gov_inl_SIEVAS_HMortonLib_1_0_SNAPSHOT.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__net_imagej_ij_1_45b.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/Maven__net_imagej_imagej_unknown.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/Kernels/Blurrer.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/resources/Kernels/Blurrer.cl" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/resources/Kernels/SimpleConvolution.cl" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/resources/Kernels/Thresholder.cl" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/test/java/TestBlur.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/test/java/TestVolumeProcessor.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/target/IDXGenerator-1.0-SNAPSHOT.jar" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/target/classes/CLFW - Copy.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/target/classes/Kernels/Blurrer.cl" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/target/classes/Kernels/SimpleConvolution.cl" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/target/classes/Kernels/Thresholder.cl" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/target/classes/Scan.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/target/classes/gov/inl/HZGenerator/BrickFactory/Partition.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/target/classes/gov/inl/HZGenerator/BrickFactory/VolumePartitioner.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/target/classes/gov/inl/HZGenerator/Kernels/Blurrer.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/target/test-classes/TestBlur.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/../VolumeVisualization/Assets/Scripts/CubeRotator.cs" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/../VolumeVisualization/Assets/Scripts/CubeRotator.cs.meta" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/../VolumeVisualization/Assets/Scripts/FirstPersonCamera.cs" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/../VolumeVisualization/Assets/Scripts/FirstPersonCamera.cs.meta" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/../VolumeVisualization/Assets/Scripts/TransferFunction.cs" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/../VolumeVisualization/Assets/Scripts/TransferFunction.cs.meta" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/../VolumeVisualization/Assets/Scripts/UserInterface.cs" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/../VolumeVisualization/Assets/Scripts/UserInterface.cs.meta" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/artifacts/HZGenerator_jar/IDXGenerator.jar" afterPath="$PROJECT_DIR$/out/artifacts/HZGenerator_jar/IDXGenerator.jar" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/classes/gov/inl/HZGenerator/BrickFactory/BrickFactory.class" afterPath="$PROJECT_DIR$/target/classes/gov/inl/HZGenerator/BrickFactory/BrickFactory.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/classes/gov/inl/HZGenerator/BrickFactory/VolumeApportioner.class" afterPath="$PROJECT_DIR$/target/classes/gov/inl/HZGenerator/BrickFactory/VolumeApportioner.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/classes/gov/inl/HZGenerator/BrickFactory/VolumePreview.class" afterPath="$PROJECT_DIR$/target/classes/gov/inl/HZGenerator/BrickFactory/VolumePreview.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/classes/gov/inl/HZGenerator/Controller.class" afterPath="$PROJECT_DIR$/target/classes/gov/inl/HZGenerator/Controller.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/classes/gov/inl/HZGenerator/Kernels/Compactor$1.class" afterPath="$PROJECT_DIR$/target/classes/gov/inl/HZGenerator/Kernels/Compactor$1.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/classes/gov/inl/HZGenerator/Kernels/Compactor$Type.class" afterPath="$PROJECT_DIR$/target/classes/gov/inl/HZGenerator/Kernels/Compactor$Type.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/classes/gov/inl/HZGenerator/Kernels/Compactor.class" afterPath="$PROJECT_DIR$/target/classes/gov/inl/HZGenerator/Kernels/Compactor.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/classes/gov/inl/HZGenerator/Kernels/MortonConverter.class" afterPath="$PROJECT_DIR$/target/classes/gov/inl/HZGenerator/Kernels/MortonConverter.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/classes/gov/inl/HZGenerator/Kernels/Partitioner.class" afterPath="$PROJECT_DIR$/target/classes/gov/inl/HZGenerator/Kernels/Partitioner.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/classes/gov/inl/HZGenerator/Kernels/PartitionerResult.class" afterPath="$PROJECT_DIR$/target/classes/gov/inl/HZGenerator/Kernels/PartitionerResult.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../VolumeVisualization/Assets/Default.unity" afterPath="$PROJECT_DIR$/../VolumeVisualization/Assets/Default.unity" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../VolumeVisualization/Assets/Materials/Volume.mat" afterPath="$PROJECT_DIR$/../VolumeVisualization/Assets/Materials/Volume.mat" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../VolumeVisualization/ProjectSettings/EditorBuildSettings.asset" afterPath="$PROJECT_DIR$/../VolumeVisualization/ProjectSettings/EditorBuildSettings.asset" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../VolumeVisualization/ProjectSettings/ProjectSettings.asset" afterPath="$PROJECT_DIR$/../VolumeVisualization/ProjectSettings/ProjectSettings.asset" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/artifacts/HZGenerator_jar.xml" afterPath="$PROJECT_DIR$/.idea/artifacts/HZGenerator_jar.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/HZGenerator.iml" afterPath="$PROJECT_DIR$/HZGenerator.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/pom.xml" afterPath="$PROJECT_DIR$/pom.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/BrickFactory.java" afterPath="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/BrickFactory.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/VolumeApportioner.java" afterPath="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/VolumeApportioner.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/VolumePreview.java" afterPath="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/VolumePreview.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/CLFW.java" afterPath="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/CLFW.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/Controller.java" afterPath="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/Controller.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/Kernels/Compactor.java" afterPath="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/Kernels/Compactor.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/Kernels/MortonConverter.java" afterPath="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/Kernels/MortonConverter.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/Kernels/Partitioner.java" afterPath="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/Kernels/Partitioner.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/Kernels/PartitionerResult.java" afterPath="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/Kernels/PartitionerResult.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/MainClass.java" afterPath="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/MainClass.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/SlicePreview.java" afterPath="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/SlicePreview.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/resources/HZGeneratorGUI.fxml" afterPath="$PROJECT_DIR$/src/main/resources/HZGeneratorGUI.fxml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/resources/Kernels/Compactor.cl" afterPath="$PROJECT_DIR$/src/main/resources/Kernels/Compactor.cl" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/resources/Kernels/MortonConverter.cl" afterPath="$PROJECT_DIR$/src/main/resources/Kernels/MortonConverter.cl" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/resources/Kernels/OpenCLSettings.json" afterPath="$PROJECT_DIR$/src/main/resources/Kernels/OpenCLSettings.json" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/test/java/TestCompact.java" afterPath="$PROJECT_DIR$/src/test/java/TestCompact.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/test/java/TestGenerateBricks.java" afterPath="$PROJECT_DIR$/src/test/java/TestGenerateBricks.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/test/java/TestMorton.java" afterPath="$PROJECT_DIR$/src/test/java/TestMorton.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/test/java/TestReduce.java" afterPath="$PROJECT_DIR$/src/test/java/TestReduce.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/test/java/TestScan.java" afterPath="$PROJECT_DIR$/src/test/java/TestScan.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/META-INF/MANIFEST.MF" afterPath="$PROJECT_DIR$/target/META-INF/MANIFEST.MF" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/classes/HZGeneratorGUI.fxml" afterPath="$PROJECT_DIR$/target/classes/HZGeneratorGUI.fxml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/classes/Kernels/Compactor.cl" afterPath="$PROJECT_DIR$/target/classes/Kernels/Compactor.cl" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/classes/Kernels/MortonConverter.cl" afterPath="$PROJECT_DIR$/target/classes/Kernels/MortonConverter.cl" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/classes/Kernels/OpenCLSettings.json" afterPath="$PROJECT_DIR$/target/classes/Kernels/OpenCLSettings.json" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../VolumeVisualization/Assets/Data/VisMale.raw.meta" afterPath="$PROJECT_DIR$/../VolumeVisualization/Assets/Data/VisMale.raw.meta" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../VolumeVisualization/Assets/Scripts/ArcBallCamera.cs" afterPath="$PROJECT_DIR$/../VolumeVisualization/Assets/Scripts/ArcBallCamera.cs" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../VolumeVisualization/Assets/Scripts/DragPanel.cs" afterPath="$PROJECT_DIR$/../VolumeVisualization/Assets/Scripts/DragPanel.cs" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../VolumeVisualization/Assets/Scripts/HZOrderReader.cs" afterPath="$PROJECT_DIR$/../VolumeVisualization/Assets/Scripts/HZOrderReader.cs" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../VolumeVisualization/Assets/Scripts/RAWFileMapper.cs" afterPath="$PROJECT_DIR$/../VolumeVisualization/Assets/Scripts/RAWFileMapper.cs" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../VolumeVisualization/Assets/Shaders/HZVolume.shader" afterPath="$PROJECT_DIR$/../VolumeVisualization/Assets/Shaders/HZVolume.shader" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/Partition.java" afterPath="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/Brick.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/VolumePartitioner.java" afterPath="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/VolumeBricker.java" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <ignored path="$PROJECT_DIR$/target/" />
@@ -92,47 +18,20 @@
   </component>
   <component name="CoverageDataManager">
     <SUITE FILE_PATH="coverage/IDXGenerator$IDXGeneratorGUI.coverage" NAME="IDXGeneratorGUI Coverage Results" MODIFIED="1496180633059" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
+    <SUITE FILE_PATH="coverage/HZGenerator$MainClass.coverage" NAME="MainClass Coverage Results" MODIFIED="1500501209241" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
     <SUITE FILE_PATH="coverage/HZGenerator$HZGeneratorGUI.coverage" NAME="HZGeneratorGUI Coverage Results" MODIFIED="1496418174169" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
     <SUITE FILE_PATH="coverage/HZGenerator$TestReduce_testReduceImage.coverage" NAME="TestReduce.testReduceImage Coverage Results" MODIFIED="1498868499896" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
     <SUITE FILE_PATH="coverage/HZGenerator$TestGenerateBricks_testGenerateBricks.coverage" NAME="TestGenerateBricks.testGenerateBricks Coverage Results" MODIFIED="1497648842587" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
-    <SUITE FILE_PATH="coverage/HZGenerator$MainClass.coverage" NAME="MainClass Coverage Results" MODIFIED="1500501209241" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
   </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="VolumeApportioner.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/VolumeApportioner.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1400">
-              <caret line="159" column="1" lean-forward="false" selection-start-line="159" selection-start-column="1" selection-end-line="159" selection-end-column="1" />
-              <folding>
-                <element signature="method#allocatePartitions#0;class#VolumeApportioner#0" expanded="false" />
-                <element signature="method#apportion8BitPartition#0;class#VolumeApportioner#0" expanded="false" />
-                <element signature="method#apportion16BitPartition#0;class#VolumeApportioner#0" expanded="false" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="MainClass.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/MainClass.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="500">
-              <caret line="30" column="22" lean-forward="true" selection-start-line="30" selection-start-column="22" selection-end-line="30" selection-end-column="22" />
+            <state relative-caret-position="340">
+              <caret line="30" column="22" lean-forward="false" selection-start-line="30" selection-start-column="22" selection-end-line="30" selection-end-column="22" />
               <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="TestGenerateBricks.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/test/java/TestGenerateBricks.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="175">
-              <caret line="12" column="8" lean-forward="true" selection-start-line="12" selection-start-column="8" selection-end-line="12" selection-end-column="92" />
-              <folding>
-                <element signature="e#237#238#0" expanded="true" />
-                <element signature="e#327#328#0" expanded="true" />
-              </folding>
             </state>
           </provider>
         </entry>
@@ -140,7 +39,7 @@
       <file leaf-file-name="TestCompact.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/test/java/TestCompact.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="175">
+            <state relative-caret-position="102">
               <caret line="17" column="92" lean-forward="false" selection-start-line="17" selection-start-column="92" selection-end-line="17" selection-end-column="92" />
               <folding>
                 <element signature="e#384#385#0" expanded="true" />
@@ -153,7 +52,7 @@
       <file leaf-file-name="TestMorton.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/test/java/TestMorton.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="75">
+            <state relative-caret-position="68">
               <caret line="14" column="92" lean-forward="false" selection-start-line="14" selection-start-column="92" selection-end-line="14" selection-end-column="92" />
               <folding>
                 <element signature="e#294#295#0" expanded="true" />
@@ -163,11 +62,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="BrickFactory.java" pinned="false" current-in-tab="true">
+      <file leaf-file-name="BrickFactory.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/BrickFactory.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="950">
-              <caret line="75" column="23" lean-forward="false" selection-start-line="75" selection-start-column="23" selection-end-line="75" selection-end-column="23" />
+            <state relative-caret-position="100">
+              <caret line="39" column="0" lean-forward="true" selection-start-line="39" selection-start-column="0" selection-end-line="39" selection-end-column="0" />
               <folding>
                 <element signature="docComment;class#BrickFactory#0" expanded="false" />
                 <element signature="method#BrickFactory#0;class#BrickFactory#0" expanded="false" />
@@ -180,10 +79,23 @@
           </provider>
         </entry>
       </file>
+      <file leaf-file-name="HZGeneratorGUI.fxml" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/resources/HZGeneratorGUI.fxml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="675">
+              <caret line="254" column="25" lean-forward="false" selection-start-line="254" selection-start-column="25" selection-end-line="254" selection-end-column="25" />
+              <folding />
+            </state>
+          </provider>
+          <provider editor-type-id="JavaFX-Scene-Builder">
+            <state />
+          </provider>
+        </entry>
+      </file>
       <file leaf-file-name="TestReduce.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/test/java/TestReduce.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="175">
+            <state relative-caret-position="119">
               <caret line="23" column="92" lean-forward="false" selection-start-line="23" selection-start-column="92" selection-end-line="23" selection-end-column="92" />
               <folding>
                 <element signature="e#592#593#0" expanded="true" />
@@ -196,7 +108,7 @@
       <file leaf-file-name="TestScan.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/test/java/TestScan.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="175">
+            <state relative-caret-position="102">
               <caret line="14" column="92" lean-forward="false" selection-start-line="14" selection-start-column="92" selection-end-line="14" selection-end-column="92" />
               <folding>
                 <element signature="e#290#291#0" expanded="true" />
@@ -209,7 +121,7 @@
       <file leaf-file-name="CLFW.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/CLFW.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1082">
+            <state relative-caret-position="1479">
               <caret line="98" column="0" lean-forward="false" selection-start-line="98" selection-start-column="0" selection-end-line="98" selection-end-column="0" />
               <folding>
                 <element signature="imports" expanded="true" />
@@ -221,12 +133,10 @@
       <file leaf-file-name="Controller.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/Controller.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="527">
-              <caret line="247" column="71" lean-forward="true" selection-start-line="247" selection-start-column="71" selection-end-line="247" selection-end-column="71" />
+            <state relative-caret-position="257">
+              <caret line="74" column="26" lean-forward="true" selection-start-line="74" selection-start-column="26" selection-end-line="74" selection-end-column="26" />
               <folding>
                 <element signature="docComment;class#Controller#0" expanded="false" />
-                <element signature="method#initialize#0;class#Controller#0" expanded="false" />
-                <element signature="e#2099#2421#0" expanded="false" />
                 <element signature="e#2254#2301#0" expanded="false" />
                 <element signature="e#2485#2561#0" expanded="false" />
                 <element signature="e#2796#2957#0" expanded="false" />
@@ -239,8 +149,23 @@
                 <element signature="method#chooseDestination#0;class#Controller#0" expanded="false" />
                 <element signature="method#openFolder#0;class#Controller#0" expanded="false" />
                 <element signature="method#openFile#0;class#Controller#0" expanded="false" />
+                <element signature="method#loadVolume#0;class#Controller#0" expanded="false" />
+                <element signature="method#toggleMapTo8BPP#0;class#Controller#0" expanded="false" />
+                <element signature="method#generate#0;class#Controller#0" expanded="false" />
+                <element signature="e#10495#11462#0" expanded="false" />
+                <element signature="e#11297#11456#0" expanded="false" />
                 <element signature="method#showAlert#0;class#Controller#0" expanded="false" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="SlicePreview.java" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/SlicePreview.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="445">
+              <caret line="42" column="63" lean-forward="false" selection-start-line="42" selection-start-column="63" selection-end-line="42" selection-end-column="63" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -324,7 +249,6 @@
         <option value="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/Kernels/Partitioner.java" />
         <option value="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/BrickFactorySettings.java" />
         <option value="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/Partition.java" />
-        <option value="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/SlicePreview.java" />
         <option value="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/SliceProcessor.java" />
         <option value="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/Volume.java" />
         <option value="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/TiffStack.java" />
@@ -341,7 +265,6 @@
         <option value="$PROJECT_DIR$/src/main/resources/Kernels/MortonConverter.cl" />
         <option value="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/VolumeBricker.java" />
         <option value="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/BrickFactory.java" />
-        <option value="$PROJECT_DIR$/src/main/resources/HZGeneratorGUI.fxml" />
         <option value="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/Controller.java" />
         <option value="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/VolumeApportioner.java" />
         <option value="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/VolumePreview.java" />
@@ -353,6 +276,8 @@
         <option value="$PROJECT_DIR$/src/test/java/TestReduce.java" />
         <option value="$PROJECT_DIR$/src/test/java/TestScan.java" />
         <option value="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/CLFW.java" />
+        <option value="$PROJECT_DIR$/src/main/resources/HZGeneratorGUI.fxml" />
+        <option value="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/SlicePreview.java" />
       </list>
     </option>
   </component>
@@ -370,10 +295,10 @@
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="-11" />
-    <option name="y" value="-11" />
-    <option name="width" value="3862" />
-    <option name="height" value="2362" />
+    <option name="x" value="-8" />
+    <option name="y" value="-8" />
+    <option name="width" value="1936" />
+    <option name="height" value="1066" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <ConfirmationsSetting value="1" id="Add" />
@@ -393,9 +318,9 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="PackagesPane" />
       <pane id="Scratches" />
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -544,7 +469,7 @@
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.16684961" />
     <property name="last_directory_selection" value="$PROJECT_DIR$/src/main/java/gov/inl/SIEVAS" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/target/META-INF/MANIFEST.MF" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="SearchEverywhereHistoryKey" value="Something went wrong while updating raw image&#9;null&#9;null" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
@@ -769,136 +694,6 @@
       <envs />
       <method />
     </configuration>
-    <configuration default="true" type="ArquillianJUnit" factoryName="" nameIsGenerated="true">
-      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
-      <module name="" />
-      <option name="arquillianRunConfiguration">
-        <value>
-          <option name="containerStateName" value="" />
-        </value>
-      </option>
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
-      <option name="PACKAGE_NAME" />
-      <option name="MAIN_CLASS_NAME" />
-      <option name="METHOD_NAME" />
-      <option name="TEST_OBJECT" value="class" />
-      <option name="VM_PARAMETERS" />
-      <option name="PARAMETERS" />
-      <option name="WORKING_DIRECTORY" />
-      <option name="ENV_VARIABLES" />
-      <option name="PASS_PARENT_ENVS" value="true" />
-      <option name="TEST_SEARCH_SCOPE">
-        <value defaultName="singleModule" />
-      </option>
-      <envs />
-      <patterns />
-      <method />
-    </configuration>
-    <configuration default="true" type="ArquillianTestNG" factoryName="">
-      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
-      <module name="" />
-      <option name="arquillianRunConfiguration">
-        <value>
-          <option name="containerStateName" value="" />
-        </value>
-      </option>
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
-      <option name="SUITE_NAME" />
-      <option name="PACKAGE_NAME" />
-      <option name="MAIN_CLASS_NAME" />
-      <option name="METHOD_NAME" />
-      <option name="GROUP_NAME" />
-      <option name="TEST_OBJECT" value="CLASS" />
-      <option name="VM_PARAMETERS" />
-      <option name="PARAMETERS" />
-      <option name="WORKING_DIRECTORY" />
-      <option name="OUTPUT_DIRECTORY" />
-      <option name="ANNOTATION_TYPE" />
-      <option name="ENV_VARIABLES" />
-      <option name="PASS_PARENT_ENVS" value="true" />
-      <option name="TEST_SEARCH_SCOPE">
-        <value defaultName="singleModule" />
-      </option>
-      <option name="USE_DEFAULT_REPORTERS" value="false" />
-      <option name="PROPERTIES_FILE" />
-      <envs />
-      <properties />
-      <listeners />
-      <method />
-    </configuration>
-    <configuration default="true" type="Cold Fusion runner description" factoryName="Cold Fusion" custom_browser="" web_path="">
-      <method />
-    </configuration>
-    <configuration default="true" type="CucumberJavaRunConfigurationType" factoryName="Cucumber java">
-      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
-      <option name="myFilePath" />
-      <option name="GLUE" />
-      <option name="myNameFilter" />
-      <option name="myGeneratedName" />
-      <option name="MAIN_CLASS_NAME" />
-      <option name="VM_PARAMETERS" />
-      <option name="PROGRAM_PARAMETERS" />
-      <option name="WORKING_DIRECTORY" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
-      <option name="ENABLE_SWING_INSPECTOR" value="false" />
-      <option name="ENV_VARIABLES" />
-      <option name="PASS_PARENT_ENVS" value="true" />
-      <module name="" />
-      <envs />
-      <method />
-    </configuration>
-    <configuration default="true" type="FlashRunConfigurationType" factoryName="Flash App">
-      <option name="BCName" value="" />
-      <option name="IOSSimulatorSdkPath" value="" />
-      <option name="adlOptions" value="" />
-      <option name="airProgramParameters" value="" />
-      <option name="appDescriptorForEmulator" value="Android" />
-      <option name="debugTransport" value="USB" />
-      <option name="debuggerSdkRaw" value="BC SDK" />
-      <option name="emulator" value="NexusOne" />
-      <option name="emulatorAdlOptions" value="" />
-      <option name="fastPackaging" value="true" />
-      <option name="fullScreenHeight" value="0" />
-      <option name="fullScreenWidth" value="0" />
-      <option name="launchUrl" value="false" />
-      <option name="launcherParameters">
-        <LauncherParameters>
-          <option name="browser" value="a7bb68e0-33c0-4d6f-a81a-aac1fdb870c8" />
-          <option name="launcherType" value="OSDefault" />
-          <option name="newPlayerInstance" value="false" />
-          <option name="playerPath" value="FlashPlayerDebugger.exe" />
-        </LauncherParameters>
-      </option>
-      <option name="mobileRunTarget" value="Emulator" />
-      <option name="moduleName" value="" />
-      <option name="overriddenMainClass" value="" />
-      <option name="overriddenOutputFileName" value="" />
-      <option name="overrideMainClass" value="false" />
-      <option name="runTrusted" value="true" />
-      <option name="screenDpi" value="0" />
-      <option name="screenHeight" value="0" />
-      <option name="screenWidth" value="0" />
-      <option name="url" value="http://" />
-      <option name="usbDebugPort" value="7936" />
-      <method />
-    </configuration>
-    <configuration default="true" type="FlexUnitRunConfigurationType" factoryName="FlexUnit" appDescriptorForEmulator="Android" class_name="" emulatorAdlOptions="" method_name="" package_name="" scope="Class">
-      <option name="BCName" value="" />
-      <option name="launcherParameters">
-        <LauncherParameters>
-          <option name="browser" value="a7bb68e0-33c0-4d6f-a81a-aac1fdb870c8" />
-          <option name="launcherType" value="OSDefault" />
-          <option name="newPlayerInstance" value="false" />
-          <option name="playerPath" value="FlashPlayerDebugger.exe" />
-        </LauncherParameters>
-      </option>
-      <option name="moduleName" value="" />
-      <option name="trusted" value="true" />
-      <method />
-    </configuration>
     <configuration default="true" type="GradleRunConfiguration" factoryName="Gradle">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -913,15 +708,6 @@
         </option>
         <option name="vmOptions" />
       </ExternalSystemSettings>
-      <method />
-    </configuration>
-    <configuration default="true" type="GrailsRunConfigurationType" factoryName="Grails">
-      <setting name="vmparams" value="" />
-      <setting name="cmdLine" value="run-app" />
-      <setting name="passParentEnv" value="true" />
-      <setting name="launchBrowser" value="true" />
-      <setting name="launchBrowserUrl" value="" />
-      <setting name="depsClasspath" value="false" />
       <method />
     </configuration>
     <configuration default="true" type="JUnit" factoryName="JUnit">
@@ -966,22 +752,6 @@
       <envs />
       <method />
     </configuration>
-    <configuration default="true" type="JavaScriptTestRunnerJest" factoryName="Jest">
-      <node-interpreter value="project" />
-      <working-dir value="" />
-      <envs />
-      <scope-kind value="ALL" />
-      <method />
-    </configuration>
-    <configuration default="true" type="JavaScriptTestRunnerProtractor" factoryName="Protractor">
-      <config-file value="" />
-      <node-interpreter value="project" />
-      <envs />
-      <method />
-    </configuration>
-    <configuration default="true" type="JavascriptDebugType" factoryName="JavaScript Debug">
-      <method />
-    </configuration>
     <configuration default="true" type="JetRunConfigurationType" factoryName="Kotlin">
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
       <option name="MAIN_CLASS_NAME" />
@@ -1015,12 +785,6 @@
       <option name="PORT" value="5005" />
       <method />
     </configuration>
-    <configuration default="true" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
-      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
-      <module name="" />
-      <envs />
-      <method />
-    </configuration>
     <configuration default="true" type="TestNG" factoryName="TestNG">
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
       <module name="" />
@@ -1047,28 +811,6 @@
       <envs />
       <properties />
       <listeners />
-      <method />
-    </configuration>
-    <configuration default="true" type="js.build_tools.gulp" factoryName="Gulp.js">
-      <node-interpreter>project</node-interpreter>
-      <node-options />
-      <gulpfile />
-      <tasks />
-      <arguments />
-      <envs />
-      <method />
-    </configuration>
-    <configuration default="true" type="js.build_tools.npm" factoryName="npm">
-      <command value="run" />
-      <scripts />
-      <node-interpreter value="project" />
-      <envs />
-      <method />
-    </configuration>
-    <configuration default="true" type="osgi.bnd.run" factoryName="Run Launcher">
-      <method />
-    </configuration>
-    <configuration default="true" type="osgi.bnd.run" factoryName="Test Launcher (JUnit)">
       <method />
     </configuration>
     <list size="5">
@@ -1182,40 +924,40 @@
     <option name="totallyTimeSpent" value="88304000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-11" y="-11" width="3862" height="2362" extended-state="6" />
+    <frame x="-8" y="-8" width="1936" height="1066" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Nl-Palette" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3096539" sideWeight="0.49166667" order="10" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3092999" sideWeight="0.49166667" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Palette&#9;" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Image Layers" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Analysis" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.17486338" sideWeight="0.2953125" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.20309654" sideWeight="0.7046875" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.20271683" sideWeight="0.7046875" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Properties" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.1328125" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.17916666" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Time Tracking" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2471875" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Theme Preview" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.28642988" sideWeight="0.8934896" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2863114" sideWeight="0.8934896" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Coverage" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.0921875" sideWeight="0.5" order="8" side_tool="true" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2709472" sideWeight="0.49583334" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Time Tracking" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2471875" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1246,7 +988,7 @@
           <option name="timeStamp" value="340" />
         </line-breakpoint>
       </breakpoints>
-      <option name="time" value="646" />
+      <option name="time" value="647" />
     </breakpoint-manager>
     <watches-manager>
       <configuration name="Application">
@@ -1287,13 +1029,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/.IntelliJIdea2017.1/idea64.exe.vmoptions">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="275">
-          <caret line="11" column="31" lean-forward="true" selection-start-line="11" selection-start-column="31" selection-end-line="11" selection-end-column="31" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$USER_HOME$/.IntelliJIdea2017.1/idea64.exe.vmoptions" />
     <entry file="jar://C:/Program Files/Java/jdk1.8.0_131/src.zip!/java/util/ArrayList.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="523">
@@ -1393,13 +1129,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/SlicePreview.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="306">
-          <caret line="26" column="42" lean-forward="false" selection-start-line="26" selection-start-column="42" selection-end-line="26" selection-end-column="42" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/RawVolume.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="260">
@@ -1446,7 +1175,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="100">
           <caret line="7" column="3" lean-forward="true" selection-start-line="7" selection-start-column="3" selection-end-line="7" selection-end-column="3" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1468,7 +1196,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="25">
           <caret line="1447" column="0" lean-forward="false" selection-start-line="1447" selection-start-column="0" selection-end-line="1447" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1483,7 +1210,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="350">
           <caret line="17" column="38" lean-forward="false" selection-start-line="17" selection-start-column="38" selection-end-line="17" selection-end-column="38" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1496,17 +1222,6 @@
             <element signature="e#2704#2705#0" expanded="true" />
           </folding>
         </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/resources/HZGeneratorGUI.fxml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="6350">
-          <caret line="254" column="25" lean-forward="false" selection-start-line="254" selection-start-column="25" selection-end-line="254" selection-end-column="25" />
-          <folding />
-        </state>
-      </provider>
-      <provider editor-type-id="JavaFX-Scene-Builder">
-        <state />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/VolumePreview.java">
@@ -1525,19 +1240,11 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/test/java/TestVolumeProcessor.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="450">
-          <caret line="20" column="34" lean-forward="true" selection-start-line="20" selection-start-column="34" selection-end-line="20" selection-end-column="34" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/src/test/java/TestVolumeProcessor.java" />
     <entry file="file://$PROJECT_DIR$/src/main/resources/Kernels/OpenCLSettings.json">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="175">
           <caret line="7" column="16" lean-forward="true" selection-start-line="7" selection-start-column="16" selection-end-line="7" selection-end-column="16" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1568,7 +1275,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/VolumeApportioner.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1400">
+        <state relative-caret-position="952">
           <caret line="159" column="1" lean-forward="false" selection-start-line="159" selection-start-column="1" selection-end-line="159" selection-end-column="1" />
           <folding>
             <element signature="method#allocatePartitions#0;class#VolumeApportioner#0" expanded="false" />
@@ -1582,14 +1289,13 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="597">
           <caret line="1088" column="16" lean-forward="true" selection-start-line="1088" selection-start-column="16" selection-end-line="1088" selection-end-column="16" />
-          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/test/java/TestGenerateBricks.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="175">
-          <caret line="12" column="8" lean-forward="true" selection-start-line="12" selection-start-column="8" selection-end-line="12" selection-end-column="92" />
+        <state relative-caret-position="102">
+          <caret line="12" column="8" lean-forward="false" selection-start-line="12" selection-start-column="8" selection-end-line="12" selection-end-column="92" />
           <folding>
             <element signature="e#237#238#0" expanded="true" />
             <element signature="e#327#328#0" expanded="true" />
@@ -1599,7 +1305,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/test/java/TestCompact.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="175">
+        <state relative-caret-position="102">
           <caret line="17" column="92" lean-forward="false" selection-start-line="17" selection-start-column="92" selection-end-line="17" selection-end-column="92" />
           <folding>
             <element signature="e#384#385#0" expanded="true" />
@@ -1610,7 +1316,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/test/java/TestMorton.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="75">
+        <state relative-caret-position="68">
           <caret line="14" column="92" lean-forward="false" selection-start-line="14" selection-start-column="92" selection-end-line="14" selection-end-column="92" />
           <folding>
             <element signature="e#294#295#0" expanded="true" />
@@ -1621,7 +1327,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/test/java/TestReduce.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="175">
+        <state relative-caret-position="119">
           <caret line="23" column="92" lean-forward="false" selection-start-line="23" selection-start-column="92" selection-end-line="23" selection-end-column="92" />
           <folding>
             <element signature="e#592#593#0" expanded="true" />
@@ -1632,7 +1338,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/test/java/TestScan.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="175">
+        <state relative-caret-position="102">
           <caret line="14" column="92" lean-forward="false" selection-start-line="14" selection-start-column="92" selection-end-line="14" selection-end-column="92" />
           <folding>
             <element signature="e#290#291#0" expanded="true" />
@@ -1643,15 +1349,15 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/MainClass.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="500">
-          <caret line="30" column="22" lean-forward="true" selection-start-line="30" selection-start-column="22" selection-end-line="30" selection-end-column="22" />
+        <state relative-caret-position="340">
+          <caret line="30" column="22" lean-forward="false" selection-start-line="30" selection-start-column="22" selection-end-line="30" selection-end-column="22" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/CLFW.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1082">
+        <state relative-caret-position="1479">
           <caret line="98" column="0" lean-forward="false" selection-start-line="98" selection-start-column="0" selection-end-line="98" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
@@ -1659,14 +1365,38 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/BrickFactory.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="100">
+          <caret line="39" column="0" lean-forward="true" selection-start-line="39" selection-start-column="0" selection-end-line="39" selection-end-column="0" />
+          <folding>
+            <element signature="docComment;class#BrickFactory#0" expanded="false" />
+            <element signature="method#BrickFactory#0;class#BrickFactory#0" expanded="false" />
+            <element signature="method#openTiff#0;class#BrickFactory#0" expanded="false" />
+            <element signature="method#openRaw#0;class#BrickFactory#0" expanded="false" />
+            <element signature="method#generateBricks#0;class#BrickFactory#0" expanded="false" />
+            <element signature="method#getResultFileSize#0;class#BrickFactory#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/resources/HZGeneratorGUI.fxml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="675">
+          <caret line="254" column="25" lean-forward="false" selection-start-line="254" selection-start-column="25" selection-end-line="254" selection-end-column="25" />
+          <folding />
+        </state>
+      </provider>
+      <provider editor-type-id="JavaFX-Scene-Builder">
+        <state />
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/Controller.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="527">
-          <caret line="247" column="71" lean-forward="true" selection-start-line="247" selection-start-column="71" selection-end-line="247" selection-end-column="71" />
+        <state relative-caret-position="257">
+          <caret line="74" column="26" lean-forward="true" selection-start-line="74" selection-start-column="26" selection-end-line="74" selection-end-column="26" />
           <folding>
             <element signature="docComment;class#Controller#0" expanded="false" />
-            <element signature="method#initialize#0;class#Controller#0" expanded="false" />
-            <element signature="e#2099#2421#0" expanded="false" />
             <element signature="e#2254#2301#0" expanded="false" />
             <element signature="e#2485#2561#0" expanded="false" />
             <element signature="e#2796#2957#0" expanded="false" />
@@ -1679,23 +1409,21 @@
             <element signature="method#chooseDestination#0;class#Controller#0" expanded="false" />
             <element signature="method#openFolder#0;class#Controller#0" expanded="false" />
             <element signature="method#openFile#0;class#Controller#0" expanded="false" />
+            <element signature="method#loadVolume#0;class#Controller#0" expanded="false" />
+            <element signature="method#toggleMapTo8BPP#0;class#Controller#0" expanded="false" />
+            <element signature="method#generate#0;class#Controller#0" expanded="false" />
+            <element signature="e#10495#11462#0" expanded="false" />
+            <element signature="e#11297#11456#0" expanded="false" />
             <element signature="method#showAlert#0;class#Controller#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/BrickFactory.java">
+    <entry file="file://$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/SlicePreview.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="950">
-          <caret line="75" column="23" lean-forward="false" selection-start-line="75" selection-start-column="23" selection-end-line="75" selection-end-column="23" />
-          <folding>
-            <element signature="docComment;class#BrickFactory#0" expanded="false" />
-            <element signature="method#BrickFactory#0;class#BrickFactory#0" expanded="false" />
-            <element signature="method#openTiff#0;class#BrickFactory#0" expanded="false" />
-            <element signature="method#openRaw#0;class#BrickFactory#0" expanded="false" />
-            <element signature="method#generateBricks#0;class#BrickFactory#0" expanded="false" />
-            <element signature="method#getResultFileSize#0;class#BrickFactory#0" expanded="false" />
-          </folding>
+        <state relative-caret-position="445">
+          <caret line="42" column="63" lean-forward="false" selection-start-line="42" selection-start-column="63" selection-end-line="42" selection-end-column="63" />
+          <folding />
         </state>
       </provider>
     </entry>

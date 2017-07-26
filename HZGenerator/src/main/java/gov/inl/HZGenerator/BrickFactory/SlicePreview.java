@@ -37,8 +37,11 @@ public class SlicePreview {
 		if (previewIntensity != 1.0f) {
 			RescaleOp rescaleOp = new RescaleOp(previewIntensity, 15, null);
 			rescaleOp.filter(slice, temp);
+			view.setImage(SwingFXUtils.toFXImage(temp, null));
+
+		} else {
+			view.setImage(SwingFXUtils.toFXImage(slice, null));
 		}
 
-		view.setImage(SwingFXUtils.toFXImage(temp, null));
 	}
 }
