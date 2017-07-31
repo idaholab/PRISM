@@ -2,6 +2,7 @@ package gov.inl.HZGenerator;/* ImageIO */
 import java.io.*;
 
 import gov.inl.HZGenerator.BrickFactory.*;
+import javafx.application.Platform;
 import javafx.scene.control.*;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -11,11 +12,14 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.util.*;
+
+import static java.lang.Thread.sleep;
 
 
 /**
@@ -50,6 +54,7 @@ public class Controller {
 	@FXML TabPane fileTabPane;
 	@FXML Tab RAWTab;
 	@FXML Tab TIFFTab;
+	@FXML Button btnGenerate;
 
 	/* Initializes the brick pane, volume processor, and sets up some FXML elements */
 	@FXML public void initialize() throws Exception {
@@ -277,7 +282,41 @@ public class Controller {
 		brickFactory.settings.outputPath = txtResultPath.getText();
 
 		// At this point, we're guaranteed a volume is loaded and the destination directory exists
-		brickFactory.generateBricks();
+		btnGenerate.setDisable(true);
+		btnGenerate.setText("Generating...");
+		brickFactory.generateBricksAsync();
+
+		volumePreview.setAll(Color.rgb(0 ,0, 0, 0));
+
+		Thread t = new Thread(() -> {
+			int currentBrick = 0;
+			volumePreview.colorBrick(currentBrick, Color.rgb(255, 255, 255, 1));
+			Platform.runLater(() -> btnGenerate.setText(0 + "/" + brickFactory.getPartitions().size()));
+
+			while (brickFactory.getApportionerStatus() == false) {
+				try {
+					int totalBricksDone = brickFactory.getTotalBricksApportioned();
+					if (totalBricksDone != currentBrick) {
+						currentBrick = totalBricksDone;
+						final int selected = totalBricksDone;
+						Platform.runLater(() -> volumePreview.colorBrick(selected, Color.rgb(255, 255, 255, 1)));
+						Platform.runLater(() -> btnGenerate.setText(totalBricksDone + "/" + brickFactory.getPartitions().size()));
+
+					}
+					Thread.sleep(16);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			Platform.runLater(() -> {
+				btnGenerate.setDisable(false);
+				btnGenerate.setText("Generate");
+				volumePreview.show(brickFactory.volume, brickFactory.getPartitions());
+			});
+		});
+		t.setDaemon(true);
+		t.start();
+
 	}
 
 	/* Shows a message box for validation purposes */

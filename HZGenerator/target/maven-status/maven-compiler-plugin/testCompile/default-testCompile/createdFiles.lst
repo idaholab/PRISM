@@ -1,0 +1,5 @@
+TestScan.class
+TestGenerateBricks.class
+TestCompact.class
+TestMorton.class
+TestReduce.class

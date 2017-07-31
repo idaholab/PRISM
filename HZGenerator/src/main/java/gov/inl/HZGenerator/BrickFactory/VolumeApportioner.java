@@ -2,15 +2,21 @@ package gov.inl.HZGenerator.BrickFactory;
 
 import gov.inl.HZGenerator.Kernels.MortonConverter;
 import gov.inl.HZGenerator.Kernels.PartitionerResult;
-import gov.inl.SIEVAS.hmortonlib.Morton3D;
-import org.joml.Vector3f;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferUShort;
 import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
+
+import java.util.List;
+import java.util.stream.IntStream;
 
 /**
  * Nathan Morrical. Summer 2017.
@@ -20,178 +26,135 @@ import java.util.*;
 public class VolumeApportioner {
 	/* For debugging */
 	Boolean verbose = true;
+	public Boolean done = false;
+	public int totalProcessed;
 
-	/* We use a list of files, keeping as many open as possible for more optimal seek times. */
-	List<RandomAccessFile> brickFiles;
+	/* We use mapped byte buffers to maximize disk write performance */
+	List<FileChannel> brickChannels;
+	List<MappedByteBuffer> brickBuffers;
 
-	/* Distributes the volume into curved partitions, saving the results to the specified destination */
+	/* Distributes the volume into curved bricks, saving the results to the specified destination */
 	public void apportion(Volume volume, PartitionerResult pr, BrickFactorySettings settings) throws IOException {
-		Boolean validateCurve = false;
+		done = false;
+		totalProcessed = 0;
+
+		/* Allocate the volume bricks */
+		if (verbose) System.out.println("Allocating curved volume");
 		if (settings.mapTo8BPP)
 			allocatePartitions(pr, 1, settings.outputPath);
 		else
 			allocatePartitions(pr, volume.getBytesPerPixel(), settings.outputPath);
 
-		/* For each slice */
-		for (int z = 0; z < volume.getDepth(); ++z) {
-
-			int[] hzPositions = new int[pr.tensorWidth * pr.minDimSize * pr.tensorHeight* pr.minDimSize];
-			int[] brick = new int[pr.tensorWidth * pr.minDimSize * pr.tensorHeight* pr.minDimSize];
-
-			/* Curve each layer */
-			int error = MortonConverter.curveLayer(pr, z, hzPositions, brick);
-
-			/* Load slice into memory */
-			BufferedImage slice = volume.getSlice(z);
-
-			/* TEST CODE */
-			if (validateCurve) {
-				if (!validate(slice.getWidth(), slice.getHeight(), pr.tensorWidth * pr.minDimSize, z, brick, hzPositions, pr)) {
-					System.out.println("Error, something went wrong while curving.");
+		/* Curve each brick */
+		IntStream.range(0, pr.partitions.size()).forEach(i -> {
+				try {
+					if (verbose) System.out.println("Apportioning partition " + i);
+					Brick p = pr.partitions.get(i);
+					if (volume.bytesPerPixel == 1)
+							apportion8BitPartition(volume, p, i);
+					else if (volume.bytesPerPixel == 2)
+						apportion16BitPartition(volume, p, i, settings.mapTo8BPP);
+					totalProcessed++;
+				} catch (IOException e) {
+					e.printStackTrace();
 				}
 			}
-
-			if (verbose) System.out.println("Apportioning layer " + z);
-
-			if (volume.getBytesPerPixel() == 1) {
-				byte[] rawBytes = ((DataBufferByte) slice.getRaster().getDataBuffer()).getData();
-				apportionBytes(slice.getWidth(), slice.getHeight(), pr.tensorWidth * pr.minDimSize, rawBytes, brick, hzPositions, pr);
-			} else {
-				short[] rawShorts = ((DataBufferUShort) slice.getRaster().getDataBuffer()).getData();
-				apportionShorts(slice.getWidth(), slice.getHeight(), pr.tensorWidth * pr.minDimSize, rawShorts, brick, hzPositions, settings.mapTo8BPP);
-			}
-
-			if (verbose) System.out.println("Layer " + Integer.toString(z) + " done. ");
-		}
-
-		closeFiles();
+		);
+		if (verbose) System.out.println("Done");
+		done = true;
 	}
 
-	/* Allocates the curved partitions on disk, opening each file and placing it in the list of files */
+	/* Allocates the curved bricks on disk, opening each file and placing it in the list of files */
 	public void allocatePartitions(PartitionerResult pr, long bytesPerPixel, String outputPath) throws IOException {
-		if (verbose) System.out.println("Allocating curved volume");
-		brickFiles = new ArrayList<>();
+		brickChannels = new ArrayList<>();
+		brickBuffers = new ArrayList<>();
 
 		for (int i = 0; i < pr.partitions.size(); ++i) {
 			int size = pr.partitions.get(i).size;
 			long bytes = size * size * size * bytesPerPixel;
-			RandomAccessFile raf = new RandomAccessFile(outputPath + "/" + i + ".raw", "rw");
-			raf.setLength(bytes);
-			brickFiles.add(raf);
+			Path path = FileSystems.getDefault().getPath(outputPath + "/" + i + ".hz");
+			brickChannels.add(FileChannel.open(path,
+					StandardOpenOption.CREATE,
+					StandardOpenOption.READ,
+					StandardOpenOption.WRITE));
+			brickBuffers.add(brickChannels.get(i).map(FileChannel.MapMode.READ_WRITE, 0, bytes));
 		}
 	}
 
-	private void apportionShorts(int width, int height, int paddedWidth, short[] rawShorts,
-								 int[] pixelToBrick, int[] pixelToHZ, Boolean scaleTo8) throws IOException
-	{
-		for (int y = 0; y < height; ++y) {
-			for (int x = 0; x < width; ++x) {
-				short data = rawShorts[x + y * width];
-				int brickNumber = pixelToBrick[x + y * paddedWidth];
-				int address = pixelToHZ[x + y * paddedWidth];
+	public void apportion8BitPartition(Volume v, Brick p, int pid) throws IOException {
+		byte[] raw = new byte[p.size * p.size * p.size];
+		DataBufferByte[] dataBuffers = new DataBufferByte[p.size];
 
-				RandomAccessFile raf = brickFiles.get(brickNumber);
-				if (scaleTo8 == false) {
-					raf.seek(address * 2); // 2 bytes per short
-					raf.write(data);
-				} else
-				{
-					raf.seek(address);
-					int i = data & 0xffff; // Convert from -32768 - 32767 to range 0 - 65535
-					byte scaled = (byte)((((double)i) / 65535d) * 255d); // remap to 0-255
-					raf.write(scaled);
-				}
-			}
-		}
+		/* Load slices into the input in parallel */
+		IntStream.range((int)p.position.z, Integer.min((int)p.position.z + p.size, v.depth)).parallel().forEach(i -> {
+			BufferedImage subImage = new BufferedImage(p.size, p.size, BufferedImage.TYPE_BYTE_GRAY);
+			Graphics g = subImage.getGraphics();
+
+			/* Get original image */
+			BufferedImage image = v.getSlice(i);
+
+			/* Draw original onto new */
+			g.drawImage(image, 0, 0, p.size, p.size, (int)p.position.x, (int)p.position.y,
+					(int)p.position.x + p.size, (int)p.position.y + p.size, null);
+
+			/* Save data buffer */
+			dataBuffers[(int) (i - p.position.z)] = (DataBufferByte) subImage.getRaster().getDataBuffer();
+			g.dispose();
+		});
+		IntStream.range(0, Integer.min(p.size, v.depth)).forEach(i
+				-> System.arraycopy(dataBuffers[i].getData(), 0, raw, p.size * p.size * i, p.size * p.size));
+
+		/* Curve the brick */
+		byte[] curved = new byte[p.size * p.size * p.size];
+		MortonConverter.curveByteVolume(p.size, raw, curved);
+
+		/* Write the brick out to file */
+		brickBuffers.get(pid).put(curved);
+		brickBuffers.get(pid).force();
+		brickChannels.get(pid).close();
 	}
 
-	private void apportionBytes(int width, int height, int paddedWidth, byte[] rawBytes,
-								int[] pixelToBrick, int[] pixelToHZ, PartitionerResult pr) throws IOException
-	{
-		for (int y = 0; y < height; ++y) {
-			for (int x = 0; x < width; ++x) {
-				int data = rawBytes[x + y * width];
-				int brickNumber = pixelToBrick[x + y * paddedWidth];
-				int address = pixelToHZ[x + y * paddedWidth];
+	public void apportion16BitPartition(Volume v, Brick p, int pid, Boolean mapTo8) throws IOException {
+		short[] raw = new short[p.size * p.size * p.size];
+		DataBufferUShort[] dataBuffers = new DataBufferUShort[p.size];
 
-//				int brickSize = pr.partitions.get(brickNumber).size;
-//				int brickSize_ = brickSize;
-//				int level = 0;
-//				while (brickSize > 0) {
-//					brickSize >>= 1;
-//					++level;
-//				}
-//				level -= 1;
-//				int bits = level * 3;
-//				int last_bit_mask = 1 << bits;
-//				int[] result = decode(address, last_bit_mask);
-//
-				RandomAccessFile raf = brickFiles.get(brickNumber);
-//				raf.seek(result[0] + brickSize_ * result[1] + brickSize_ * brickSize_ * result[2]);
-				raf.seek(address);
-				raf.write(data);
-			}
-		}
-	}
+		/* Load slices into the input in parallel */
+		IntStream.range((int)p.position.z, Integer.min((int)p.position.z + p.size, v.depth)).parallel().forEach(i -> {
+			BufferedImage subImage = new BufferedImage(p.size, p.size, BufferedImage.TYPE_USHORT_GRAY);
+			Graphics g = subImage.getGraphics();
 
-	/* For debugging */
-	public int[] decode(int c, int last_bit_mask) {
-		if(c == 0L) {
-			return new int[]{0, 0, 0};
+			/* Get original image */
+			BufferedImage image = v.getSlice(i);
+
+			/* Draw original onto new */
+			g.drawImage(image, 0, 0, p.size, p.size, (int)p.position.x, (int)p.position.y,
+					(int)p.position.x + p.size, (int)p.position.y + p.size, null);
+
+			/* Save data buffer */
+			dataBuffers[(int)(i - p.position.z)] = (DataBufferUShort) subImage.getRaster().getDataBuffer();
+			g.dispose();
+		});
+		IntStream.range(0, Integer.min(p.size, v.depth)).forEach(i
+				-> System.arraycopy(dataBuffers[i].getData(), 0, raw, p.size * p.size * i, p.size * p.size));
+
+		/* Curve the brick */
+		MappedByteBuffer bb = brickBuffers.get(pid);
+		if (mapTo8) {
+			byte[] curved = new byte[p.size * p.size * p.size];
+			MortonConverter.curveShortToByteVolume(p.size, raw, curved);
+
+			/* Write the brick out to file */
+			bb.put(curved);
+			bb.force();
+
 		} else {
-			c = c << 1 | 1;
+			short[] curved = new short[p.size * p.size * p.size];
+			MortonConverter.curveShortVolume(p.size, raw, curved);
 
-			int i = c;
-			i |= (i >>  1);
-			i |= (i >>  2);
-			i |= (i >>  4);
-			i |= (i >>  8);
-			i |= (i >> 16);
-			i = i - (i >> 1);
-
-
-			c = c * (last_bit_mask / i);
-			c &= ~last_bit_mask;
-			Morton3D morton = new Morton3D();
-			return morton.decode(c);
+			/* Write the brick out to file */
+			bb.asShortBuffer().put(curved);
+			bb.force();
 		}
-	}
-
-	/* For debugging */
-	private Boolean validate(int width, int height, int paddedWidth, int z, int[] brick, int[] hzPositions, PartitionerResult pr) {
-		if (verbose) System.out.println("Validating curve for layer " + z);
-		for (int x = 0; x < width; x += 10) {
-			for (int y = 0; y < height; y += 10) {
-				if (x > width || y > height) continue;
-				int brickNumber = brick[x + y * paddedWidth];
-				int address = hzPositions[x + y * paddedWidth];
-				int brickSize = pr.partitions.get(brickNumber).size;
-				int brickSize_ = brickSize;
-				int level = 0;
-				while (brickSize > 0) {
-					brickSize >>= 1;
-					++level;
-				}
-				level -= 1;
-
-				int bits = level * 3;
-				int last_bit_mask = 1 << bits;
-				Vector3f brickPos = pr.partitions.get(brickNumber).position;
-				Vector3f pos = new Vector3f(x, y, z).sub(brickPos);
-
-				int[] result = decode(address, last_bit_mask);
-				if (pos.x != result[0] || pos.y != result[1] || pos.z != result[2]) {
-					return false;
-				}
-			}
-		}
-		return true;
-	}
-
-	public void closeFiles() throws IOException {
-		for (int i = 0; i < brickFiles.size(); ++i) {
-			RandomAccessFile raf = brickFiles.get(i);
-			raf.close();
-		}
+		brickChannels.get(pid).close();
 	}
 }

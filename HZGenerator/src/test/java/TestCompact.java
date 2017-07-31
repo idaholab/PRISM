@@ -15,8 +15,7 @@ import gov.inl.HZGenerator.CLFW;
  */
 public class TestCompact extends TestCase {
 	protected void setUp() {
-		File openCLSettings = new File(getClass().getClassLoader().getResource("Kernels/OpenCLSettings.json").getPath());
-		assertEquals(CLFW.Initialize(openCLSettings), CL_SUCCESS);
+		assertEquals(CLFW.Initialize("Kernels/OpenCLSettings.json", "Kernels"), CL_SUCCESS);
 	}
 
 	public void testCompact() {

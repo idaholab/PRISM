@@ -1,12 +1,17 @@
+// See Compactor.java
+
+/* Determine compaction address.
+  see https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch39.html figure 39-14
+ */
 inline int getAddress(
     __global int *predicationBuffer,
-    __global int *addressBuffer,
+    __global int *scannedBuffer,
     int size,
     const int gid
 )
 {
-    int a = addressBuffer[gid];
-    int b = addressBuffer[size - 2];
+    int a = scannedBuffer[gid];
+    int b = scannedBuffer[size - 2];
     int c = predicationBuffer[gid];
     int e = predicationBuffer[size - 1];
 

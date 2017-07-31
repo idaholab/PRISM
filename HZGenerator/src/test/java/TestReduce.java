@@ -21,8 +21,7 @@ import static org.jocl.CL.*;
  */
 public class TestReduce extends TestCase {
 	protected void setUp() {
-		File openCLSettings = new File(getClass().getClassLoader().getResource("Kernels/OpenCLSettings.json").getPath());
-		assertEquals(CLFW.Initialize(openCLSettings), CL_SUCCESS);
+		assertEquals(CLFW.Initialize("Kernels/OpenCLSettings.json", "Kernels"), CL_SUCCESS);
 	}
 
 	public void testReduce() {

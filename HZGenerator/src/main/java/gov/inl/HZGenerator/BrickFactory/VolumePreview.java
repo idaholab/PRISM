@@ -101,13 +101,11 @@ public class VolumePreview {
 		updateScene = value;
 	}
 
-	/* Shows the potential partitions of a bricked volume */
-	public void show(Volume volume, List<Partition> partitions) {
+	/* Shows the potential bricks of a bricked volume */
+	public void show(Volume volume, List<Brick> partitions) {
 		boxes = new Box[partitions.size() + 1];
 
 		group.getChildren().clear();
-		group.getChildren().add(ambientLight);
-		group.getChildren().add(pointLight);
 
 		Box box = new Box(2.f, 2.f, 2.f);
 		box.setMaterial(new PhongMaterial(Color.WHITE));
@@ -122,7 +120,7 @@ public class VolumePreview {
 
 		Random rand = new Random();
 		for (int i = 0; i < partitions.size(); ++i) {
-			Partition p = partitions.get(i);
+			Brick p = partitions.get(i);
 			Vector3f offset_ = new Vector3f(offset);
 			float size = (p.size * 2.f) / bbMaxWidth;
 			/* Reference at bottom left of bounding box, then add on local transform */
@@ -142,6 +140,41 @@ public class VolumePreview {
 			b.setTranslateZ(pos.z);
 			boxes[i] = b;
 			group.getChildren().add(b);
+		}
+
+		group.getChildren().add(ambientLight);
+		group.getChildren().add(pointLight);
+	}
+
+    public void hideAll() {
+		group.getChildren().clear();
+
+		for (int i = 0; i < boxes.length; ++i) {
+			boxes[i].setMaterial(new PhongMaterial(Color.rgb(0, 0, 0, 0)));
+			group.getChildren().add(boxes[i]);
+		}
+
+		group.getChildren().add(ambientLight);
+		group.getChildren().add(pointLight);
+	}
+
+	public void setAll(Color rgb) {
+		group.getChildren().clear();
+
+		for (int i = 0; i < boxes.length; ++i) {
+			boxes[i].setMaterial(new PhongMaterial(rgb));
+			group.getChildren().add(boxes[i]);
+		}
+
+		group.getChildren().add(ambientLight);
+		group.getChildren().add(pointLight);
+	}
+
+	public void colorBrick(int currentBrick, Color rgb) {
+		try {
+			((Box)group.getChildren().get(currentBrick)).setMaterial(new PhongMaterial(rgb));
+		} catch (Exception e) {
+			System.out.println("Something went wrong coloring the brick");
 		}
 	}
 }

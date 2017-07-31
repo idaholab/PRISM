@@ -6,20 +6,17 @@ import static org.jocl.CL.*;
 import gov.inl.HZGenerator.CLFW;
 
 /**
- * Created by BITINK on 6/16/2017.
+ * Nate Morrical. Summer 2017.
+ *
+ * Check out 39.3.1, Stream Compaction
+ * 	https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch39.html
+ *
+ * TLDR: Stream compaction produces a smaller vector with only interesting elements.
  */
 public class Compactor {
 	public enum Type {
 		INT, INT4
 	};
-
-	public static int CompactInt(cl_mem input, cl_mem predication, cl_mem address, int totalElements, cl_mem output) {
-			return Compact(input, Type.INT, predication, address, totalElements, output);
-	}
-
-	public static int CompactInt4(cl_mem input, cl_mem predication, cl_mem address, int totalElements, cl_mem output) {
-		return Compact(input, Type.INT4, predication, address, totalElements, output);
-	}
 
 	public static int Compact(cl_mem input, Type type, cl_mem predication, cl_mem address, int totalElements, cl_mem output) {
 		int[] error = {0};

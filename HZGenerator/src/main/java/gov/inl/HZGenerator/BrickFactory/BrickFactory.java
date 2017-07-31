@@ -1,6 +1,5 @@
 package gov.inl.HZGenerator.BrickFactory;
 
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.List;
 
@@ -17,15 +16,15 @@ public class BrickFactory {
 	public BrickFactorySettings settings;
 
 	/* Splits up a raw into bricks */
-	private VolumePartitioner volumePartitioner;
+	private VolumeBricker volumePartitioner;
 
-	/* Uses the volume and partitions to curve data */
+	/* Uses the volume and bricks to curve data */
 	private VolumeApportioner volumeApportioner;
 
 	/* Constructor */
 	public BrickFactory() {
 		settings = new BrickFactorySettings();
-		volumePartitioner = new VolumePartitioner();
+		volumePartitioner = new VolumeBricker();
 		volumeApportioner = new VolumeApportioner();
 	}
 
@@ -49,9 +48,9 @@ public class BrickFactory {
 		return (volume == null) ? null : volume.getSliceList();
 	}
 
-	/* Processes slices, then curves optimized partitions of the volume. Saves at settings.outputpath */
+	/* Processes slices, then curves optimized bricks of the volume. Saves at settings.outputpath */
 	public void generateBricks() {
-		/* Partition the volume data, which can be read using the generated json file*/
+		/* Brick the volume data, which can be read using the generated json file*/
 		volumePartitioner.partition(volume, settings);
 		try {
 			volumePartitioner.saveJson(settings.outputPath);
@@ -66,8 +65,15 @@ public class BrickFactory {
 		}
 	}
 
-	/* Returns the volume partitions */
-	public List<Partition> getPartitions() {
+	public void generateBricksAsync() {
+		volumeApportioner.done = false;
+		Thread t = new Thread(() -> generateBricks());
+		t.setDaemon(true);
+		t.start();
+	}
+
+	/* Returns the volume bricks */
+	public List<Brick> getPartitions() {
 		/* First, if no volume was loaded, just return null. */
 		if (volume == null) return null;
 
@@ -78,9 +84,9 @@ public class BrickFactory {
 	/* Returns the file size for the curved volume. */
 	public String getResultFileSize() throws Exception {
 		if (volume == null) throw new Exception("No volume was loaded. unable to get curved file size.");
-		List<Partition> partitions = volumePartitioner.partition(volume, settings);
+		List<Brick> partitions = volumePartitioner.partition(volume, settings);
 		long totalPixels = 0;
-		for (Partition p : partitions) {
+		for (Brick p : partitions) {
 			totalPixels += Math.pow(p.size, 3);
 		}
 
@@ -92,5 +98,13 @@ public class BrickFactory {
 		if (temp > 1000) {unit = "GB"; temp /= 1000;}
 		if (temp > 1000) {unit = "TB"; temp /= 1000;}
 		return(Math.round(temp * 1000.f) / 1000.f + " " + unit);
+	}
+
+	public int getTotalBricksApportioned() {
+		return volumeApportioner.totalProcessed;
+	}
+
+	public Boolean getApportionerStatus() {
+		return volumeApportioner.done;
 	}
 }

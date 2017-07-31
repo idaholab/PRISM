@@ -1,6 +1,6 @@
 package gov.inl.HZGenerator.Kernels;
 
-import gov.inl.HZGenerator.BrickFactory.Partition;
+import gov.inl.HZGenerator.BrickFactory.Brick;
 import org.jocl.cl_mem;
 
 import java.util.ArrayList;
@@ -15,7 +15,7 @@ public class PartitionerResult {
 	public cl_mem addresses;
 	public cl_mem denseSizes;
 	public cl_mem denseLocations;
-	public List<Partition> partitions;
+	public List<Brick> partitions;
 	public int minDimSize;
 	public int tensorWidth;
 	public int tensorHeight;

@@ -8,8 +8,10 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.Scanner;
 
 import org.json.*;
+import sun.misc.IOUtils;
 
 /**
  * Nate Morrical. Summer 2017
@@ -33,7 +35,7 @@ public class CLFW {
 	protected CLFW() {}
 
 	// Generates the static fields required to use OpenCL
-	public static int Initialize(File openCLSettings) {
+	public static int Initialize(String openCLSettingsPath, String KernelsDirectory) {
 		int[] error = new int[1];
 		final int platformIndex = 0;
 		final long deviceType = CL_DEVICE_TYPE_ALL;
@@ -77,13 +79,16 @@ public class CLFW {
 		// Compile source files
 		try {
 			// Read json to get kernel file names
-			String contents = new String(Files.readAllBytes(Paths.get(openCLSettings.getPath())));
+			Scanner scanner = new Scanner(CLFW.class.getClassLoader().getResourceAsStream(openCLSettingsPath));
+
+			String contents = scanner.useDelimiter("\\Z").next();
 			JSONObject obj = new JSONObject(contents);
 			JSONArray arr = obj.getJSONArray("Sources");
 			String[] sources = new String[arr.length()];
-			for (int i = 0; i < arr.length(); ++i)
-				sources[i] = new String(Files.readAllBytes(Paths.get( openCLSettings.getParent() + "/" + (String)arr.get(i))));
-
+			for (int i = 0; i < arr.length(); ++i) {
+				Scanner kernelScanner = new Scanner(CLFW.class.getClassLoader().getResourceAsStream(KernelsDirectory + "/" + (String) arr.get(i)));
+				sources[i] = kernelScanner.useDelimiter("\\Z").next() + "\n";
+			}
 			// Compile the kernels
 			cl_program program = clCreateProgramWithSource(DefaultContext, sources.length, sources,
 					null, error);
