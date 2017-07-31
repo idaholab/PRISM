@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import gov.inl.HZGenerator.Kernels.*;
+import gov.inl.HZGenerator.Octree.OctNode;
+import org.joml.Vector3i;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -17,30 +19,23 @@ import org.json.JSONObject;
  * 	width is a power of two. This allows each brick to be curved using HZ Ordering, while adding minimal padding.
  */
 public class VolumeBricker {
-	public List<Brick> bricks;
 	Volume lastVolume;
 	int minBrickSize, maxBrickSize = 0;
 	int bytesPerPixel;
 	public PartitionerResult pr = null;
 
-	/* Constructor */
-	public VolumeBricker() {
-		bricks = new ArrayList<>();
-	}
-
 	/* This method uses the GPU to accelerate partitioning, returning a list of bricks */
-	public List<Brick> partition(Volume volume, BrickFactorySettings settings) {
+	public PartitionerResult partition(Volume volume, BrickFactorySettings settings) {
 		/* If the volume/settings haven't changed since last time, just return the previously created
 		* bricks. */
 		if( (lastVolume == volume) &&
 			(minBrickSize == settings.getMinBrickSize()) &&
 			maxBrickSize == settings.getMaxBrickSize())
-				return bricks;
+				return pr;
 		/* Remember the parameters for above return optimization */
 		lastVolume = volume;
 		minBrickSize = settings.getMinBrickSize();
 		maxBrickSize = settings.getMaxBrickSize();
-		bricks.clear();
 		int width = volume.getWidth();
 		int height = volume.getHeight();
 		int depth = volume.getDepth();
@@ -48,8 +43,8 @@ public class VolumeBricker {
 		pr = new PartitionerResult();
 		Partitioner.CombineBricks(width, height, depth, minBrickSize,
 				maxBrickSize, pr );
-		bricks = pr.partitions;
-		return bricks;
+		pr.octree = OctNode.buildOctree(new Vector3i(width, height, depth), pr, minBrickSize);
+		return pr;
 	}
 
 	/* Saves partition data for later visualization */
@@ -57,7 +52,7 @@ public class VolumeBricker {
 		try {
 			JSONObject json = new JSONObject();
 			json.put("bytesPerPixel", bytesPerPixel);
-			json.put("totalBricks", bricks.size());
+			json.put("totalBricks", pr.bricks.size());
 
 			int gx = roundUp(lastVolume.getWidth(), minBrickSize);
 			int gy = roundUp(lastVolume.getHeight(), minBrickSize);
@@ -72,18 +67,19 @@ public class VolumeBricker {
 			json.put("maxLevel", maxBrickSize);
 
 			JSONArray bricks = new JSONArray();
-			for (int i = 0; i < this.bricks.size(); ++i) {
+			for (int i = 0; i < pr.bricks.size(); ++i) {
 				JSONObject brick = new JSONObject();
 				brick.put("filename", i + ".hz");
-				brick.put("size", this.bricks.get(i).size);
+				brick.put("size", pr.bricks.get(i).size);
 				JSONArray position = new JSONArray();
-				position.put(this.bricks.get(i).position.x);
-				position.put(this.bricks.get(i).position.y);
-				position.put(this.bricks.get(i).position.z);
+				position.put(pr.bricks.get(i).position.x);
+				position.put(pr.bricks.get(i).position.y);
+				position.put(pr.bricks.get(i).position.z);
 				brick.put("position", position);
 				bricks.put(brick);
 			}
 			json.put("bricks", bricks);
+			json.put("octree", pr.octree.toJson());
 			File f = new File(outputPath + "/metadata.json");
 			f.delete();
 			Boolean success = f.createNewFile();

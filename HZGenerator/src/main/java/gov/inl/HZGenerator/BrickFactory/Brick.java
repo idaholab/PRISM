@@ -7,15 +7,16 @@ import org.joml.*;
  * A brick is a cubic region located in a volume.
  */
 public class Brick {
-	Vector3f position;
+	Vector3i position;
 	int size;
 
 	public Brick() {
-		position = new Vector3f(0.f, 0.f, 0.f);
+		position = new Vector3i();
 	}
 	public void setPosition(int x, int y, int z) {
-		this.position = new Vector3f(x, y, z);
+		this.position = new Vector3i(x, y, z);
 	}
+	public Vector3i getPosition(){return position;}
 	public void setSize(int size) {
 		this.size = size;
 	}

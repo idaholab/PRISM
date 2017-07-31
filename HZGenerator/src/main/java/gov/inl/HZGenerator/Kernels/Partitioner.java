@@ -116,7 +116,7 @@ public class Partitioner {
 	public static int CombineBricks (
 			int width, int height, int depth, int minDimSize, int maxDimSize,
 			PartitionerResult pr) {
-		pr.partitions.clear();
+		pr.bricks.clear();
 		pr.minDimSize = minDimSize;
 		numBricks = -1;
 		int[] error = {0};
@@ -198,7 +198,7 @@ public class Partitioner {
 			Brick p = new Brick();
 			p.setPosition(locations[4 * i], locations[(4 * i) + 1], locations[(4 * i) + 2]);
 			p.setSize(sizes[i]);
-			pr.partitions.add(p);
+			pr.bricks.add(p);
 		}
 
 		return error[0];

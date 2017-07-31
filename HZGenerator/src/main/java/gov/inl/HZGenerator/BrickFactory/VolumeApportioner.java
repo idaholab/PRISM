@@ -46,10 +46,10 @@ public class VolumeApportioner {
 			allocatePartitions(pr, volume.getBytesPerPixel(), settings.outputPath);
 
 		/* Curve each brick */
-		IntStream.range(0, pr.partitions.size()).forEach(i -> {
+		IntStream.range(0, pr.bricks.size()).forEach(i -> {
 				try {
 					if (verbose) System.out.println("Apportioning partition " + i);
-					Brick p = pr.partitions.get(i);
+					Brick p = pr.bricks.get(i);
 					if (volume.bytesPerPixel == 1)
 							apportion8BitPartition(volume, p, i);
 					else if (volume.bytesPerPixel == 2)
@@ -69,8 +69,8 @@ public class VolumeApportioner {
 		brickChannels = new ArrayList<>();
 		brickBuffers = new ArrayList<>();
 
-		for (int i = 0; i < pr.partitions.size(); ++i) {
-			int size = pr.partitions.get(i).size;
+		for (int i = 0; i < pr.bricks.size(); ++i) {
+			int size = pr.bricks.get(i).size;
 			long bytes = size * size * size * bytesPerPixel;
 			Path path = FileSystems.getDefault().getPath(outputPath + "/" + i + ".hz");
 			brickChannels.add(FileChannel.open(path,

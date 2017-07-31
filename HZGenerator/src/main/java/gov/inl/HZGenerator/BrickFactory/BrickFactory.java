@@ -78,13 +78,13 @@ public class BrickFactory {
 		if (volume == null) return null;
 
 		/* Otherwise, addInts the loaded volume through the volume partitioner */
-		return volumePartitioner.partition(volume, settings);
+		return volumePartitioner.partition(volume, settings).bricks;
 	}
 
 	/* Returns the file size for the curved volume. */
 	public String getResultFileSize() throws Exception {
 		if (volume == null) throw new Exception("No volume was loaded. unable to get curved file size.");
-		List<Brick> partitions = volumePartitioner.partition(volume, settings);
+		List<Brick> partitions = volumePartitioner.partition(volume, settings).bricks;
 		long totalPixels = 0;
 		for (Brick p : partitions) {
 			totalPixels += Math.pow(p.size, 3);

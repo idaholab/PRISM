@@ -21,7 +21,6 @@ public class OctNode {
     OctNode parent = null;
     OctNode children[] = new OctNode[8];
     Boolean isLeaf = true;
-    int value = -1;
 
 
     Vector3i pxPosition;
@@ -57,7 +56,7 @@ public class OctNode {
         root.pxPosition = new Vector3i(0,0,0);
         root.pxWidth = CLFW.NextPow2(maxDim);
 
-        generateLevel(root, root.bricks, levels);
+        generateLevel(root, root.bricks, levels - 1);
 
         return root;
     }
@@ -112,7 +111,11 @@ public class OctNode {
                 }
                 current.put("Children", children);
             } else {
-                current.put("Value", value);
+                /* If an octnode is a leaf, it should have only one brick */
+                if (bricks.size() == 0)
+                    current.put("Value", -1);
+                else
+                    current.put("Value", bricks.get(0).getKey());
             }
         } catch (JSONException e) {
             e.printStackTrace();

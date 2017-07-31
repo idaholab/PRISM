@@ -124,7 +124,7 @@ public class VolumePreview {
 			Vector3f offset_ = new Vector3f(offset);
 			float size = (p.size * 2.f) / bbMaxWidth;
 			/* Reference at bottom left of bounding box, then add on local transform */
-			Vector3f pos = offset_.add(p.position);
+			Vector3f pos = offset_.add(new Vector3f(p.position.x, p.position.y, p.position.z));
 
 			/* Place position inside 1,1,1 cube */
 			pos = pos.div(bbMaxWidth).mul(2.f).sub(1.f, 1.f, 1.f);

@@ -3,6 +3,9 @@
     <output-path>$PROJECT_DIR$/out/artifacts/HZGenerator_jar</output-path>
     <root id="archive" name="IDXGenerator.jar">
       <element id="module-output" name="HZGenerator" />
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/target/META-INF/MANIFEST.MF" />
+      </element>
     </root>
   </artifact>
 </component>
