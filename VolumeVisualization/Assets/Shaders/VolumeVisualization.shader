@@ -1,9 +1,12 @@
-﻿﻿Shader "Custom/VolumeVisualization"
+﻿/* Volume Visualization Shader | Marko Sterbentz
+ *﻿ This shader is for barebones volume visualization. It renders only small, RAW data files.
+ * NOTE: This shader is no longer recommended for use.
+ */
+Shader "Custom/VolumeVisualization"
 {
 	Properties
 	{
 		_VolumeDataTexture("Data Texture", 3D) = "" {}						// The volume data
-		_Axis("Axes Order", Vector) = (1, 2, 3)								// coordinate i = 0,1,2 in Unity corresponds to coordinate _Axis[i]-1 in the data
 		_NormPerStep("Intensity Normalization per Step", Float) = 1
 		_NormPerRay("Intensity Normalization per Ray" , Float) = 1
 		_Steps("Max Number of Steps", Range(1,1024)) = 128
@@ -32,7 +35,6 @@
 
 			/********************* DATA *********************/
 			sampler3D _VolumeDataTexture;
-			float3 _Axis;
 			float _NormPerStep;
 			float _NormPerRay;
 			float _Steps;
@@ -93,10 +95,7 @@
 			// Gets the intensity data value at a given position in the 3D texture
 			// note: pos is normalized in [0, 1]
 			float4 sampleIntensity(float3 pos) {
-				float3 posTex = float3(pos[_Axis[0] - 1],pos[_Axis[1] - 1],pos[_Axis[2] - 1]);
-
-				float data = tex3Dlod(_VolumeDataTexture, float4(posTex,0)).a;
-
+				float data = tex3Dlod(_VolumeDataTexture, float4(pos,0)).a;
 				return float4(data, data, data, data);
 			}
 

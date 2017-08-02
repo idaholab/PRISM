@@ -1,24 +1,23 @@
-﻿/* Color Panel Handler | Marko Sterbentz 6/22/2017
- * This script handles user input for the color portion of the transfer function.
- */ 
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using Vectrosity;
 
+/* Color Panel Handler | Marko Sterbentz 6/22/2017
+ * This script handles user input for the color portion of the transfer function.
+ */
 public class ColorPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandler, IPointerUpHandler
 {
 	// External variables
 	public Canvas colorCanvas;                                  // The canvas that overlays the color panel and will be used to draw the color graph.
     private TransferFunctionHandler transferFunctionHandler;    // The transfer function script that passes user input to the transfer function.
-	private VolumeController volumeController;                  // The volume controller that applies changes to the view given user input in this panel.
-	private TransferFunction transferFunction;
+	private VolumeController volumeController;                  // A reference to the VolumeController that manages the renderer.
+	private TransferFunction transferFunction;                  // The transfer function that is used by the current volume.
 
 	// Internal variables
-    private RectTransform panelRectTransform;					// The RectTransform of the color panel.
+	private RectTransform panelRectTransform;					// The RectTransform of the color panel.
     private float maxWidth;                                     // The local maximum width of the color panel.
 	private float minWidth, minHeight;							// The local minimum width and height of the color panel.
-    //private int isovalueRange;									// The range of possible isovalues for the current volume.
 
 	private VectorLine colorGraphPoints;                        // The Vectrosity points that will be drawn for the color points.
 	private VectorLine colorGraphHighlightedPoint;              // The Vectrosity point that will be draw on top of the currently active point in the color panel.
@@ -33,10 +32,8 @@ public class ColorPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 		minWidth = borderSize;
 		minHeight = borderSize;
         transferFunctionHandler = (TransferFunctionHandler)GameObject.Find("Transfer Function Panel").GetComponent(typeof(TransferFunctionHandler));
-		volumeController = volumeController = (VolumeController)GameObject.Find("VolumeController").GetComponent(typeof(VolumeController));
+		volumeController = (VolumeController)GameObject.Find("VolumeController").GetComponent(typeof(VolumeController));
 		transferFunction = volumeController.getTransferFunction();
-
-		//isovalueRange = transferFunction.getIsovalueRange();
 
 		// Initialize the color graph points VectorLine
 		colorGraphPoints = new VectorLine("colorGraphPoints", new List<Vector2>(), pointRadius, LineType.Points);
@@ -60,7 +57,7 @@ public class ColorPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 		Vector2 localPosition = getLocalPositionFromScreenPosition(data.position, data.pressEventCamera);
 
 		// Check if there is a control point at the localPosition, and return it if there is one
-		transferFunction.setActivePoint(getClickedPoint(localPosition));
+		transferFunction.ActiveControlPoint = getClickedPoint(localPosition);
 
 		// Deselect any highlighted points and close the color palette
 		transferFunctionHandler.dehighlightPoints();
@@ -69,25 +66,25 @@ public class ColorPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 		// Left click
 		if (Input.GetMouseButton(0))
 		{
-			if (transferFunction.getActivePoint() == null)
+			if (transferFunction.ActiveControlPoint == null)
 			{
 				// If no point is clicked, generate a new point to be added to the transfer function
 				ControlPoint newActivePoint = getColorPointFromOffset(localPosition, transferFunctionHandler.getColorPalette().getCurrentColor());
 				transferFunction.addColorPoint(newActivePoint);
-				transferFunction.setActivePoint(newActivePoint);
+				transferFunction.ActiveControlPoint = newActivePoint;
 			}
 
 			// Open the color palette
 			transferFunctionHandler.openColorPalette();
-			transferFunctionHandler.getColorPalette().setCurrentColor(transferFunction.getActivePoint().color);
+			transferFunctionHandler.getColorPalette().setCurrentColor(transferFunction.ActiveControlPoint.color);
 			transferFunctionHandler.getColorPalette().setSliders();
 		}
 		// Right click
 		else if (Input.GetMouseButton(1))
 		{
-			if (transferFunction.getActivePoint() != null)
+			if (transferFunction.ActiveControlPoint != null)
 			{
-				transferFunction.removeColorPoint(transferFunction.getActivePoint());
+				transferFunction.removeColorPoint(transferFunction.ActiveControlPoint);
 			}
 		}
     }
@@ -101,7 +98,7 @@ public class ColorPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 			Vector2 localPosition = getLocalPositionFromScreenPosition(data.position, data.pressEventCamera);
 
 			// Update the current active point in the transfer function
-			transferFunction.updateActivePoint(getColorPointFromOffset(localPosition, transferFunction.getActivePoint().color));
+			transferFunction.updateActivePoint(getColorPointFromOffset(localPosition, transferFunction.ActiveControlPoint.color));
 		}
 	}
 
@@ -116,7 +113,7 @@ public class ColorPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 	public void updateColorVectrosityGraph()
 	{
 		List<Vector2> updatedPoints = new List<Vector2>();
-		List<ControlPoint> currentColorPoints = transferFunction.getColorPoints();
+		List<ControlPoint> currentColorPoints = transferFunction.ColorPoints;
 		for (int i = 0; i < currentColorPoints.Count; i++)
 		{
 			// Convert color control points to local space points and store them in the Vectrosity line
@@ -135,7 +132,7 @@ public class ColorPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 	{
 		List<Vector2> highlightedPoint = new List<Vector2>();
 
-		Vector2 activePointPosition = getLocalPositionFromColorPoint(transferFunction.getActivePoint());
+		Vector2 activePointPosition = getLocalPositionFromColorPoint(transferFunction.ActiveControlPoint);
 		highlightedPoint.Add(activePointPosition);
 		colorGraphHighlightedPoint.points2 = highlightedPoint;
 
@@ -155,7 +152,7 @@ public class ColorPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 		Vector2 localPosition = new Vector2();
 
 		// Convert to a local position within the color panel
-		localPosition.x = (colorPoint.isovalue / (float) transferFunction.getIsovalueRange()) * maxWidth;
+		localPosition.x = (colorPoint.isovalue / (float) transferFunction.IsovalueRange) * maxWidth;
 		localPosition.y = 0.0f;
 
 		// Clamp the position to stay within the color panel's borders
@@ -183,7 +180,7 @@ public class ColorPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 	{
 		ControlPoint cp = new ControlPoint(
 			color,																			// color value
-			Mathf.FloorToInt(transferFunction.getIsovalueRange() * (offset.x / maxWidth))	// isovalue index
+			Mathf.FloorToInt(transferFunction.IsovalueRange * (offset.x / maxWidth))	// isovalue index
 			);
 		return cp;
 	}
@@ -200,7 +197,7 @@ public class ColorPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 	// Note: The given localClickPosition is assumed to be in the local coordinates of the panel.
 	private ControlPoint getClickedPoint(Vector2 localClickPosition)
 	{
-		List<ControlPoint> colorPoints = transferFunction.getColorPoints();
+		List<ControlPoint> colorPoints = transferFunction.ColorPoints;
 		for (int i = 0; i < colorPoints.Count; i++)
 		{
 			if (Vector2.Distance(localClickPosition, getLocalPositionFromColorPoint(colorPoints[i])) < pointRadius)

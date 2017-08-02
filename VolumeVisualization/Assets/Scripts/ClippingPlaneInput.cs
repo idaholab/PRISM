@@ -1,10 +1,8 @@
-﻿/* Clipping Plane Input | Marko Sterbentz 7/11/17
+﻿using UnityEngine;
+
+/* Clipping Plane Input | Marko Sterbentz 7/11/17
  * This script will get input for the clipping tool and pass it to the VolumeController.
  */
-using System;
-using UnityEngine;
-using UnityEngine.EventSystems;
-
 public class ClippingPlaneInput : MonoBehaviour
 {
 	public Camera mainCamera;

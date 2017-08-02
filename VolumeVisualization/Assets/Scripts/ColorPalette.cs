@@ -1,12 +1,11 @@
-﻿/* Color Palette | Marko Sterbentz 6/30/2017
- * This script handles user input on a color palette pop-up menu.
- */ 
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
+/* Color Palette | Marko Sterbentz 6/30/2017
+ * This script handles user input on a color palette pop-up menu.
+ */
 public class ColorPalette : MonoBehaviour
 {
-
 	private TransferFunction transferFunction;              // Reference to the transfer function that is in the volumeController
 	private VolumeController volumeController;              // The main controller used to synchronize data input, user input, and visualization
 

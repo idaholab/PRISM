@@ -1,12 +1,12 @@
-﻿// Written by stermj﻿
-
+﻿/* HZ Volume Shader | Marko Sterbentz 6/19/2017
+ * A vert/frag shader for rendering data bricks that use HZ-ordered data
+ */
 Shader "Custom/HZVolume"
 {
 	Properties
 	{
 		_MainTex("Texture", 2D) = "white" {}											// An array of bytes that is the 8-bit raw data. It is essentially a 1D array/texture.
 		_VolumeDataTexture("3D Data Texture", 3D) = "" {}
-		_Axis("Axes Order", Vector) = (1, 2, 3)											// coordinate i = 0,1,2 in Unity corresponds to coordinate _Axis[i]-1 in the data
 		_NormPerRay("Intensity Normalization per Ray" , Float) = 1
 		_Steps("Max Number of Steps", Range(1,1024)) = 512
 		_TransferFunctionTex("Transfer Function", 2D) = "white" {}
@@ -44,7 +44,6 @@ Shader "Custom/HZVolume"
 			sampler2D _MainTex;
 			sampler3D _VolumeDataTexture;
 			sampler2D _TransferFunctionTex;
-			float3 _Axis;
 			float _NormPerRay;
 			float _Steps;
 			float3 _ClippingPlaneNormal;
@@ -218,25 +217,23 @@ Shader "Custom/HZVolume"
 			}
 
 			/***************************************** END HZ CURVING CODE ************************************************/
+
+			/********* SAMPLING 3D HZ CURVED RAW DATA WITH TEXTURE COORD CALCULATION **********/
 			float sampleIntensityHz3D(float3 pos)
 			{
-				/********* SAMPLING 3D HZ CURVED RAW DATA WITH TEXTURE COORD CALCULATION **********/
 				uint zIndex = morton3D(pos);										// Get the Z order index		
 				uint maskedZIndex = computeMaskedZIndex(zIndex);					// Get the masked Z index
 				uint hzIndex = getHZIndex(maskedZIndex);							// Find the hz order index
 				uint dataCubeDimension = 1 << _CurrentZLevel;						// The dimension of the data brick using the current hz level.
-				float3 texCoord = texCoord3DFromHzIndex(hzIndex, dataCubeDimension, dataCubeDimension, dataCubeDimension);			// THE DIMENSIONS NEED TO BE THE DATA BRICK SIZE, not the full level _BrickSize
+				float3 texCoord = texCoord3DFromHzIndex(hzIndex, dataCubeDimension, dataCubeDimension, dataCubeDimension);
 				float data = tex3Dlod(_VolumeDataTexture, float4(texCoord, 0)).a;
 				return data;
 			}
 
+			/********* SAMPLING 3D RAW WITH POSITION GIVEN ***********/
 			float sampleIntensityRaw3D(float3 pos)
 			{
-				/********* SAMPLING 3D RAW WITH POSITION GIVEN ***********/
-				// Get the position in texture coordinates
-				float3 posTex = float3(pos[_Axis[0] - 1], pos[_Axis[1] - 1], pos[_Axis[2] - 1]);
-				float data = tex3Dlod(_VolumeDataTexture, float4(posTex, 0)).a;
-				return data;
+				return tex3Dlod(_VolumeDataTexture, float4(pos, 0)).a;
 			}
 			
 			// Gets the intensity data value at a given position in the volume.
@@ -283,9 +280,7 @@ Shader "Custom/HZVolume"
 				float ray_length = length(ray_dir);							// The length of the ray to travel
 				ray_dir = normalize(ray_stop - ray_start);					// The direction of the ray (normalized)
 
-				//float3 ray_step = ray_dir * sqrt(3) / _Steps;				// The step size of the ray-march (OLD)
 				float step_size = ray_length / (float)_Steps;
-				//float step_size = 0.001;
 				float3 ray_step = ray_dir * step_size;
 				//return float4(abs(ray_stop - ray_start), 1);
 				//return float4(ray_length, ray_length, ray_length, 1);

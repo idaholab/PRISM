@@ -1,10 +1,10 @@
-﻿/* Arc Ball Camera | Marko Sterbentz 5/31/2017
+﻿using UnityEngine;
+using UnityEngine.EventSystems;
+
+/* Arc Ball Camera | Marko Sterbentz 5/31/2017
  * This script provides simple (albeit flawed) controls for orbiting the camera around a fixed center point.
  * Note: Adapted from a script at: http://wiki.unity3d.com/index.php?title=MouseOrbitImproved 
  */
-using UnityEngine;
-using UnityEngine.EventSystems;
-
 public class ArcBallCamera : MonoBehaviour
 {
 	private Vector3 targetPosition;

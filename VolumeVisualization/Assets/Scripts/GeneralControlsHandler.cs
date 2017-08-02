@@ -1,10 +1,9 @@
-﻿/* User Interface | Marko Sterbentz 6/6/2017
- * This script provides functionality for updating the shader with general values provided by the user.
- */ 
-
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
+/* User Interface | Marko Sterbentz 6/6/2017
+ * This script provides functionality for updating the shader with general values provided by the user.
+ */
 public class GeneralControlsHandler : MonoBehaviour {
 
 	private VolumeController volumeController;      // The main controller used to synchronize data input, user input, and visualization
@@ -33,19 +32,19 @@ public class GeneralControlsHandler : MonoBehaviour {
     /* General Slider Update Functions */
     public void updateStepsValue(float newVal)
     {
-		volumeController.updateMaterialPropFloatAll("_Steps", newVal);
+		volumeController.getCurrentVolume().updateMaterialPropFloatAll("_Steps", newVal);
         maxStepsValueText.text = newVal.ToString();
     }
 
     public void updateNormPerRay(float newVal)
     {
-		volumeController.updateMaterialPropFloatAll("_NormPerRay", newVal);
+		volumeController.getCurrentVolume().updateMaterialPropFloatAll("_NormPerRay", newVal);
         normPerRayValueText.text = newVal.ToString("0.00");
     }
 
     public void updateHZRenderLevel(float newVal)
     {
-		volumeController.updateMaterialPropIntAll("_HZRenderLevel", (int) newVal);
+		volumeController.getCurrentVolume().updateMaterialPropIntAll("_HZRenderLevel", (int) newVal);
         hzRenderLevelValueText.text = newVal.ToString();
     }
 }

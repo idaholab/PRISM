@@ -1,20 +1,18 @@
-﻿/* Alpha Panel Handler | Marko Sterbentz 6/21/2017
- * This script provides functionality for handling user input for the alpha portion of the transfer function.
- * Important note for use: Ensure that the panel this script is attached to has its pivot set to (0,0).
- */
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
 using Vectrosity;
 
+/* Alpha Panel Handler | Marko Sterbentz 6/21/2017
+ * This script provides functionality for handling user input for the alpha portion of the transfer function.
+ * Important note for use: Ensure that the panel this script is attached to has its pivot set to (0,0).
+ */
 public class AlphaPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandler, IPointerUpHandler {
 
 	public Canvas alphaCanvas;								// The canvas that overlays the alpha panel and will be used to draw the alpha graph.
     private TransferFunctionHandler transferFunctionHandler;// The transfer function script that passes user input to the transfer function.
-	private TransferFunction transferFunction;
-	private VolumeController volumeController;
+	private TransferFunction transferFunction;				// The transfer function that is used by the current volume.
+	private VolumeController volumeController;				// A reference to the VolumeController that manages the renderer.
 
 	private RectTransform panelRectTransform;				// The RectTransform of the alpha panel.
     private float maxWidth, maxHeight;						// The local maximum width and height of the alpha panel.
@@ -36,7 +34,7 @@ public class AlphaPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 		minWidth =  borderSize;
 		minHeight = borderSize;
         transferFunctionHandler = (TransferFunctionHandler)GameObject.Find("Transfer Function Panel").GetComponent(typeof(TransferFunctionHandler));
-		volumeController = volumeController = (VolumeController)GameObject.Find("VolumeController").GetComponent(typeof(VolumeController));
+		volumeController = (VolumeController)GameObject.Find("VolumeController").GetComponent(typeof(VolumeController));
 		transferFunction = volumeController.getTransferFunction();
 
 		// Initialize the alpha graph points VectorLine
@@ -71,28 +69,27 @@ public class AlphaPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 		Vector2 localPosition = getLocalPositionFromScreenPosition(data.position, data.pressEventCamera);
 
 		// Check if there is a control point at the localPosition, and return it if there is one
-		transferFunction.setActivePoint(getClickedPoint(localPosition));
+		transferFunction.ActiveControlPoint = getClickedPoint(localPosition);
 
 		transferFunctionHandler.dehighlightPoints();
 
 		// Left click
 		if (Input.GetMouseButton(0))
 		{
-			if (transferFunction.getActivePoint() == null)
+			if (transferFunction.ActiveControlPoint == null)
 			{
 				// If no point is clicked, generate a new point to be added to the transfer function
 				ControlPoint newActivePoint = getAlphaPointFromLocalPosition(localPosition);
 				transferFunction.addAlphaPoint(newActivePoint);
-				transferFunction.setActivePoint(newActivePoint);
+				transferFunction.ActiveControlPoint = newActivePoint;
 			}
 		}
 		// Right click
 		else if (Input.GetMouseButton(1))
 		{
-			if (transferFunction.getActivePoint() != null)
+			if (transferFunction.ActiveControlPoint != null)
 			{
-				transferFunction.removeAlphaPoint(transferFunction.getActivePoint());
-				//transferFunction.setActivePoint(null);
+				transferFunction.removeAlphaPoint(transferFunction.ActiveControlPoint);
 			}
 		}
     }
@@ -123,7 +120,7 @@ public class AlphaPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 	{
 		// Update the alpha points
 		List<Vector2> updatedPoints = new List<Vector2>();
-		List<ControlPoint> currentAlphaPoints = transferFunction.getAlphaPoints();
+		List<ControlPoint> currentAlphaPoints = transferFunction.AlphaPoints;
 		for (int i = 0; i < currentAlphaPoints.Count; i++)
 		{
 			// Convert alpha control points to local space points and store them in the Vectrosity line
@@ -144,7 +141,7 @@ public class AlphaPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 	{
 		List<Vector2> highlightedPoint = new List<Vector2>();
 
-		Vector2 activePointPosition = getLocalPositionFromAlphaPoint(transferFunction.getActivePoint());
+		Vector2 activePointPosition = getLocalPositionFromAlphaPoint(transferFunction.ActiveControlPoint);
 		highlightedPoint.Add(activePointPosition);
 		alphaGraphHighlightedPoint.points2 = highlightedPoint;
 
@@ -164,7 +161,7 @@ public class AlphaPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 		Vector2 localPosition = new Vector2();
 
 		// Convert to a local position within the alpha panel
-		localPosition.x = (alphaPoint.isovalue / (float) transferFunction.getIsovalueRange()) * maxWidth;
+		localPosition.x = (alphaPoint.isovalue / (float) transferFunction.IsovalueRange) * maxWidth;
 		localPosition.y = alphaPoint.color.a * maxHeight;
 
 		// Clamp the position to stay within the alpha panel's borders
@@ -193,7 +190,7 @@ public class AlphaPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 	{
 		ControlPoint cp = new ControlPoint(
 			(localPosition.y) / maxHeight,																// alpha value
-			Mathf.FloorToInt(transferFunction.getIsovalueRange() * ((localPosition.x) / maxWidth))       // isovalue index
+			Mathf.FloorToInt(transferFunction.IsovalueRange * ((localPosition.x) / maxWidth))       // isovalue index
 			);
 		return cp;
 	}
@@ -210,12 +207,11 @@ public class AlphaPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 	// Note: The given localClickPosition is assumed to be in the local coordinates of the panel.
 	private ControlPoint getClickedPoint(Vector2 localClickPosition)
 	{
-		List<ControlPoint> alphaPoints = transferFunction.getAlphaPoints();
+		List<ControlPoint> alphaPoints = transferFunction.AlphaPoints;
 		for (int i = 0; i < alphaPoints.Count; i++)
 		{
 			if (Vector2.Distance(localClickPosition, getLocalPositionFromAlphaPoint(alphaPoints[i])) < pointRadius)
 			{
-				//Debug.Log("Alpha: " + alphaPoints[i].color.a + " | Isovalue: " + alphaPoints[i].isovalue);
 				return alphaPoints[i];
 			}
 		}
