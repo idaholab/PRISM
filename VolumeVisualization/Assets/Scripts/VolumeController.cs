@@ -1,11 +1,13 @@
-﻿using System;
+﻿/* Volume Controller | Marko Sterbentz 7/3/2017 */
+
+using System;
 using UnityEngine;
 using Vectrosity;
 using System.Collections.Generic;
 
-/* Volume Controller | Marko Sterbentz 7/3/2017
- * This class is the medium between the data and the volume rendering, and handles requests between the two.
- */
+/// <summary>
+/// This class is the medium between the data and the volume rendering, and handles requests between the two.
+/// </summary>
 public class VolumeController : MonoBehaviour {
 	
 	private Volume currentVolume;						// The data volume that will be rendered
@@ -22,7 +24,9 @@ public class VolumeController : MonoBehaviour {
 	public ComputeShader brickAnalysisShader;
 	private int analysisKernelID;
 
-	// Use this for initialization. This will ensure that the global variables needed by other objects are initialized first.
+	/// <summary>
+	/// Initialization function for the VolumeController. Ensures that the global variables needed by other objects are initialized first.
+	/// </summary>
 	private void Awake()
 	{
 		// 0. Create the default material
@@ -40,6 +44,10 @@ public class VolumeController : MonoBehaviour {
 		clippingPlane = new ClippingPlane(new Vector3(0,0,0), new Vector3(1, 0 ,0), false);
 		updateClippingPlaneAll();
 
+		// 4. Set up the target for the camera controls
+		CameraControls cameraControls = (CameraControls)mainCamera.GetComponent(typeof(CameraControls));
+		cameraControls.target = currentVolume.VolumeCube;
+
 		// DEBUG: Creating a wireframe bounding box cube
 		boundingBoxLine = new VectorLine("boundingCube", new List<Vector3>(24), 2.0f);
 		boundingBoxLine.MakeCube(new Vector3(0.5f, 0.5f, 0.5f), 1, 1, 1);               // Note: Places the corner at (0, 0, 0)
@@ -56,7 +64,9 @@ public class VolumeController : MonoBehaviour {
 		analysisKernelID = brickAnalysisShader.FindKernel("BrickAnalysis");
 	}
 
-	// Update is called once per frame
+	/// <summary>
+	/// Updates the VolumeController once per frame.
+	/// </summary>
 	private void Update ()
 	{
 		// Draw the 1 x 1 x 1 bounding box for the volume.
@@ -83,7 +93,9 @@ public class VolumeController : MonoBehaviour {
 	/*****************************************************************************
 	 * UTILITY METHODS
 	 *****************************************************************************/
-	 // Updates the Z-order render level of all bricks in the current volume based on user input.
+	/// <summary>
+	/// Updates the Z-order render level of all bricks in the current volume based on user input.
+	/// </summary>
 	public void checkZRenderLevelInput()
 	{
 		if (Input.GetKeyDown("0"))
@@ -141,13 +153,15 @@ public class VolumeController : MonoBehaviour {
 	/*****************************************************************************
 	 * SHADER BUFFERING METHODS WRAPPERS
 	 *****************************************************************************/
-	// Sends the values in the VolumeController's ClippingPlane to all bricks' materials.
+	/// <summary>
+	/// Sends the values in the VolumeController's ClippingPlane to all bricks' materials.
+	/// </summary>
 	public void updateClippingPlaneAll()
 	{
 		for (int i = 0; i < currentVolume.Bricks.Length; i++)
 		{
 			// Transform the clipping plane from world to local space of the current brick, accounting for scale
-			Vector3 localClippingPlanePosition = currentVolume.Bricks[i].getGameObject().transform.InverseTransformPoint(clippingPlane.Position);
+			Vector3 localClippingPlanePosition = currentVolume.Bricks[i].GameObject.transform.InverseTransformPoint(clippingPlane.Position);
 
 			// Send the transformed clipping plane location to the current brick's material shader
 			currentVolume.updateMaterialPropVector3("_ClippingPlanePosition", localClippingPlanePosition, i);;
@@ -163,16 +177,28 @@ public class VolumeController : MonoBehaviour {
 	/*****************************************************************************
 	 * ACCESSORS AND MUTATORS
 	 *****************************************************************************/
+	/// <summary>
+	/// Returns the transfer function used by the volume controller.
+	/// </summary>
+	/// <returns></returns>
 	public TransferFunction getTransferFunction()
 	{
 		return transferFunction;
 	}
 
+	/// <summary>
+	/// Returns the current volume used by the volume controller.
+	/// </summary>
+	/// <returns></returns>
 	public Volume getCurrentVolume()
 	{
 		return currentVolume;
 	}
 
+	/// <summary>
+	/// Returns the clipping plane used by the volume controller.
+	/// </summary>
+	/// <returns></returns>
 	public ClippingPlane getClippingPlane()
 	{
 		return clippingPlane;
@@ -181,6 +207,11 @@ public class VolumeController : MonoBehaviour {
 	/*****************************************************************************
 	* COMPUTE METHODS
 	*****************************************************************************/
+	/// <summary>
+	/// An example of how to use compute shaders in Unity. 
+	/// Does not perform any useful function with regards to rendering the volume.
+	/// </summary>
+	/// <returns></returns>
 	public BrickData[] runBrickAnalysis()
 	{
 		// Create the brick data

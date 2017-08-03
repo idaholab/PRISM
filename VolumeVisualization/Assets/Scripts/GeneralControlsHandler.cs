@@ -1,9 +1,11 @@
-﻿using UnityEngine;
+﻿/* General Controls Handler | Marko Sterbentz 6/6/2017 */
+
+using UnityEngine;
 using UnityEngine.UI;
 
-/* User Interface | Marko Sterbentz 6/6/2017
- * This script provides functionality for updating the shader with general values provided by the user.
- */
+/// <summary>
+/// This script provides functionality for updating the shader with general values provided by the user.
+/// </summary>
 public class GeneralControlsHandler : MonoBehaviour {
 
 	private VolumeController volumeController;      // The main controller used to synchronize data input, user input, and visualization
@@ -13,7 +15,9 @@ public class GeneralControlsHandler : MonoBehaviour {
     public Text normPerRayValueText;
     public Text hzRenderLevelValueText;
 
-    // Use this for initialization
+    /// <summary>
+	/// Initialization function for the GeneralControlsHandler.
+	/// </summary>
     void Start () {
 		// Set up the reference to the VolumeController
 		volumeController = (VolumeController)GameObject.Find("VolumeController").GetComponent(typeof(VolumeController));
@@ -24,25 +28,32 @@ public class GeneralControlsHandler : MonoBehaviour {
         hzRenderLevelValueText.text = GameObject.Find("HZ Render Level Slider").GetComponent<Slider>().value.ToString();
 	}
 	
-	// Update is called once per frame
-	void Update () {
 
-    }
-
-    /* General Slider Update Functions */
+	/// <summary>
+	/// Steps slider update function.
+	/// </summary>
+	/// <param name="newVal"></param>
     public void updateStepsValue(float newVal)
     {
 		volumeController.getCurrentVolume().updateMaterialPropFloatAll("_Steps", newVal);
         maxStepsValueText.text = newVal.ToString();
     }
 
-    public void updateNormPerRay(float newVal)
+	/// <summary>
+	/// Norm per ray slider update function.
+	/// </summary>
+	/// <param name="newVal"></param>
+	public void updateNormPerRay(float newVal)
     {
 		volumeController.getCurrentVolume().updateMaterialPropFloatAll("_NormPerRay", newVal);
         normPerRayValueText.text = newVal.ToString("0.00");
     }
 
-    public void updateHZRenderLevel(float newVal)
+	/// <summary>
+	/// HZ-order render level slider update function.
+	/// </summary>
+	/// <param name="newVal"></param>
+	public void updateHZRenderLevel(float newVal)
     {
 		volumeController.getCurrentVolume().updateMaterialPropIntAll("_HZRenderLevel", (int) newVal);
         hzRenderLevelValueText.text = newVal.ToString();

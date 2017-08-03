@@ -1,8 +1,10 @@
-﻿using UnityEngine;
+﻿/* Clipping Plane | Marko Sterbentz 7/11/2017 */
 
-/* Clipping Plane | Marko Sterbentz 7/11/2017
- * This class contains the data for a plane that can be used to clip the volume.
- */
+using UnityEngine;
+
+/// <summary>
+/// Contains the data for a plane that can be used to clip the volume.
+/// </summary>
 public class ClippingPlane
 {
 	/* Member variables */
@@ -48,6 +50,9 @@ public class ClippingPlane
 	}
 
 	/* Constructors */
+	/// <summary>
+	/// Creates a new instance of a clipping plane.
+	/// </summary>
 	public ClippingPlane()
 	{
 		position = new Vector3(0.5f, 0.5f, 0.5f);
@@ -55,6 +60,12 @@ public class ClippingPlane
 		enabled = false;
 	}
 
+	/// <summary>
+	/// Creates a new instance of a clipping plane.
+	/// </summary>
+	/// <param name="_position"></param>
+	/// <param name="_normal"></param>
+	/// <param name="_enabled"></param>
 	public ClippingPlane(Vector3 _position, Vector3 _normal, bool _enabled)
 	{
 		position = _position;

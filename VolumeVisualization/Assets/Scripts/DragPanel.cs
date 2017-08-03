@@ -1,10 +1,13 @@
-﻿using UnityEngine;
-using UnityEngine.EventSystems;
-
-/* Drag Panel | Marko Sterbentz 6/6/2017
- * This script allows the panel to which it is attached to be dragged on click.
+﻿/* Drag Panel | Marko Sterbentz 6/6/2017 
  * Note: Code taken from the tutorial at: https://unity3d.com/learn/tutorials/modules/intermediate/live-training-archive/panels-panes-windows?playlist=17111
  */
+
+using UnityEngine;
+using UnityEngine.EventSystems;
+
+/// <summary>
+/// This script allows the panel to which it is attached to be dragged on click.
+/// </summary>
 public class DragPanel : MonoBehaviour, IPointerDownHandler, IDragHandler
 {
 
@@ -12,6 +15,9 @@ public class DragPanel : MonoBehaviour, IPointerDownHandler, IDragHandler
     private RectTransform canvasRectTransform;
     private RectTransform panelRectTransform;
 
+	/// <summary>
+	/// Initializes the DragPanel before the other Start functions.
+	/// </summary>
     void Awake()
     {
         Canvas canvas = GetComponentInParent<Canvas>();
@@ -22,12 +28,20 @@ public class DragPanel : MonoBehaviour, IPointerDownHandler, IDragHandler
         }
     }
 
+	/// <summary>
+	/// Unity OnPointerDown event handler for the drag panel.
+	/// </summary>
+	/// <param name="data"></param>
     public void OnPointerDown(PointerEventData data)
     {
         panelRectTransform.SetAsLastSibling();
         RectTransformUtility.ScreenPointToLocalPointInRectangle(panelRectTransform, data.position, data.pressEventCamera, out pointerOffset);
     }
 
+	/// <summary>
+	/// Unity OnDrag event handler for the drag panel.
+	/// </summary>
+	/// <param name="data"></param>
     public void OnDrag(PointerEventData data)
     {
         if (panelRectTransform == null)
@@ -44,6 +58,11 @@ public class DragPanel : MonoBehaviour, IPointerDownHandler, IDragHandler
         }
     }
 
+	/// <summary>
+	/// Clamps the button click to be within the game window.
+	/// </summary>
+	/// <param name="data"></param>
+	/// <returns></returns>
     Vector2 ClampToWindow(PointerEventData data)
     {
         Vector2 rawPointerPosition = data.position;

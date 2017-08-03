@@ -1,12 +1,14 @@
-﻿using System.Collections.Generic;
+﻿/* Alpha Panel Handler | Marko Sterbentz 6/21/2017 */
+
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using Vectrosity;
 
-/* Alpha Panel Handler | Marko Sterbentz 6/21/2017
- * This script provides functionality for handling user input for the alpha portion of the transfer function.
- * Important note for use: Ensure that the panel this script is attached to has its pivot set to (0,0).
- */
+/// <summary>
+/// Provides functionality for handling user input for the alpha portion of the transfer function.
+/// Important note for use: Ensure that the panel this script is attached to has its pivot set to (0,0).
+/// </summary>
 public class AlphaPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandler, IPointerUpHandler {
 
 	public Canvas alphaCanvas;								// The canvas that overlays the alpha panel and will be used to draw the alpha graph.
@@ -26,6 +28,9 @@ public class AlphaPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 	private float borderSize = 0.0f;						// Size of the border around the panel. Padding on the internal edges of the panel is added. CAUSES BUGS WHEN NOT 0.0
 
     // Use this for initialization
+	/// <summary>
+	/// Initialization function for the AlphaPanelHandler.
+	/// </summary>
     void Start()
     {
 		panelRectTransform = transform as RectTransform;
@@ -53,13 +58,18 @@ public class AlphaPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 		alphaGraphHighlightedPoint.SetCanvas(alphaCanvas, false);
     }
 
-    // Update is called once per frame
-    void Update()
+	/// <summary>
+	/// Updates AlphaPanelHandler once per frame.
+	/// </summary>
+	void Update()
 	{
 
 	}
 
-	// Create a temporary alpha control point that is sent to the transfer function.
+	/// <summary>
+	/// Create a temporary alpha control point that is sent to the transfer function.
+	/// </summary>
+	/// <param name="data"></param>
 	public void OnPointerDown(PointerEventData data)
     {
 		// Close the color palette (if it is open)
@@ -93,9 +103,12 @@ public class AlphaPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 			}
 		}
     }
-
-	// Updates the current active alpha point.
-    public void OnDrag(PointerEventData data)
+ 
+	/// <summary>
+	/// Updates the current active alpha point.
+	/// </summary>
+	/// <param name="data"></param>
+	public void OnDrag(PointerEventData data)
     {
 		// Left click
 		if (Input.GetMouseButton(0))
@@ -108,14 +121,19 @@ public class AlphaPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 		}
     }
 
-	// Finalizes the active alpha point
-    public void OnPointerUp(PointerEventData data)
+	/// <summary>
+	/// Finalizes the active alpha point
+	/// </summary>
+	/// <param name="data"></param>
+	public void OnPointerUp(PointerEventData data)
     {
 		transferFunction.finalizeActivePoint();
     }
 
-	// Updates the alpha Vectrosity graph in the user interface by updating and drawing the points.
-	// Note: Assumes the transfer function's alpha points are already sorted.
+	/// <summary>
+	/// Updates the alpha Vectrosity graph in the user interface by updating and drawing the points.
+	/// Assumes the transfer function's alpha points are already sorted.
+	/// </summary>
 	public void updateAlphaVectrosityGraph()
 	{
 		// Update the alpha points
@@ -136,7 +154,9 @@ public class AlphaPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 		alphaGraphPoints.Draw();
 	}
 
-	// Highlights the current active point in the transfer function .
+	/// <summary>
+	/// Highlights the current active point in the transfer function.
+	/// </summary>
 	public void highlightActivePoint()
 	{
 		List<Vector2> highlightedPoint = new List<Vector2>();
@@ -147,15 +167,21 @@ public class AlphaPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 
 		alphaGraphHighlightedPoint.Draw();
 	}
-
-	// De-highlights the current active point in the transfer function.
+ 
+	/// <summary>
+	/// De-highlights the current active point in the transfer function.
+	/// </summary>
 	public void dehighlightPoints()
 	{
 		alphaGraphHighlightedPoint.points2 = new List<Vector2>();
 		alphaGraphHighlightedPoint.Draw();
 	}
 
-	// Converts the given alpha control point to the local space within the alpha panel.
+	/// <summary>
+	/// Converts the given alpha control point to the local space within the alpha panel.
+	/// </summary>
+	/// <param name="alphaPoint"></param>
+	/// <returns></returns>
 	private Vector2 getLocalPositionFromAlphaPoint(ControlPoint alphaPoint)
 	{
 		Vector2 localPosition = new Vector2();
@@ -170,7 +196,12 @@ public class AlphaPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 		return localPosition;
 	}
 
-	// Converts the given screen position to a local space within the alpha panel.
+	/// <summary>
+	/// Converts the given screen position to a local space within the alpha panel.
+	/// </summary>
+	/// <param name="screenPosition"></param>
+	/// <param name="cam"></param>
+	/// <returns></returns>
 	private Vector2 getLocalPositionFromScreenPosition(Vector2 screenPosition, Camera cam)
 	{
 		Vector2 localPosition;
@@ -184,8 +215,12 @@ public class AlphaPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 		return localPosition;
 	}
 
-	// Generates an alpha control point to be sent to the transfer function.
-	// Note: The given offset must be clamped to [0, 1]
+	/// <summary>
+	/// Generates an alpha control point to be sent to the transfer function.
+	/// The given offset must be clamped to [0, 1]
+	/// </summary>
+	/// <param name="localPosition"></param>
+	/// <returns></returns>
 	private ControlPoint getAlphaPointFromLocalPosition(Vector2 localPosition)
 	{
 		ControlPoint cp = new ControlPoint(
@@ -195,7 +230,11 @@ public class AlphaPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 		return cp;
 	}
 
-	// Clamps the given point to be within the borders of the alpha panel.
+	/// <summary>
+	/// Clamps the given point to be within the borders of the alpha panel.
+	/// </summary>
+	/// <param name="localPoint"></param>
+	/// <returns></returns>
 	private Vector2 clampToAlphaPanel(Vector2 localPoint)
 	{
 		localPoint.x = Mathf.Clamp(localPoint.x, minWidth, maxWidth);
@@ -203,8 +242,12 @@ public class AlphaPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 		return localPoint;
 	}
 
-	// Returns the alpha control point that was clicked by the user. Returns null if no point was clicked.
-	// Note: The given localClickPosition is assumed to be in the local coordinates of the panel.
+	/// <summary>
+	/// Returns the alpha control point that was clicked by the user. Returns null if no point was clicked.
+	/// The given localClickPosition is assumed to be in the local coordinates of the panel.
+	/// </summary>
+	/// <param name="localClickPosition"></param>
+	/// <returns></returns>
 	private ControlPoint getClickedPoint(Vector2 localClickPosition)
 	{
 		List<ControlPoint> alphaPoints = transferFunction.AlphaPoints;

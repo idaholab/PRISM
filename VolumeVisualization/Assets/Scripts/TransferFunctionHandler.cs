@@ -1,12 +1,14 @@
-﻿using System.Collections.Generic;
+﻿/* Transfer Function Handler | Marko Sterbentz 6/8/2017 */
+
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
 
-/* Transfer Function Handler | Marko Sterbentz 6/8/2017
- * This script provides functionality for setting up the transfer function based on user input.
- * Note: If the transfer function is not being used, the shader must be changed to no longer sample from the texture this script generates.
- */
+/// <summary>
+/// Provides functionality for setting up the transfer function based on user input.
+/// If the transfer function is not being used, the shader must be changed to no longer sample from the texture this script generates.
+/// </summary>
 public class TransferFunctionHandler : MonoBehaviour {
 
 	private VolumeController volumeController;      // The main controller used to synchronize data input, user input, and visualization
@@ -32,7 +34,9 @@ public class TransferFunctionHandler : MonoBehaviour {
 	private Button loadButton;						// The button used to load the current transfer function
 	private Button saveButton;						// The button used to save the current transfer function
 
-	// Use this for initialization
+	/// <summary>
+	/// Initialization function for the TransferFunctionHandler.
+	/// </summary>
 	void Start () {
 		// Set up the reference to the VolumeController
 		volumeController = (VolumeController) GameObject.Find("VolumeController").GetComponent(typeof(VolumeController));
@@ -85,7 +89,9 @@ public class TransferFunctionHandler : MonoBehaviour {
 		transferFunction.TransferFunctionChanged = true;
 	}
 	
-	// Update is called once per frame
+	/// <summary>
+	/// Updates TransferFunctionHandler once per frame.
+	/// </summary>
 	void Update () {
 		if (transferFunction.TransferFunctionChanged)
 		{
@@ -100,7 +106,9 @@ public class TransferFunctionHandler : MonoBehaviour {
 	/*****************************************************************************
 	* GENERAL UPDATE FUNCTION
 	*****************************************************************************/
-	// Updates both the transfer function UI and buffers over the transfer function texture to the shader.
+	/// <summary>
+	/// Updates both the transfer function UI and buffers over the transfer function texture to the shader.
+	/// </summary>
 	private void updateTransferFunction()
 	{
 		// Update the transfer function texture
@@ -132,7 +140,9 @@ public class TransferFunctionHandler : MonoBehaviour {
 	/*****************************************************************************
 	* CONTROL POINT HANDLERS
 	*****************************************************************************/
-	// Highlights the currently active point in the appropriate panel.
+	/// <summary>
+	/// Highlights the currently active point in the appropriate panel.
+	/// </summary>
 	public void highlightActivePoint()
 	{
 		if (transferFunction.ActiveControlPoint != null)
@@ -148,7 +158,9 @@ public class TransferFunctionHandler : MonoBehaviour {
 		}
 	}
 
-	// Dehighlights points in both the color and alpha panels.
+	/// <summary>
+	/// Dehighlights points in both the color and alpha panels.
+	/// </summary>
 	public void dehighlightPoints()
 	{
 		alphaPanelHandler.dehighlightPoints();
@@ -158,13 +170,17 @@ public class TransferFunctionHandler : MonoBehaviour {
 	/*****************************************************************************
 	* COLOR PALETTE FUNCTIONS
 	*****************************************************************************/
-	// Activates the color palette panel
+	/// <summary>
+	/// Activates the color palette panel.
+	/// </summary>
 	public void openColorPalette()
 	{
 		colorPalettePanel.SetActive(true);
 	}
 
-	// Deactivates the color palette panel
+	/// <summary>
+	/// Deactivates the color palette panel.
+	/// </summary>
 	public void closeColorPalette()
 	{
 		colorPalettePanel.SetActive(false);
@@ -172,17 +188,21 @@ public class TransferFunctionHandler : MonoBehaviour {
 
 	/*****************************************************************************
 	* TRANSFER FUNCTION FILE IO
-	*****************************************************************************/
-	// Saves the current transfer function to the currently selected file.
-	// Note: This is a wrapper needed for the button click to work.
+	*****************************************************************************/ 
+	/// <summary>
+	/// Saves the current transfer function to the currently selected file.
+	/// This is a wrapper needed for the button click to work.
+	/// </summary>
 	public void saveTransferFunction()
 	{
 		string path = savedTransferFunctionFolderPath + currentTransferFunctionFile + transferFunctionFileExtension;
 		transferFunction.saveTransferFunction(path);
 	}
 
-	// Loads the currently selected transfer function file.
-	// Note: This is a wrapper needed for the button click to work.
+	/// <summary>
+	/// Loads the currently selected transfer function file.
+	/// This is a wrapper needed for the button click to work.
+	/// </summary>
 	public void loadTransferFunction()
 	{
 		string path = savedTransferFunctionFolderPath + currentTransferFunctionFile + transferFunctionFileExtension;
@@ -192,19 +212,28 @@ public class TransferFunctionHandler : MonoBehaviour {
 	/*****************************************************************************
 	 * ACCESSORS AND MUTATORS
 	 *****************************************************************************/
-	// Sets the current transfer function file to load in the currently selected directory.
+	/// <summary>
+	/// Sets the current transfer function file to load in the currently selected directory.
+	/// </summary>
+	/// <param name="newFileName"></param>
 	public void setCurrentTransferFunctionFile(string newFileName)
 	{
 		currentTransferFunctionFile = newFileName;
 	}
 
-	// Updates the dropdown menu to display the option at the given index.
+	/// <summary>
+	/// Updates the dropdown menu to display the option at the given index.
+	/// </summary>
+	/// <param name="index"></param>
 	public void dropDownMenuChangeFile(int index)
 	{
 		setCurrentTransferFunctionFile(dropdownMenu.options[index].text);
 	}
 
-	// Returns the script attached to the color palette panel.
+	/// <summary>
+	/// Returns the script attached to the color palette panel.
+	/// </summary>
+	/// <returns></returns>
 	public ColorPalette getColorPalette()
 	{
 		return colorPaletteHandler;

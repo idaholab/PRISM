@@ -1,20 +1,22 @@
-﻿using System;
+﻿/* Transfer Function | Marko Sterbentz 7/5/2017 */
+
+using System;
 using System.IO;
 using System.Collections.Generic;
 using UnityEngine;
 
-/* Transfer Function | Marko Sterbentz 7/5/2017
- * This class is the transfer function that maps the isovalues of the volume to a specific color dependent on the control points.
- */
+/// <summary>
+/// The transfer function maps the isovalues of the volume to specific colors dependent on the control points.
+/// </summary>
 public class TransferFunction
 {
 	/* Member variables */
 	private List<ControlPoint> colorPoints;          // The list of control points used for the color of the transfer function
 	private List<ControlPoint> alphaPoints;          // The list of control points used for the alpha of the transfer function
-	private ControlPoint activeControlPoint;        // The control point currently selected by the user
-	private int isovalueRange;                      // The range of possible values allowed in the transfer function
+	private ControlPoint activeControlPoint;         // The control point currently selected by the user
+	private int isovalueRange;                       // The range of possible values allowed in the transfer function
 	private bool transferFunctionChanged;            // Flag that is used to determine when to update the transfer function and send it to the shader
-	private Texture2D transferTexture;              // The texture that represents the transfer function and is buffered to the shader to be sampled
+	private Texture2D transferTexture;               // The texture that represents the transfer function and is buffered to the shader to be sampled
 
 	/* Properties */
 	public List<ControlPoint> ColorPoints
@@ -86,6 +88,10 @@ public class TransferFunction
 	}
 
 	/* Constructor */
+	/// <summary>
+	/// Creates a new instance of a transfer function.
+	/// </summary>
+	/// <param name="_isovalueRange"></param>
 	public TransferFunction(int _isovalueRange)
 	{
 		colorPoints = new List<ControlPoint>();
@@ -99,7 +105,10 @@ public class TransferFunction
 	/*****************************************************************************
 	* TRANSFER FUNCTION TEXTURE METHODS
 	*****************************************************************************/
-	// Generate the transfer texture based on the control points in colorPoints and alphaPoints
+	/// <summary>
+	/// Generate the transfer texture based on the control points in colorPoints and alphaPoints.
+	/// </summary>
+	/// <returns></returns>
 	public Texture2D generateTransferTexture()
 	{
 		// Initialize the array of colors for the pixels
@@ -118,8 +127,11 @@ public class TransferFunction
 		return newTransferTexture;
 	}
 
-	// Generates the color values for the transfer texture.
-	// Note: The color's alpha values will be set 1.0 by this function.
+	/// <summary>
+	/// Generates the color values for the transfer texture.
+	/// The color's alpha values will be set 1.0 by this function.
+	/// </summary>
+	/// <param name="transferColors"></param>
 	public void generateTransferTextureColors(Color[] transferColors)
 	{
 		// Sort the list in place by increasing isovalues
@@ -142,7 +154,10 @@ public class TransferFunction
 		}
 	}
 
-	// Generates the alpha values for the transfer texture
+	/// <summary>
+	/// Generates the alpha values for the transfer texture.
+	/// </summary>
+	/// <param name="transferColors"></param>
 	public void generateTransferTextureAlphas(Color[] transferColors)
 	{
 		// Sort the list in place by increasing isovalues
@@ -167,8 +182,10 @@ public class TransferFunction
 	/*****************************************************************************
 	* CONTROL POINT HANDLERS
 	*****************************************************************************/
-	// Adds two default points for both the color and alpha points.
-	// Note: To ensure behavior of the transfer function is defined, endpoints must be placed at 0 and isovalueRange.
+	/// <summary>
+	/// Adds two default points for both the color and alpha points.
+	/// To ensure behavior of the transfer function is defined, endpoints must be placed at 0 and isovalueRange.
+	/// </summary>
 	private void addDefaultPoints()
 	{
 		colorPoints.Add(new ControlPoint(0.0f, 0.0f, 0.0f, 0));
@@ -178,41 +195,58 @@ public class TransferFunction
 		alphaPoints.Add(new ControlPoint(1.0f, isovalueRange));
 	}
 
-	// Adds the given alpha control point to the list of alpha control points.
+	/// <summary>
+	/// Adds the given alpha control point to the list of alpha control points.
+	/// </summary>
+	/// <param name="ap"></param>
 	public void addAlphaPoint(ControlPoint ap)
 	{
 		alphaPoints.Add(ap);
 		transferFunctionChanged = true;
 	}
 
-	// Adds the given color control point to the list of color control points.
+	/// <summary>
+	/// Adds the given color control point to the list of color control points.
+	/// </summary>
+	/// <param name="cp"></param>
 	public void addColorPoint(ControlPoint cp)
 	{
 		colorPoints.Add(cp);
 		transferFunctionChanged = true;
 	}
 
-	// Removes the given alpha control point from the list of alpha control points.
+	/// <summary>
+	/// Removes the given alpha control point from the list of alpha control points.
+	/// </summary>
+	/// <param name="ap"></param>
 	public void removeAlphaPoint(ControlPoint ap)
 	{
 		alphaPoints.Remove(ap);
 		transferFunctionChanged = true;
 	}
 
-	// Removes the given alpha control points from the list of color control points.
+	/// <summary>
+	/// Removes the given color control points from the list of color control points.
+	/// </summary>
+	/// <param name="cp"></param>
 	public void removeColorPoint(ControlPoint cp)
 	{
 		colorPoints.Remove(cp);
 		transferFunctionChanged = true;
 	}
 
-	// Sets the activeControlPoint reference to null so that this point is no longer modified.
+	/// <summary>
+	/// Sets the activeControlPoint reference to null so that this point is no longer modified.
+	/// </summary>
 	public void finalizeActivePoint()
 	{
 		activeControlPoint = null;
 	}
 
-	// Updates the all fields in activeControlPoint by reference.
+	/// <summary>
+	/// Updates the all fields in activeControlPoint by reference.
+	/// </summary>
+	/// <param name="newActivePoint"></param>
 	public void updateActivePoint(ControlPoint newActivePoint)
 	{
 		activeControlPoint.updateColor(newActivePoint.color);
@@ -220,7 +254,10 @@ public class TransferFunction
 		transferFunctionChanged = true;
 	}
 
-	// Updates the color field in activeControlPoint by reference.
+	/// <summary>
+	/// Updates the color field in activeControlPoint by reference.
+	/// </summary>
+	/// <param name="newColor"></param>
 	public void updateActivePoint(Color newColor)
 	{
 		activeControlPoint.updateColor(newColor);
@@ -230,7 +267,10 @@ public class TransferFunction
 	/*****************************************************************************
 	* TRANSFER FUNCTION FILE IO
 	*****************************************************************************/
-	// Saves the current control points to the given path
+	/// <summary>
+	/// Saves the current control points to the given path.
+	/// </summary>
+	/// <param name="filePath"></param>
 	public void saveTransferFunction(string filePath)
 	{
 		try
@@ -257,7 +297,10 @@ public class TransferFunction
 		}
 	}
 
-	// Loads the transfer function file at the given file path, if there is one.
+	/// <summary>
+	/// Loads the transfer function file at the given file path, if there is one.
+	/// </summary>
+	/// <param name="filePath"></param>
 	public void loadTransferFunction(string filePath)
 	{
 		try
@@ -283,7 +326,9 @@ public class TransferFunction
 		}
 	}
 
-	// Saves a png of the current transfer function texture.
+	/// <summary>
+	/// Saves a png of the current transfer function texture.
+	/// </summary>
 	private void saveTransferTextureToFile()
 	{
 		System.IO.File.WriteAllBytes(Application.dataPath + @"\transferTextureCapture.png", transferTexture.EncodeToPNG());

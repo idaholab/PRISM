@@ -1,11 +1,13 @@
-﻿using System.Collections.Generic;
+﻿/* Color Panel Handler | Marko Sterbentz 6/22/2017 */
+
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using Vectrosity;
 
-/* Color Panel Handler | Marko Sterbentz 6/22/2017
- * This script handles user input for the color portion of the transfer function.
- */
+/// <summary>
+/// Handles user input for the color portion of the transfer function.
+/// </summary>
 public class ColorPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandler, IPointerUpHandler
 {
 	// External variables
@@ -25,7 +27,9 @@ public class ColorPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 	private float pointRadius = 10.0f;							// Radius of the Vectrosity points in the graph.
 	private float borderSize = 0.0f;							// Size of the border around the panel. Padding on the internal edges of the panel is added. CAUSES BUGS WHEN NOT 0.0
 
-    // Use this for initialization
+    /// <summary>
+	/// Initialization function for the ColorPanelHandler.
+	/// </summary>
     void Start () {
 		panelRectTransform = transform as RectTransform;
         maxWidth = panelRectTransform.rect.width - borderSize;
@@ -46,11 +50,17 @@ public class ColorPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 		colorGraphHighlightedPoint.SetCanvas(colorCanvas, false);
 	}
 	
-	// Update is called once per frame
+	/// <summary>
+	/// Updates the ColorPanelHandler once per frame.
+	/// </summary>
 	void Update () {
 		
 	}
 
+	/// <summary>
+	/// Unity OnPointerDown event handler for the ColorPanelHandler.
+	/// </summary>
+	/// <param name="data"></param>
     public void OnPointerDown(PointerEventData data)
     {
 		// Get the local position within the color panel
@@ -89,6 +99,10 @@ public class ColorPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 		}
     }
 
+	/// <summary>
+	/// Unity OnDrag event handler for the ColorPanelHandler.
+	/// </summary>
+	/// <param name="data"></param>
     public void OnDrag(PointerEventData data)
     {
 		// Left click
@@ -102,14 +116,20 @@ public class ColorPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 		}
 	}
 
+	/// <summary>
+	/// Unity OnPointerUp event handler for the ColorPanelHandler.
+	/// </summary>
+	/// <param name="data"></param>
     public void OnPointerUp(PointerEventData data)
     {
 		// Finalizes the temporary color point
 		//transferFunction.finalizeActivePoint();
 	}
 
-	// Updates the color Vectrosity graph in the user interface by updating and drawing the points.
-	// Note: Assumes the transfer function's color points are already sorted.
+	/// <summary>
+	/// Updates the color Vectrosity graph in the user interface by updating and drawing the points.
+	/// Assumes the transfer function's color points are already sorted.
+	/// </summary>
 	public void updateColorVectrosityGraph()
 	{
 		List<Vector2> updatedPoints = new List<Vector2>();
@@ -127,7 +147,9 @@ public class ColorPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 		colorGraphPoints.Draw();
 	}
 
-	// Highlights the current active point in the transfer function .
+	/// <summary>
+	/// Highlights the current active point in the transfer function.
+	/// </summary>
 	public void highlightActivePoint()
 	{
 		List<Vector2> highlightedPoint = new List<Vector2>();
@@ -139,14 +161,20 @@ public class ColorPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 		colorGraphHighlightedPoint.Draw();
 	}
 
-	// De-highlights the color points in the transfer function.
+	/// <summary>
+	///  De-highlights the color points in the transfer function.
+	/// </summary>
 	public void dehighlightPoints()
 	{
 		colorGraphHighlightedPoint.points2 = new List<Vector2>();
 		colorGraphHighlightedPoint.Draw();
 	}
 
-	// Converts the given color control point to the local space within the color panel
+	/// <summary>
+	/// Converts the given color control point to the local space within the color panel.
+	/// </summary>
+	/// <param name="colorPoint"></param>
+	/// <returns></returns>
 	private Vector2 getLocalPositionFromColorPoint(ControlPoint colorPoint)
 	{
 		Vector2 localPosition = new Vector2();
@@ -161,7 +189,12 @@ public class ColorPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 		return localPosition;
 	}
 
-	// Converts the given screen position to a local space within the color panel.
+	/// <summary>
+	/// Converts the given screen position to a local space within the color panel.
+	/// </summary>
+	/// <param name="screenPosition"></param>
+	/// <param name="cam"></param>
+	/// <returns></returns>
 	private Vector2 getLocalPositionFromScreenPosition(Vector2 screenPosition, Camera cam)
 	{
 		Vector2 localPosition;
@@ -174,8 +207,13 @@ public class ColorPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 
 		return localPosition;
 	}
-
-	// Generates a color control point to be sent to the transfer function.
+	 
+	/// <summary>
+	/// Generates a color control point to be sent to the transfer function.
+	/// </summary>
+	/// <param name="offset"></param>
+	/// <param name="color"></param>
+	/// <returns></returns>
 	private ControlPoint getColorPointFromOffset(Vector2 offset, Color color)
 	{
 		ControlPoint cp = new ControlPoint(
@@ -185,7 +223,11 @@ public class ColorPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 		return cp;
 	}
 
-	// Clamps the given point to be within the borders of the color panel.
+	/// <summary>
+	/// Clamps the given point to be within the borders of the color panel.
+	/// </summary>
+	/// <param name="localPoint"></param>
+	/// <returns></returns>
 	private Vector2 clampToColorPanel(Vector2 localPoint)
 	{
 		localPoint.x = Mathf.Clamp(localPoint.x, minWidth, maxWidth);
@@ -193,8 +235,12 @@ public class ColorPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 		return localPoint;
 	}
 
-	// Returns the color control point that was clicked by the user. Returns null if no point was clicked.
-	// Note: The given localClickPosition is assumed to be in the local coordinates of the panel.
+	/// <summary>
+	/// Returns the color control point that was clicked by the user. Returns null if no point was clicked.
+	/// The given localClickPosition is assumed to be in the local coordinates of the panel.
+	/// </summary>
+	/// <param name="localClickPosition"></param>
+	/// <returns></returns>
 	private ControlPoint getClickedPoint(Vector2 localClickPosition)
 	{
 		List<ControlPoint> colorPoints = transferFunction.ColorPoints;

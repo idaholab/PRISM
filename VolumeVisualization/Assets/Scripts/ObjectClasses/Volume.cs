@@ -1,11 +1,13 @@
-﻿using System;
+﻿/* Volume | Marko Sterbentz 8/2/2017 */
+
+using System;
 using System.IO;
 using UnityEngine;
 using SimpleJSON;
 
-/* Volume | Marko Sterbentz 8/2/2017
- * This class represents the volume to be visualized.
- */ 
+/// <summary>
+/// This class represents the volume to be visualized.
+/// </summary>
 public class Volume {
 
 	/* Member variables */
@@ -19,6 +21,7 @@ public class Volume {
 	private string dataPath;
 	private Vector3 position;
 	private Material volumeMaterial;
+	private GameObject volumeCube;
 
 	/* Properties */
 	public Brick[] Bricks
@@ -120,17 +123,42 @@ public class Volume {
 			volumeMaterial = value;
 		}
 	}
+	public GameObject VolumeCube
+	{
+		get
+		{
+			return volumeCube;
+		}
+	}
 
 	/* Constructors */
+	/// <summary>
+	/// Creates a new instance of a volume.
+	/// </summary>
 	public Volume()
 	{
 
 	}
 
+	/// <summary>
+	/// Creates a new instance of a volume.
+	/// </summary>
+	/// <param name="_dataPath"></param>
+	/// <param name="_metadataFileName"></param>
+	/// <param name="_volumeMaterial"></param>
 	public Volume(string _dataPath, string _metadataFileName, Material _volumeMaterial)
 	{
 		// Set the default position of the volume
 		Position = new Vector3(0.5f, 0.5f, 0.5f);
+
+		// Create the (non-visible) Unity game object that will represent the volume
+		volumeCube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+
+		// Set the position of the Unity game object
+		volumeCube.transform.position = Position;
+
+		// Make the Unity game object invisible
+		volumeCube.GetComponent<MeshRenderer>().enabled = false;
 
 		// Set the volume material
 		VolumeMaterial = _volumeMaterial;
@@ -140,6 +168,11 @@ public class Volume {
 	}
 
 	/* Methods */
+	/// <summary>
+	/// Loads the volume data in the given directory.
+	/// </summary>
+	/// <param name="_dataPath"></param>
+	/// <param name="metadataFileName"></param>
 	public void loadVolume(string _dataPath, string metadataFileName)
 	{
 		try
@@ -203,7 +236,7 @@ public class Volume {
 				bricks[i] = new Brick(newBrickFilename, newBrickSize, finalBrickPosition, volumeMaterial);
 
 				// Scale the bricks to the correct size
-				bricks[i].getGameObject().transform.localScale = new Vector3(bricks[i].getSize(), bricks[i].getSize(), bricks[i].getSize()) / maxGlobalSize;
+				bricks[i].GameObject.transform.localScale = new Vector3(bricks[i].Size, bricks[i].Size, bricks[i].Size) / maxGlobalSize;
 			}
 
 			Debug.Log("Metadata read.");
@@ -214,7 +247,10 @@ public class Volume {
 		}
 	}
 
-	// Generates the isovalue range given the number of bits per pixels (i.e. format of the data)
+	/// <summary>
+	/// Generates the isovalue range given the number of bits per pixels.
+	/// </summary>
+	/// <returns></returns>
 	public int calculateIsovalueRange()
 	{
 		return ((int)Mathf.Pow(2.0f, bitsPerPixel)) - 1;
@@ -223,11 +259,22 @@ public class Volume {
 	/*****************************************************************************
 	 * SHADER BUFFERING METHODS
 	 *****************************************************************************/
+	/// <summary>
+	/// Updates the float property for the brick at the given index on the shader.
+	/// </summary>
+	/// <param name="propName"></param>
+	/// <param name="val"></param>
+	/// <param name="brickIndex"></param>
 	public void updateMaterialPropFloat(string propName, float val, int brickIndex)
 	{
-		Bricks[brickIndex].getGameObject().GetComponent<Renderer>().material.SetFloat(propName, val);
+		Bricks[brickIndex].GameObject.GetComponent<Renderer>().material.SetFloat(propName, val);
 	}
 
+	/// <summary>
+	/// Updates the float property for all bricks on the shader.
+	/// </summary>
+	/// <param name="propName"></param>
+	/// <param name="val"></param>
 	public void updateMaterialPropFloatAll(string propName, float val)
 	{
 		// Update the volumeMaterial
@@ -236,15 +283,26 @@ public class Volume {
 		// Update the materials in all of the bricks
 		for (int i = 0; i < Bricks.Length; i++)
 		{
-			Bricks[i].getGameObject().GetComponent<Renderer>().material.SetFloat(propName, val);
+			Bricks[i].GameObject.GetComponent<Renderer>().material.SetFloat(propName, val);
 		}
 	}
 
+	/// <summary>
+	/// Updates the float3 property for the brick at the given index on the shader.
+	/// </summary>
+	/// <param name="propName"></param>
+	/// <param name="val"></param>
+	/// <param name="brickIndex"></param>
 	public void updateMaterialPropFloat3(string propName, float[] val, int brickIndex)
 	{
-		Bricks[brickIndex].getGameObject().GetComponent<Renderer>().material.SetFloatArray(propName, val);
+		Bricks[brickIndex].GameObject.GetComponent<Renderer>().material.SetFloatArray(propName, val);
 	}
 
+	/// <summary>
+	/// Updates the float3 property for all bricks on the shader.
+	/// </summary>
+	/// <param name="propName"></param>
+	/// <param name="val"></param>
 	public void updateMaterialPropFloat3All(string propName, float[] val)
 	{
 		// Update the volumeMaterial
@@ -253,15 +311,26 @@ public class Volume {
 		// Update the materials in all of the bricks
 		for (int i = 0; i < Bricks.Length; i++)
 		{
-			Bricks[i].getGameObject().GetComponent<Renderer>().material.SetFloatArray(propName, val);
+			Bricks[i].GameObject.GetComponent<Renderer>().material.SetFloatArray(propName, val);
 		}
 	}
 
+	/// <summary>
+	/// Updates the int property for the brick at the given index on the shader.
+	/// </summary>
+	/// <param name="propName"></param>
+	/// <param name="val"></param>
+	/// <param name="brickIndex"></param>
 	public void updateMaterialPropInt(string propName, int val, int brickIndex)
 	{
-		Bricks[brickIndex].getGameObject().GetComponent<Renderer>().material.SetInt(propName, val);
+		Bricks[brickIndex].GameObject.GetComponent<Renderer>().material.SetInt(propName, val);
 	}
 
+	/// <summary>
+	/// Updates int property for all bricks on the shader.
+	/// </summary>
+	/// <param name="propName"></param>
+	/// <param name="val"></param>
 	public void updateMaterialPropIntAll(string propName, int val)
 	{
 		// Update the volumeMaterial
@@ -270,15 +339,26 @@ public class Volume {
 		// Update the materials in all of the bricks
 		for (int i = 0; i < Bricks.Length; i++)
 		{
-			Bricks[i].getGameObject().GetComponent<Renderer>().material.SetInt(propName, val);
+			Bricks[i].GameObject.GetComponent<Renderer>().material.SetInt(propName, val);
 		}
 	}
 
+	/// <summary>
+	/// Updates the Texture2D property for the brick at the given index on the shader.
+	/// </summary>
+	/// <param name="propName"></param>
+	/// <param name="tex"></param>
+	/// <param name="brickIndex"></param>
 	public void updateMaterialPropTexture2D(string propName, Texture2D tex, int brickIndex)
 	{
-		Bricks[brickIndex].getGameObject().GetComponent<Renderer>().material.SetTexture(propName, tex);
+		Bricks[brickIndex].GameObject.GetComponent<Renderer>().material.SetTexture(propName, tex);
 	}
 
+	/// <summary>
+	/// Updates the Texture2D property for all bricks on the shader.
+	/// </summary>
+	/// <param name="propName"></param>
+	/// <param name="tex"></param>
 	public void updateMaterialPropTexture2DAll(string propName, Texture2D tex)
 	{
 		// Update the volumeMaterial
@@ -287,15 +367,26 @@ public class Volume {
 		// Update the materials in all of the bricks
 		for (int i = 0; i < Bricks.Length; i++)
 		{
-			Bricks[i].getGameObject().GetComponent<Renderer>().material.SetTexture(propName, tex);
+			Bricks[i].GameObject.GetComponent<Renderer>().material.SetTexture(propName, tex);
 		}
 	}
 
+	/// <summary>
+	/// Updates the Texture3D property for the brick at the given index on the shader.
+	/// </summary>
+	/// <param name="propName"></param>
+	/// <param name="tex"></param>
+	/// <param name="brickIndex"></param>
 	public void updateMaterialPropTexture3D(string propName, Texture3D tex, int brickIndex)
 	{
-		Bricks[brickIndex].getGameObject().GetComponent<Renderer>().material.SetTexture(propName, tex);
+		Bricks[brickIndex].GameObject.GetComponent<Renderer>().material.SetTexture(propName, tex);
 	}
 
+	/// <summary>
+	/// Updates the Texture3D property for all bricks on the shader.
+	/// </summary>
+	/// <param name="propName"></param>
+	/// <param name="tex"></param>
 	public void updateMaterialPropTexture3DAll(string propName, Texture3D tex)
 	{
 		// Update the volumeMaterial
@@ -304,15 +395,26 @@ public class Volume {
 		// Update the materials in all of the bricks
 		for (int i = 0; i < Bricks.Length; i++)
 		{
-			Bricks[i].getGameObject().GetComponent<Renderer>().material.SetTexture(propName, tex);
+			Bricks[i].GameObject.GetComponent<Renderer>().material.SetTexture(propName, tex);
 		}
 	}
 
+	/// <summary>
+	/// Updates the Vector3 property for the brick at the given index on the shader.
+	/// </summary>
+	/// <param name="propName"></param>
+	/// <param name="val"></param>
+	/// <param name="brickIndex"></param>
 	public void updateMaterialPropVector3(string propName, Vector3 val, int brickIndex)
 	{
-		Bricks[brickIndex].getGameObject().GetComponent<Renderer>().material.SetVector(propName, val);
+		Bricks[brickIndex].GameObject.GetComponent<Renderer>().material.SetVector(propName, val);
 	}
 
+	/// <summary>
+	/// Updates the Vector3 property for all bricks on the shader.
+	/// </summary>
+	/// <param name="propName"></param>
+	/// <param name="val"></param>
 	public void updateMaterialPropVector3All(string propName, Vector3 val)
 	{
 		// Update the volumeMaterial
@@ -321,7 +423,7 @@ public class Volume {
 		// Update the materials in all of the bricks
 		for (int i = 0; i < bricks.Length; i++)
 		{
-			Bricks[i].getGameObject().GetComponent<Renderer>().material.SetVector(propName, val);
+			Bricks[i].GameObject.GetComponent<Renderer>().material.SetVector(propName, val);
 		}
 	}
 }

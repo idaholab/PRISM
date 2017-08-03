@@ -1,34 +1,35 @@
-﻿using UnityEngine;
+﻿/* Clipping Plane Input | Marko Sterbentz 7/11/17 */
 
-/* Clipping Plane Input | Marko Sterbentz 7/11/17
- * This script will get input for the clipping tool and pass it to the VolumeController.
- */
+using UnityEngine;
+
+/// <summary>
+/// Get input for the clipping tool and pass it to the VolumeController.
+/// </summary>
 public class ClippingPlaneInput : MonoBehaviour
 {
 	public Camera mainCamera;
-
 	private VolumeController volumeController;
 
-	// Use this for initialization
+	/// <summary>
+	/// Initialization function for the AlphaPanelHandler.
+	/// </summary>
 	void Start () {
 		// Set up the reference to the VolumeController
 		volumeController = (VolumeController)GameObject.Find("VolumeController").GetComponent(typeof(VolumeController));
 	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
 
+	/// <summary>
+	/// Updates ClippingPlaneInput once per frame, after other updates have ran.
+	/// </summary>
 	private void LateUpdate()
 	{
 		// Right click events
-		if (Input.GetMouseButtonDown(1))
+		if (Input.GetKeyDown("c"))
 		{
 			volumeController.getClippingPlane().Enabled = true;
 			volumeController.updateClippingPlaneAll();
 		}
-		if (Input.GetMouseButtonUp(1))
+		if (Input.GetKeyUp("c"))
 		{
 			volumeController.getClippingPlane().Enabled = false;
 			volumeController.updateClippingPlaneAll();

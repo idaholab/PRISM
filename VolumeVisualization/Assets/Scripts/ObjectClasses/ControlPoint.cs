@@ -1,12 +1,13 @@
-﻿using System;
+﻿/* Control Point | Marko Sterbentz 6/8/2017 */
+
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-/*
- * Control Point | Marko Sterbentz 6/8/2017
- * Specifies the color and alpha value at a specific isovalue in the transfer function.
- * Note: Can be either a color or alpha control point depending on how they're used.
- */
+/// <summary>
+/// Specifies the color and alpha value at a specific isovalue in the transfer function.
+/// Can be either a color or alpha control point depending on how they're used.
+/// </summary>
 [Serializable]
 public class ControlPoint
 {
@@ -15,16 +16,33 @@ public class ControlPoint
 	public int isovalue;
 
 	/* Constructors */
+	/// <summary>
+	/// Creates a new instance of a control point.
+	/// </summary>
+	/// <param name="r"></param>
+	/// <param name="g"></param>
+	/// <param name="b"></param>
+	/// <param name="isovalue"></param>
 	public ControlPoint(float r, float g, float b, int isovalue)
 	{
 		update(r, g, b, isovalue);
 	}
 
+	/// <summary>
+	/// Creates a new instance of a control point.
+	/// </summary>
+	/// <param name="alpha"></param>
+	/// <param name="isovalue"></param>
 	public ControlPoint(float alpha, int isovalue)
 	{
 		update(alpha, isovalue);
 	}
 
+	/// <summary>
+	/// Creates a new instance of a control point.
+	/// </summary>
+	/// <param name="newColor"></param>
+	/// <param name="newIsovalue"></param>
 	public ControlPoint(Color newColor, int newIsovalue)
 	{
 		update(newColor, newIsovalue);
@@ -68,10 +86,12 @@ public class ControlPoint
 	}
 }
 
-/*
- * Control Point Lists | Marko Sterbentz 6/30/2017
- * This class is used for saving and loading the lists of control points the transfer function uses.
- */
+
+/* Control Point Lists | Marko Sterbentz 6/30/2017 */
+
+ /// <summary>
+ /// Used for saving and loading the lists of control points the transfer function uses.
+ /// </summary>
 [Serializable]
 public class ControlPointLists
 {

@@ -1,14 +1,16 @@
-﻿using System;
+﻿/* Brick | Marko Sterbentz 7/3/2017 */
+
+using System;
 using System.IO;
 using UnityEngine;
 
-/* Brick | Marko Sterbentz 7/3/2017
- * This class holds the data associated with a single brick of the volume to be rendered.
- */
+/// <summary>
+/// This class holds the data associated with a single brick of the volume to be rendered.
+/// </summary>
 public class Brick
 {
 	/* Member variables */
-	private GameObject cube;                                        // The cube GameObject that is the rendered representation of this brick.
+	private GameObject gameObject;                                  // The cube GameObject that is the rendered representation of this brick.
 	private int size;                                               // The dimensions of the data in voxel space. Size is assumed to be a power of 2.
 	private int maxZLevel;                                          // The max number of Z-Order levels this brick has.
 	private int currentZLevel;                                      // The current Z-Order rendering level for this brick.
@@ -16,15 +18,15 @@ public class Brick
 	private string filename;                                        // The name of the data file associated with this brick.
 
 	/* Properties */
-	public GameObject Cube
+	public GameObject GameObject
 	{
 		get
 		{
-			return cube;
+			return gameObject;
 		}
 		set
 		{
-			cube = value;
+			gameObject = value;
 		}
 	}
 
@@ -90,21 +92,31 @@ public class Brick
 	}
 
 	/* Constructors*/
+	/// <summary>
+	/// Creates a new instance of a data brick.
+	/// </summary>
 	public Brick()
 	{
 
 	}
 
+	/// <summary>
+	/// Creates a new instance of a data brick.
+	/// </summary>
+	/// <param name="_filename"></param>
+	/// <param name="_size"></param>
+	/// <param name="_position"></param>
+	/// <param name="mat"></param>
 	public Brick(string _filename, int _size, Vector3 _position, Material mat)
 	{
 		//Set the name of the data file associated with this brick
 		filename = _filename;
 
 		// Initialize a Unity cube to represent the brick
-		cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+		gameObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
 
 		// Set the position of the 
-		cube.transform.position = _position;
+		gameObject.transform.position = _position;
 
 		// Assign the given material to render the cube with
 		setMaterial(mat);
@@ -125,7 +137,10 @@ public class Brick
 	/*****************************************************************************
 	 * UTILITY FUNCTIONS
 	 *****************************************************************************/
-	// Returns the computed maximum number of z levels this brick can render to.
+	/// <summary>
+	/// Returns the computed maximum number of z levels this brick can render to.
+	/// </summary>
+	/// <returns></returns>
 	public int calculateMaxLevels()
 	{
 		int totalLevels = 0;                                                                            // NOTE: Starting at 0, instead of -1
@@ -139,7 +154,10 @@ public class Brick
 		return totalLevels;
 	}
 
-	// Returns the computed last bit mask for this brick.
+	/// <summary>
+	/// Returns the computed last bit mask for this brick.
+	/// </summary>
+	/// <returns></returns>
 	public uint calculateLastBitMask()
 	{
 		int zBits = maxZLevel * 3;
@@ -147,7 +165,10 @@ public class Brick
 		return lbm;
 	}
 
-	// The file must already have been opened.
+	/// <summary>
+	/// The file must already have been opened.
+	/// </summary>
+	/// <returns></returns>
 	public Texture3D readRaw8Into3D()
 	{
 		try
@@ -176,7 +197,7 @@ public class Brick
 			data.Apply();
 
 			// Send the intensity scalar values to the shader
-			cube.GetComponent<Renderer>().material.SetTexture("_VolumeDataTexture", data);
+			gameObject.GetComponent<Renderer>().material.SetTexture("_VolumeDataTexture", data);
 
 			return data;
 		}
@@ -188,7 +209,10 @@ public class Brick
 
 	}
 
-	// The file must already have been opened.
+	/// <summary>
+	/// The file must already have been opened.
+	/// </summary>
+	/// <returns></returns>
 	public Texture3D readRaw8Into3DZLevel()
 	{
 		try
@@ -218,7 +242,7 @@ public class Brick
 			data.Apply();
 
 			// Send the intensity scalar values to the shader
-			cube.GetComponent<Renderer>().material.SetTexture("_VolumeDataTexture", data);
+			gameObject.GetComponent<Renderer>().material.SetTexture("_VolumeDataTexture", data);
 
 			return data;
 		}
@@ -230,13 +254,16 @@ public class Brick
 
 	}
 
-	// Generates a struct of the bricks data that can be analyzed in the compute shader.
+	/// <summary>
+	/// Generates a struct of the bricks data that can be analyzed in the compute shader.
+	/// </summary>
+	/// <returns></returns>
 	public BrickData getBrickData()
 	{
 		BrickData newData;
 
 		newData.size = size;
-		newData.position = cube.transform.position;
+		newData.position = gameObject.transform.position;
 		newData.maxZLevel = maxZLevel;
 		newData.currentZLevel = currentZLevel;
 		newData.updateData = false;
@@ -247,85 +274,78 @@ public class Brick
 	/*****************************************************************************
 	 * ACCESSORS
 	 *****************************************************************************/
-	// Returns the Unity game object associated with this brick.
-	public GameObject getGameObject()
-	{
-		return cube;
-	}
-
-	// Returns the material of the Unity game object.
+	/// <summary>
+	/// Returns the material of the Unity game object.
+	/// </summary>
+	/// <returns></returns>
 	public Material getMaterial()
 	{
-		return cube.GetComponent<Renderer>().material;
-	}
-
-	// Returns the size of the brick.
-	public int getSize()
-	{
-		return size;
-	}
-
-	// Returns the maximum number of Z-order levels this brick can render to.
-	public int getMaxZLevel()
-	{
-		return maxZLevel;
-	}
-
-	// Returns the current Z-order level that the brick is rendering to.
-	public int getCurrentZLevel()
-	{
-		return currentZLevel;
-	}
-
-	// Returns the last bit mask used to access data in hz curve of this brick.
-	public uint getLastBitMask()
-	{
-		return lastBitMask;
+		return gameObject.GetComponent<Renderer>().material;
 	}
 
 	/*****************************************************************************
 	 * MUTATOR AND SHADER BUFFERING METHODS
 	 *****************************************************************************/
-	// Sets this brick's material to the given material.
+	/// <summary>
+	/// Sets this brick's material to the given material.
+	/// </summary>
+	/// <param name="mat"></param>
 	public void setMaterial(Material mat)
 	{
-		cube.GetComponent<Renderer>().material = mat;
+		gameObject.GetComponent<Renderer>().material = mat;
 	}
 
+	/// <summary>
+	/// Sets the size of the brick on both the CPU and in the shader.
+	/// </summary>
+	/// <param name="_size"></param>
 	public void updateBrickSize(int _size)
 	{
-		size = _size;
-		cube.GetComponent<Renderer>().material.SetInt("_BrickSize", size);
+		Size = _size;
+		gameObject.GetComponent<Renderer>().material.SetInt("_BrickSize", size);
 	}
 
-	// Sets the variable Updates the zRenderLevel on this brick and on the shader.
+	/// <summary>
+	/// Sets the current Z-Order rendering level both on the CPU and in the shader.
+	/// </summary>
+	/// <param name="_currentZlevel"></param>
 	public void updateCurrentZLevel(int _currentZlevel)
 	{
 		// Clamp the input level to be between 0 and maxZLevel, inclusive
-		currentZLevel = Math.Min(Math.Max(_currentZlevel, 0), maxZLevel);
-		cube.GetComponent<Renderer>().material.SetInt("_CurrentZLevel", currentZLevel);
+		CurrentZLevel = _currentZlevel;
+		gameObject.GetComponent<Renderer>().material.SetInt("_CurrentZLevel", currentZLevel);
 
 		// Read in the appropriate amount of data dependent on the current z level to render to
 		readRaw8Into3DZLevel();
 	}
 
+	/// <summary>
+	/// Sets the maximum Z-Order rendering level both on the CPU and in the shader.
+	/// </summary>
+	/// <param name="_maxZLevel"></param>
 	public void updateMaxZLevel(int _maxZLevel)
 	{
-		maxZLevel = _maxZLevel;
-		cube.GetComponent<Renderer>().material.SetInt("_MaxZLevel", maxZLevel);
+		MaxZLevel = _maxZLevel;
+		gameObject.GetComponent<Renderer>().material.SetInt("_MaxZLevel", maxZLevel);
 	}
 
+	/// <summary>
+	/// Sets the last bit mask both on the CPU and in the shader.
+	/// </summary>
+	/// <param name="_lastBitMask"></param>
 	public void updateLastBitMask(uint _lastBitMask)
 	{
-		lastBitMask = _lastBitMask;
-		cube.GetComponent<Renderer>().material.SetInt("_LastBitMask", (int)lastBitMask);
+		LastBitMask = _lastBitMask;
+		gameObject.GetComponent<Renderer>().material.SetInt("_LastBitMask", (int)lastBitMask);
 	}
 }
 
-/* BrickData | Marko Sterbentz 7/18/2017
- * This struct mirrors the struct in use by the BrickAnalysis compute shader.
- * Note: Is 28 bytes in size.
- */
+/* BrickData | Marko Sterbentz 7/18/2017 */
+
+/// <summary>
+/// This struct mirrors the struct in use by the BrickAnalysis compute shader.
+/// This struct is 28 bytes in size.
+/// </summary>
 public struct BrickData
 {
 	public int size;                    // 4 bytes							
