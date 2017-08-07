@@ -1,4 +1,8 @@
-﻿Shader "Custom/DistFuncVolume"
+﻿/* Distance Function Volume Shader | Marko Sterbentz
+ *﻿ This shader is for barebones volume visualization using distance functions.
+ * NOTE: This shader is no longer recommended for use.
+ */
+Shader "Custom/DistFuncVolume"
 {
 	Properties
 	{

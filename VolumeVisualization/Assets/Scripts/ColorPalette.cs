@@ -1,12 +1,13 @@
-﻿/* Color Palette | Marko Sterbentz 6/30/2017
- * This script handles user input on a color palette pop-up menu.
- */ 
+﻿/* Color Palette | Marko Sterbentz 6/30/2017 */
+
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// Handle user input on a color palette pop-up menu.
+/// </summary>
 public class ColorPalette : MonoBehaviour
 {
-
 	private TransferFunction transferFunction;              // Reference to the transfer function that is in the volumeController
 	private VolumeController volumeController;              // The main controller used to synchronize data input, user input, and visualization
 
@@ -23,7 +24,9 @@ public class ColorPalette : MonoBehaviour
 	// The color the palette currently holds
 	private Color currentColor;
 
-	// Use this for initialization
+	/// <summary>
+	/// Initialization function for ColorPalette.
+	/// </summary>
 	void Start()
 	{
 		// Initialize the color palette text fields
@@ -40,33 +43,39 @@ public class ColorPalette : MonoBehaviour
 		this.gameObject.SetActive(false);
 	}
 
-	// Update is called once per frame
-	void Update()
-	{
-
-	}
-
-	/* Color Palette Slider Update Functions */
+	/// <summary>
+	/// Red color palette slider update function.
+	/// </summary>
+	/// <param name="newVal"></param>
 	public void updateRedValue(float newVal)
 	{
 		redValueText.text = newVal.ToString();
 		transferFunction.updateActivePoint(new Color(redSlider.value / 255.0f, greenSlider.value / 255.0f, blueSlider.value / 255.0f));
 	}
 
+	/// <summary>
+	/// Green color palette slider update function.
+	/// </summary>
+	/// <param name="newVal"></param>
 	public void updateGreenValue(float newVal)
 	{
 		greenValueText.text = newVal.ToString();
 		transferFunction.updateActivePoint(new Color(redSlider.value / 255.0f, greenSlider.value / 255.0f, blueSlider.value / 255.0f));
 	}
 
+	/// <summary>
+	/// Blue color palette slider update function.
+	/// </summary>
+	/// <param name="newVal"></param>
 	public void updateBlueValue(float newVal)
 	{
 		blueValueText.text = newVal.ToString();
 		transferFunction.updateActivePoint(new Color(redSlider.value / 255.0f, greenSlider.value / 255.0f, blueSlider.value / 255.0f));
 	}
 
-	// Sets the color palette's sliders to the palette's currentColor.
-	// Note: This converts from [0, 1] to [0, 255] color range.
+	/// <summary>
+	/// Sets the color palette's sliders to the palette's currentColor. This converts from [0, 1] to [0, 255] color range.
+	/// </summary>
 	public void setSliders()
 	{
 		redSlider.value = Mathf.FloorToInt(currentColor.r * 255);
@@ -74,13 +83,19 @@ public class ColorPalette : MonoBehaviour
 		blueSlider.value = Mathf.FloorToInt(currentColor.b * 255);
 	}
 
-	// Set the color palette's current color.
+	/// <summary>
+	/// Set the color palette's current color.
+	/// </summary>
+	/// <param name="newCurrentColor"></param>
 	public void setCurrentColor(Color newCurrentColor)
 	{
 		this.currentColor = newCurrentColor;
 	}
 
-	// Returns the currently selected color in the color palette.
+	/// <summary>
+	/// Returns the currently selected color in the color palette.
+	/// </summary>
+	/// <returns></returns>
 	public Color getCurrentColor()
 	{
 		return currentColor;
