@@ -22,7 +22,6 @@ public class OctNode {
     OctNode children[] = new OctNode[8];
     Boolean isLeaf = true;
 
-
     Vector3i pxPosition;
     int pxWidth;
 
@@ -98,8 +97,19 @@ public class OctNode {
 
         for (int i = 0; i < 8; ++i)
             generateLevel(node.children[i], node.children[i].bricks, currentLevel - 1);
+
     }
 
+    public static int getTotalNodes(OctNode node) {
+        if (node.isLeaf) return 1;
+        else {
+            int total = 1;
+            for (int i = 0; i < 8; ++i) {
+                total += getTotalNodes(node.children[i]);
+            }
+            return total;
+        }
+    }
     public JSONObject toJson() {
         JSONObject current = new JSONObject();
 

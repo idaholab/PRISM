@@ -43,6 +43,12 @@ public class VolumeBricker {
 		pr = new PartitionerResult();
 		Partitioner.CombineBricks(width, height, depth, minBrickSize,
 				maxBrickSize, pr );
+		/* Its possible that all bricks are larger than the min brick size, so we find the actual min brick size here
+		* and pass that to the octree to calculate total levels */
+		minBrickSize = pr.bricks.get(0).size;
+		for (int i = 1; i < pr.bricks.size(); ++i) {
+			minBrickSize = Integer.min(minBrickSize, pr.bricks.get(i).size);
+		}
 		pr.octree = OctNode.buildOctree(new Vector3i(width, height, depth), pr, minBrickSize);
 		return pr;
 	}
@@ -80,6 +86,7 @@ public class VolumeBricker {
 			}
 			json.put("bricks", bricks);
 			json.put("octree", pr.octree.toJson());
+			json.put("totalOctnodes", OctNode.getTotalNodes(pr.octree));
 			File f = new File(outputPath + "/metadata.json");
 			f.delete();
 			Boolean success = f.createNewFile();

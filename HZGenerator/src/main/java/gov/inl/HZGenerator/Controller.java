@@ -113,25 +113,57 @@ public class Controller {
 		maxDimWidthChoice.getSelectionModel().select(0);
 		minDimWidthChoice.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
 			int minBrickSize = Integer.parseInt(minDimWidthChoice.getSelectionModel().getSelectedItem().toString());
+			int maxBrickSize = Integer.parseInt(maxDimWidthChoice.getSelectionModel().getSelectedItem().toString());
+			if (minBrickSize > maxBrickSize) {
+				maxBrickSize = minBrickSize;
+				maxDimWidthChoice.setValue(maxBrickSize);
+			}
 			try {
 				brickFactory.settings.setMinBrickSize(minBrickSize);
+				brickFactory.settings.setMaxBrickSize(maxBrickSize);
 				if (brickFactory.volume != null) {
-					volumePreview.show(brickFactory.volume, brickFactory.getPartitions());
+					List<Brick> bricks = brickFactory.getBrickPartitions();
+					volumePreview.show(brickFactory.volume, bricks);
 					lblFileSize.setText(brickFactory.getResultFileSize());
-					lblNumBricks.setText(brickFactory.getPartitions().size() + "");
+					lblNumBricks.setText(bricks.size() + "");
+					/* Its possible that all bricks are larger than the min or smaller than max . */
+					int actualMinBrickSize = bricks.get(0).getSize();
+					int actualMaxBrickSize = bricks.get(0).getSize();
+					for (int i = 1; i < bricks.size(); ++i) {
+						actualMinBrickSize = Integer.min(actualMinBrickSize, bricks.get(i).getSize());
+						actualMaxBrickSize = Integer.max(actualMaxBrickSize, bricks.get(i).getSize());
+					}
+					minDimWidthChoice.setValue(actualMinBrickSize);
+					maxDimWidthChoice.setValue(actualMaxBrickSize);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		});
 		maxDimWidthChoice.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+			int minBrickSize = Integer.parseInt(minDimWidthChoice.getSelectionModel().getSelectedItem().toString());
 			int maxBrickSize = Integer.parseInt(maxDimWidthChoice.getSelectionModel().getSelectedItem().toString());
+			if (maxBrickSize < minBrickSize) {
+				minBrickSize = maxBrickSize;
+				minDimWidthChoice.setValue(minBrickSize);
+			}
 			try {
+				brickFactory.settings.setMinBrickSize(minBrickSize);
 				brickFactory.settings.setMaxBrickSize(maxBrickSize);
 				if (brickFactory.volume != null) {
-					volumePreview.show(brickFactory.volume, brickFactory.getPartitions());
+					List<Brick> bricks = brickFactory.getBrickPartitions();
+					volumePreview.show(brickFactory.volume, bricks);
 					lblFileSize.setText(brickFactory.getResultFileSize());
-					lblNumBricks.setText(brickFactory.getPartitions().size() + "");
+					lblNumBricks.setText(bricks.size() + "");
+					/* Its possible that all bricks are larger than the min or smaller than max . */
+					int actualMinBrickSize = bricks.get(0).getSize();
+					int actualMaxBrickSize = bricks.get(0).getSize();
+					for (int i = 1; i < bricks.size(); ++i) {
+						actualMinBrickSize = Integer.min(actualMinBrickSize, bricks.get(i).getSize());
+						actualMaxBrickSize = Integer.max(actualMaxBrickSize, bricks.get(i).getSize());
+					}
+					minDimWidthChoice.setValue(actualMinBrickSize);
+					maxDimWidthChoice.setValue(actualMaxBrickSize);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -245,11 +277,22 @@ public class Controller {
 			sliceList.getItems().clear();
 			for (String s : sliceNames) sliceList.getItems().add(s);
 			sliceIdx = 0;
-			volumePreview.show(brickFactory.volume, brickFactory.getPartitions());
+			List<Brick> bricks = brickFactory.getBrickPartitions();
+			volumePreview.show(brickFactory.volume, brickFactory.getBrickPartitions());
 			slicePreview.show(brickFactory.volume.getSlice(0));
 
+			/* Its possible that all bricks are larger than the min or smaller than max . */
+			int actualMinBrickSize = bricks.get(0).getSize();
+			int actualMaxBrickSize = bricks.get(0).getSize();
+			for (int i = 1; i < bricks.size(); ++i) {
+				actualMinBrickSize = Integer.min(actualMinBrickSize, bricks.get(i).getSize());
+				actualMaxBrickSize = Integer.max(actualMaxBrickSize, bricks.get(i).getSize());
+			}
+			minDimWidthChoice.setValue(actualMinBrickSize);
+			maxDimWidthChoice.setValue(actualMaxBrickSize);
+
 			lblFileSize.setText(brickFactory.getResultFileSize());
-			lblNumBricks.setText(brickFactory.getPartitions().size() + "");
+			lblNumBricks.setText(brickFactory.getBrickPartitions().size() + "");
 		} catch (Exception e) {
 			showAlert(Alert.AlertType.ERROR, "error",
 					"something went wrong while updating the visual previews: " + e.getMessage());
@@ -261,7 +304,7 @@ public class Controller {
 		try {
 			brickFactory.settings.mapTo8BPP = mapTo8BPP.isSelected();
 			lblFileSize.setText(brickFactory.getResultFileSize());
-			lblNumBricks.setText(brickFactory.getPartitions().size() + "");
+			lblNumBricks.setText(brickFactory.getBrickPartitions().size() + "");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -291,7 +334,7 @@ public class Controller {
 		Thread t = new Thread(() -> {
 			int currentBrick = 0;
 			volumePreview.colorBrick(currentBrick, Color.rgb(255, 255, 255, 1));
-			Platform.runLater(() -> btnGenerate.setText(0 + "/" + brickFactory.getPartitions().size()));
+			Platform.runLater(() -> btnGenerate.setText(0 + "/" + brickFactory.getBrickPartitions().size()));
 
 			while (brickFactory.getApportionerStatus() == false) {
 				try {
@@ -300,7 +343,7 @@ public class Controller {
 						currentBrick = totalBricksDone;
 						final int selected = totalBricksDone;
 						Platform.runLater(() -> volumePreview.colorBrick(selected, Color.rgb(255, 255, 255, 1)));
-						Platform.runLater(() -> btnGenerate.setText(totalBricksDone + "/" + brickFactory.getPartitions().size()));
+						Platform.runLater(() -> btnGenerate.setText(totalBricksDone + "/" + brickFactory.getBrickPartitions().size()));
 
 					}
 					Thread.sleep(16);
@@ -311,7 +354,7 @@ public class Controller {
 			Platform.runLater(() -> {
 				btnGenerate.setDisable(false);
 				btnGenerate.setText("Generate");
-				volumePreview.show(brickFactory.volume, brickFactory.getPartitions());
+				volumePreview.show(brickFactory.volume, brickFactory.getBrickPartitions());
 			});
 		});
 		t.setDaemon(true);

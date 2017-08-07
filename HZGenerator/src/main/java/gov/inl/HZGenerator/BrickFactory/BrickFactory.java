@@ -73,7 +73,7 @@ public class BrickFactory {
 	}
 
 	/* Returns the volume bricks */
-	public List<Brick> getPartitions() {
+	public List<Brick> getBrickPartitions() {
 		/* First, if no volume was loaded, just return null. */
 		if (volume == null) return null;
 
