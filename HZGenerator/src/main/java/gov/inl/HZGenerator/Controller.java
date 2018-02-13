@@ -21,6 +21,9 @@ import java.util.*;
 
 import static java.lang.Thread.sleep;
 
+import java.nio.file.Paths;
+import java.nio.file.Files;
+import java.nio.charset.Charset;
 
 /**
  * Nate Morrical. Summer 2017.
@@ -361,11 +364,15 @@ public class Controller {
 			});
 			
 			long endTime = System.currentTimeMillis();
-			List<String> lines = Arrays.asList("Start Time: ", startTime.toString(), 
-											   " End Time: ", endTime.toString(), 
-											   " Duration: ", (endTime - startTime).toString());
-			Path timerLog = Paths.get("timer_log.txt");
-			Files.write(timerLog, lines, Charset.forName("UTF-8"));
+			List<String> lines = Arrays.asList("Start Time: ", String.valueOf(startTime), 
+											   "End Time: ", String.valueOf(endTime),
+											   "Duration: ", String.valueOf(endTime - startTime));
+			try {
+				Files.write(Paths.get("./timer_log.txt"), lines, Charset.forName("UTF-8"));
+			}
+			catch(IOException e) {
+				System.out.println("Problem writing time log");
+			}
 		});
 		t.setDaemon(true);
 		t.start();
