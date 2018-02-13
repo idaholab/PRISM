@@ -102,7 +102,7 @@ public class VolumeApportioner {
 			g.dispose();
 		});
 		IntStream.range(0, Integer.min(p.size, v.depth)).forEach(i
-				-> System.arraycopy(dataBuffers[i].getData(), 0, raw, p.size * p.size * i, p.size * p.size));
+				-> { if ((dataBuffers[i]!=null) && (dataBuffers[i].getData() !=null )) System.arraycopy(dataBuffers[i].getData(), 0, raw, p.size * p.size * i, p.size * p.size); });
 
 		/* Curve the brick */
 		byte[] curved = new byte[p.size * p.size * p.size];
@@ -135,7 +135,7 @@ public class VolumeApportioner {
 			g.dispose();
 		});
 		IntStream.range(0, Integer.min(p.size, v.depth)).forEach(i
-				-> System.arraycopy(dataBuffers[i].getData(), 0, raw, p.size * p.size * i, p.size * p.size));
+				-> {if ((dataBuffers[i]!=null) && (dataBuffers[i].getData()!=null)) System.arraycopy(dataBuffers[i].getData(), 0, raw, p.size * p.size * i, p.size * p.size);});
 
 		/* Curve the brick */
 		MappedByteBuffer bb = brickBuffers.get(pid);
