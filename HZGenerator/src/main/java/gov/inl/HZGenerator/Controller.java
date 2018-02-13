@@ -324,6 +324,9 @@ public class Controller {
 		}
 		brickFactory.settings.outputPath = txtResultPath.getText();
 
+		// Get the current time for profiling purposes
+		long startTime = System.currentTimeMillis();
+		
 		// At this point, we're guaranteed a volume is loaded and the destination directory exists
 		btnGenerate.setDisable(true);
 		btnGenerate.setText("Generating...");
@@ -356,6 +359,13 @@ public class Controller {
 				btnGenerate.setText("Generate");
 				volumePreview.show(brickFactory.volume, brickFactory.getBrickPartitions());
 			});
+			
+			long endTime = System.currentTimeMillis();
+			List<String> lines = Arrays.asList("Start Time: ", startTime.toString(), 
+											   " End Time: ", endTime.toString(), 
+											   " Duration: ", (endTime - startTime).toString());
+			Path timerLog = Paths.get("timer_log.txt");
+			Files.write(timerLog, lines, Charset.forName("UTF-8"));
 		});
 		t.setDaemon(true);
 		t.start();
