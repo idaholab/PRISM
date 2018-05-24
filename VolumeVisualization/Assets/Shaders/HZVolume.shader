@@ -1,4 +1,6 @@
-﻿/* HZ Volume Shader | Marko Sterbentz 6/19/2017
+﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
+/* HZ Volume Shader | Marko Sterbentz 6/19/2017
  * A vert/frag shader for rendering data bricks that use HZ-ordered data
  */
 Shader "Custom/HZVolume"
@@ -8,7 +10,7 @@ Shader "Custom/HZVolume"
 		_MainTex("Texture", 2D) = "white" {}											// An array of bytes that is the 8-bit raw data. It is essentially a 1D array/texture.
 		_VolumeDataTexture("3D Data Texture", 3D) = "" {}
 		_NormPerRay("Intensity Normalization per Ray" , Float) = 1
-		_Steps("Max Number of Steps", Range(1,1024)) = 512
+		_Steps("Max Number of Steps", Range(1,1024)) = 128
 		_TransferFunctionTex("Transfer Function", 2D) = "white" {}
 		_ClippingPlaneNormal("Clipping Plane Normal", Vector) = (1, 0, 0)
 		_ClippingPlanePosition("Clipping Plane Position", Vector) = (0.5, 0.5, 0.5)
@@ -17,6 +19,14 @@ Shader "Custom/HZVolume"
 		_CurrentZLevel("Current Z Render Level", Int) = 0
 		_MaxZLevel("Max Z Render Level", Int) = 0
 		_LastBitMask("Last Bit Mask", Int) = 0
+
+		// data slicing clipping planes and thresholding (X, Y, Z are user coordinates) (landon wooley)
+		_SliceAxisXMin("Slice along axis X: min", Range(0,1)) = 0
+		_SliceAxisXMax("Slice along axis X: max", Range(0,1)) = 1
+		_SliceAxisYMin("Slice along axis Y: min", Range(0,1)) = 0
+		_SliceAxisYMax("Slice along axis Y: max", Range(0,1)) = 1
+		_SliceAxisZMin("Slice along axis Z: min", Range(0,1)) = 0
+		_SliceAxisZMax("Slice along axis Z: max", Range(0,1)) = 1
 	}
 
 	SubShader
@@ -24,12 +34,14 @@ Shader "Custom/HZVolume"
 		Tags
 		{
 			"Queue" = "Transparent"	   /* Allow transparent surfaces to render. */
+			"RenderType" = "Transparent"
 		}
 
-		Blend SrcAlpha OneMinusSrcAlpha	// Needed for rendering transparent surfaces.
+		Blend One OneMinusSrcAlpha	// Needed for rendering transparent surfaces.
 		Cull Off
 		ZTest LEqual
 		ZWrite Off
+		Fog { Mode off }
 
 		Pass
 		{
@@ -53,6 +65,11 @@ Shader "Custom/HZVolume"
 			int _CurrentZLevel;
 			int _MaxZLevel;
 			int _LastBitMask;
+
+			// Defines a sub-volume of data in which to render data
+			float           _SliceAxisXMin, _SliceAxisXMax;
+			float           _SliceAxisYMin, _SliceAxisYMax;
+			float           _SliceAxisZMin, _SliceAxisZMax;
 
 			//static uint LAST_BIT_MASK = (1 << 24);
 
@@ -101,7 +118,7 @@ Shader "Custom/HZVolume"
 			{
 				v2f o;
 
-				o.pos = mul(UNITY_MATRIX_MVP, i.pos);
+				o.pos = UnityObjectToClipPos(i.pos);
 				o.ray_d = -ObjSpaceViewDir(i.pos);
 				o.ray_o = i.pos.xyz - o.ray_d;
 				
@@ -227,6 +244,16 @@ Shader "Custom/HZVolume"
 				uint dataCubeDimension = 1 << _CurrentZLevel;						// The dimension of the data brick using the current hz level.
 				float3 texCoord = texCoord3DFromHzIndex(hzIndex, dataCubeDimension, dataCubeDimension, dataCubeDimension);
 				float data = tex3Dlod(_VolumeDataTexture, float4(texCoord, 0)).a;
+
+				// Slice and Threshold (from landon wooley implementation)
+				// slice (eliminates data outside of the bounding box defined by _SliceAxis* variables)
+				data *= step(_SliceAxisXMin, texCoord.x);
+				data *= step(_SliceAxisYMin, texCoord.y);
+				data *= step(_SliceAxisZMin, texCoord.z);
+				data *= step(texCoord.x, _SliceAxisXMax);
+				data *= step(texCoord.y, _SliceAxisYMax);
+				data *= step(texCoord.z, _SliceAxisZMax);
+
 				return data;
 			}
 
@@ -280,8 +307,11 @@ Shader "Custom/HZVolume"
 				float ray_length = length(ray_dir);							// The length of the ray to travel
 				ray_dir = normalize(ray_stop - ray_start);					// The direction of the ray (normalized)
 
-				float step_size = ray_length / (float)_Steps;
-				float3 ray_step = ray_dir * step_size;
+				//float step_size = ray_length / (float)_Steps;
+				//float3 ray_step = ray_dir * step_size;
+
+				float3 ray_step = normalize(ray_dir) * sqrt(3) / _Steps;
+
 				//return float4(abs(ray_stop - ray_start), 1);
 				//return float4(ray_length, ray_length, ray_length, 1);
 
@@ -345,7 +375,7 @@ Shader "Custom/HZVolume"
 					if (ray_pos.x > 1 || ray_pos.y > 1 || ray_pos.z > 1) break;
 
 					// Check if accumulated alpha is greater than 1.0
-					//if (fColor.a > 1.0) break;
+					if (fColor.a > 1.0) break;
 				}
 
 				return fColor * _NormPerRay;

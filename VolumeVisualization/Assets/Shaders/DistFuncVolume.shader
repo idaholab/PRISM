@@ -1,4 +1,6 @@
-﻿/* Distance Function Volume Shader | Marko Sterbentz
+﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
+/* Distance Function Volume Shader | Marko Sterbentz
  *﻿ This shader is for barebones volume visualization using distance functions.
  * NOTE: This shader is no longer recommended for use.
  */
@@ -264,9 +266,9 @@ Shader "Custom/DistFuncVolume"
 			v2f vert (appdata v)
 			{
 				v2f o;
-				o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+				o.pos = UnityObjectToClipPos(v.vertex);
 				o.wPos = mul(unity_ObjectToWorld, v.vertex).xyz;
-				o.pCoords = mul(UNITY_MATRIX_MVP, v.vertex);
+				o.pCoords = UnityObjectToClipPos(v.vertex);
 				return o;
 			}
 			

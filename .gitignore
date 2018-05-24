@@ -21,3 +21,4 @@ Temp/
 *.db.meta
 HZGenerator/target/**
 HZGenerator/.idea/workspace.xml
+*.opendb

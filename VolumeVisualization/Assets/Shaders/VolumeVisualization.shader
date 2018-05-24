@@ -1,4 +1,6 @@
-﻿/* Volume Visualization Shader | Marko Sterbentz
+﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
+/* Volume Visualization Shader | Marko Sterbentz
  *﻿ This shader is for barebones volume visualization. It renders only small, RAW data files.
  * NOTE: This shader is no longer recommended for use.
  */
@@ -85,7 +87,7 @@ Shader "Custom/VolumeVisualization"
 			{
 				v2f o;
 
-				o.pos = mul(UNITY_MATRIX_MVP, i.pos);
+				o.pos = UnityObjectToClipPos(i.pos);
 				o.ray_d = -ObjSpaceViewDir(i.pos);
 				o.ray_o = i.pos.xyz - o.ray_d;
 
