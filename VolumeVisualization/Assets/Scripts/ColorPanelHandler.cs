@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using Vectrosity;
+using UnityEngine.UI;
 
 /// <summary>
 /// Handles user input for the color portion of the transfer function.
@@ -18,37 +18,44 @@ public class ColorPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 
 	// Internal variables
 	private RectTransform panelRectTransform;					// The RectTransform of the color panel.
+    private RectTransform drawCanvasRectTransform;              // The RectTransform of the color panel.
     private float maxWidth;                                     // The local maximum width of the color panel.
-	private float minWidth, minHeight;							// The local minimum width and height of the color panel.
+	private float minWidth, minHeight;                          // The local minimum width and height of the color panel.
 
-	private VectorLine colorGraphPoints;                        // The Vectrosity points that will be drawn for the color points.
-	private VectorLine colorGraphHighlightedPoint;              // The Vectrosity point that will be draw on top of the currently active point in the color panel.
+    public GameObject controlPointImagePrefab;                  // A prefab that will represent the control points visually in the color graph.
+    private List<ControlPointRenderer> controlPointRenderers;   // A reference to all of the wrappers for rendering the control points in the color graph.
 
-	private float pointRadius = 10.0f;							// Radius of the Vectrosity points in the graph.
-	private float borderSize = 0.0f;							// Size of the border around the panel. Padding on the internal edges of the panel is added. CAUSES BUGS WHEN NOT 0.0
+    private float pointRadius = 10.0f;							// Radius of the points in the graph.
+	private float borderSize = 0.0f;                            // Size of the border around the panel. Padding on the internal edges of the panel is added. CAUSES BUGS WHEN NOT 0.0
+
+    public Color pointColor = new Color(1.0f, 1.0f, 1.0f, 1.0f);
+    public Color pointHighlightColor = new Color(0.0f, 0.0f, 0.0f, 1.0f);
 
     /// <summary>
 	/// Initialization function for the ColorPanelHandler.
 	/// </summary>
     void Start () {
 		panelRectTransform = transform as RectTransform;
-        maxWidth = panelRectTransform.rect.width - borderSize;
-		minWidth = borderSize;
-		minHeight = borderSize;
+        drawCanvasRectTransform = colorCanvas.transform as RectTransform;
+        //maxWidth = panelRectTransform.rect.width - borderSize;
+        //minWidth = borderSize;
+        //minHeight = borderSize;
+        maxWidth = drawCanvasRectTransform.rect.width;
+        minWidth = 0.0f;
+        minHeight = 0.0f;
         transferFunctionHandler = (TransferFunctionHandler)GameObject.Find("Transfer Function Panel").GetComponent(typeof(TransferFunctionHandler));
 		volumeController = (VolumeController)GameObject.Find("VolumeController").GetComponent(typeof(VolumeController));
 		transferFunction = volumeController.getTransferFunction();
 
-		// Initialize the color graph points VectorLine
-		colorGraphPoints = new VectorLine("colorGraphPoints", new List<Vector2>(), pointRadius, LineType.Points);
-		colorGraphPoints.color = Color.white;
-		colorGraphPoints.SetCanvas(colorCanvas, false);
-
-		// Initialize the color graph highlight point
-		colorGraphHighlightedPoint = new VectorLine("alphaGraphHighlightedPoint", new List<Vector2>(), pointRadius, LineType.Points);
-		colorGraphHighlightedPoint.color = Color.black;
-		colorGraphHighlightedPoint.SetCanvas(colorCanvas, false);
-	}
+        // Initialize the control point renderers
+        controlPointRenderers = new List<ControlPointRenderer>();
+        for (int i = 0; i < transferFunction.ColorPoints.Count; i++)
+        {
+            controlPointRenderers.Add(new ControlPointRenderer(transferFunction.ColorPoints[i],
+                                                               createControlPointImage(transferFunction.ColorPoints[i]))
+                                     );
+        }
+    }
 	
 	/// <summary>
 	/// Updates the ColorPanelHandler once per frame.
@@ -81,7 +88,8 @@ public class ColorPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 				// If no point is clicked, generate a new point to be added to the transfer function
 				ControlPoint newActivePoint = getColorPointFromOffset(localPosition, transferFunctionHandler.getColorPalette().getCurrentColor());
 				transferFunction.addColorPoint(newActivePoint);
-				transferFunction.ActiveControlPoint = newActivePoint;
+                controlPointRenderers.Add(new ControlPointRenderer(newActivePoint, createControlPointImage(newActivePoint)));
+                transferFunction.ActiveControlPoint = newActivePoint;
 			}
 
 			// Open the color palette
@@ -94,8 +102,19 @@ public class ColorPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 		{
 			if (transferFunction.ActiveControlPoint != null)
 			{
+                // Delete the active point that was clicked
 				transferFunction.removeColorPoint(transferFunction.ActiveControlPoint);
-			}
+
+                // Delete its associated renderer
+                for (int i = 0; i < controlPointRenderers.Count; i++)
+                {
+                    if (controlPointRenderers[i].CP.Equals(transferFunction.ActiveControlPoint))
+                    {
+                        controlPointRenderers[i].destruct();
+                        controlPointRenderers.Remove(controlPointRenderers[i]);
+                    }
+                }
+            }
 		}
     }
 
@@ -127,48 +146,41 @@ public class ColorPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 	}
 
 	/// <summary>
-	/// Updates the color Vectrosity graph in the user interface by updating and drawing the points.
+	/// Updates the color graph in the user interface by updating and drawing the points.
 	/// Assumes the transfer function's color points are already sorted.
 	/// </summary>
-	public void updateColorVectrosityGraph()
+	public void updateColorGraph()
 	{
-		List<Vector2> updatedPoints = new List<Vector2>();
-		List<ControlPoint> currentColorPoints = transferFunction.ColorPoints;
-		for (int i = 0; i < currentColorPoints.Count; i++)
-		{
-			// Convert color control points to local space points and store them in the Vectrosity line
-			updatedPoints.Add(getLocalPositionFromColorPoint(currentColorPoints[i]));
-		}
-
-		// Have the Vectrosity points reference the control point positions
-		colorGraphPoints.points2 = updatedPoints;
-
-		// Draw Vectrosity graph
-		colorGraphPoints.Draw();
-	}
+        // Update the positions of the control point renderers
+        for (int i = 0; i < controlPointRenderers.Count; i++)
+        {
+            controlPointRenderers[i].Image.transform.localPosition = getLocalPositionFromColorPoint(controlPointRenderers[i].CP);
+        }
+    }
 
 	/// <summary>
 	/// Highlights the current active point in the transfer function.
 	/// </summary>
 	public void highlightActivePoint()
 	{
-		List<Vector2> highlightedPoint = new List<Vector2>();
-
-		Vector2 activePointPosition = getLocalPositionFromColorPoint(transferFunction.ActiveControlPoint);
-		highlightedPoint.Add(activePointPosition);
-		colorGraphHighlightedPoint.points2 = highlightedPoint;
-
-		colorGraphHighlightedPoint.Draw();
-	}
+        //colorGraphHighlightedPoint.Draw();
+        ControlPointRenderer activePointRenderer = getControlPointRenderer(transferFunction.ActiveControlPoint);
+        if (activePointRenderer != null)
+        {
+            activePointRenderer.Image.GetComponent<Image>().color = pointHighlightColor;
+        }
+    }
 
 	/// <summary>
 	///  De-highlights the color points in the transfer function.
 	/// </summary>
 	public void dehighlightPoints()
 	{
-		colorGraphHighlightedPoint.points2 = new List<Vector2>();
-		colorGraphHighlightedPoint.Draw();
-	}
+        for (int i = 0; i < controlPointRenderers.Count; i++)
+        {
+            controlPointRenderers[i].Image.GetComponent<Image>().color = pointColor;
+        }
+    }
 
 	/// <summary>
 	/// Converts the given color control point to the local space within the color panel.
@@ -199,11 +211,12 @@ public class ColorPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 	{
 		Vector2 localPosition;
 
-		// Convert to a local position within the color panel
-		RectTransformUtility.ScreenPointToLocalPointInRectangle(panelRectTransform, screenPosition, cam, out localPosition);
+        // Convert to a local position within the color panel
+        //RectTransformUtility.ScreenPointToLocalPointInRectangle(panelRectTransform, screenPosition, cam, out localPosition);
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(drawCanvasRectTransform, screenPosition, cam, out localPosition);
 
-		// Clamp the position to stay within the color panel's borders
-		localPosition = clampToColorPanel(localPosition);
+        // Clamp the position to stay within the color panel's borders
+        localPosition = clampToColorPanel(localPosition);
 
 		return localPosition;
 	}
@@ -254,4 +267,65 @@ public class ColorPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 		return null;
 	}
 
+    /// <summary>
+    /// Creates a new control point image GameObject to use for rendering the given control point on the color canvas.
+    /// </summary>
+    /// <param name="cp"></param>
+    /// <returns></returns>
+    private GameObject createControlPointImage(ControlPoint cp)
+    {
+        GameObject newControlPointImage = Instantiate(controlPointImagePrefab);
+        newControlPointImage.transform.SetParent(colorCanvas.transform);
+        newControlPointImage.transform.localPosition = getLocalPositionFromColorPoint(cp);
+        newControlPointImage.transform.rotation = Quaternion.identity;
+        return newControlPointImage;
+    }
+
+    /// <summary>
+    /// Returns the ControlPointRenderer associated with the given ControlPoint
+    /// </summary>
+    /// <returns></returns>
+    private ControlPointRenderer getControlPointRenderer(ControlPoint cp)
+    {
+        for (int i = 0; i < controlPointRenderers.Count; i++)
+        {
+            if (controlPointRenderers[i].CP.Equals(transferFunction.ActiveControlPoint))
+            {
+                return controlPointRenderers[i];
+            }
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Deletes all of the color control point renderers.
+    /// </summary>
+    public void deleteAllControlPointRenderers()
+    {
+        // Delete associated renderers
+        if (controlPointRenderers != null)
+        {
+            for (int i = 0; i < controlPointRenderers.Count; i++)
+            {
+                controlPointRenderers[i].destruct();
+            }
+            controlPointRenderers.Clear();
+        }
+    }
+
+    /// <summary>
+    /// Creates a brand new set of control point renderers for each of the color control points.
+    /// </summary>
+    public void createNewControlPointRenderers()
+    {
+        if (controlPointRenderers != null)
+        {
+            for (int i = 0; i < transferFunction.ColorPoints.Count; i++)
+            {
+                controlPointRenderers.Add(new ControlPointRenderer(transferFunction.ColorPoints[i],
+                                                                   createControlPointImage(transferFunction.ColorPoints[i]))
+                                         );
+            }
+        }
+    }
 }

@@ -128,10 +128,10 @@ public class TransferFunctionHandler : MonoBehaviour {
 		transferTextureDisplay.texture = colorTextureDisplay;
 
 		// Update the Vectrosity graph for the alpha panel
-		alphaPanelHandler.updateAlphaVectrosityGraph();
+		alphaPanelHandler.updateAlphaLineRendererGraph();
 
 		// Update the Vectrosity graph for the color panel
-		colorPanelHandler.updateColorVectrosityGraph();
+		colorPanelHandler.updateColorGraph();
 
 		// Highlight the active point
 		highlightActivePoint();
@@ -205,8 +205,19 @@ public class TransferFunctionHandler : MonoBehaviour {
 	/// </summary>
 	public void loadTransferFunction()
 	{
+        // Create the path to the transfer function to load
 		string path = savedTransferFunctionFolderPath + currentTransferFunctionFile + transferFunctionFileExtension;
+
+        // Delete the old transfer function points
+        alphaPanelHandler.deleteAllControlPointRenderers();
+        colorPanelHandler.deleteAllControlPointRenderers();
+
+        // Load in the new transfer function points from a file
 		transferFunction.loadTransferFunction(path);
+
+        // Create new control point renderers for the points that were loaded in
+        alphaPanelHandler.createNewControlPointRenderers();
+        colorPanelHandler.createNewControlPointRenderers();
 	}
 
 	/*****************************************************************************

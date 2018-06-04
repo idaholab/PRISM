@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using Vectrosity;
+using UnityEngine.UI;
 
 /// <summary>
 /// Provides functionality for handling user input for the alpha portion of the transfer function.
@@ -16,46 +16,49 @@ public class AlphaPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 	private TransferFunction transferFunction;				// The transfer function that is used by the current volume.
 	private VolumeController volumeController;				// A reference to the VolumeController that manages the renderer.
 
-	private RectTransform panelRectTransform;				// The RectTransform of the alpha panel.
+    private RectTransform drawCanvasRectTransform;          // The RectTransform of the alpha drawing canvas.
+	//private RectTransform panelRectTransform;				// The RectTransform of the alpha panel.
     private float maxWidth, maxHeight;						// The local maximum width and height of the alpha panel.
-	private float minWidth, minHeight;						// The local minimum width and height of the alpha panel.
+	private float minWidth, minHeight;                      // The local minimum width and height of the alpha panel.
 
-    private VectorLine alphaGraphLine;						// The Vectrosity line that will be drawn for the graph.
-	private VectorLine alphaGraphPoints;					// The Vectrosity points that will be drawn for the graph.
-	private VectorLine alphaGraphHighlightedPoint;			// The Vectrosity point that will be draw on top of the currently active point in the alpha panel.
+    public LineRenderer alphaLineRenderer;                  // The LineRenderer that will be used to display the alpha graph.
+    public GameObject controlPointImagePrefab;              // A prefab that will represent the control points visually in the alpha graph.
+    private List<ControlPointRenderer> controlPointRenderers; // A reference to all of the wrappers for rendering the control points in the alpha graph.
 
-	private float pointRadius = 10.0f;						// Radius of the Vectrosity points in the graph.
-	private float borderSize = 0.0f;						// Size of the border around the panel. Padding on the internal edges of the panel is added. CAUSES BUGS WHEN NOT 0.0
+	private float pointRadius = 10.0f;						// Radius of the control points when interacting with them in the graph.
+	private float borderSize = 0.0f;                        // Size of the border around the panel. Padding on the internal edges of the panel is added. CAUSES BUGS WHEN NOT 0.0
 
+    public Color pointColor = new Color(1.0f, 1.0f, 1.0f, 1.0f);
+    public Color pointHighlightColor = new Color(0.0f, 0.0f, 0.0f, 1.0f);
+    
     // Use this for initialization
 	/// <summary>
 	/// Initialization function for the AlphaPanelHandler.
 	/// </summary>
     void Start()
     {
-		panelRectTransform = transform as RectTransform;
-		maxWidth = panelRectTransform.rect.width - borderSize;
-		maxHeight = panelRectTransform.rect.height - borderSize;
-		minWidth =  borderSize;
-		minHeight = borderSize;
+		//panelRectTransform = transform as RectTransform;
+        drawCanvasRectTransform = alphaCanvas.transform as RectTransform;
+        //maxWidth = panelRectTransform.rect.width - borderSize;
+        //maxHeight = panelRectTransform.rect.height - borderSize;
+        //minWidth =  borderSize;
+        //minHeight = borderSize;
+        maxWidth = drawCanvasRectTransform.rect.width;
+        maxHeight = drawCanvasRectTransform.rect.height;
+        minWidth = 0.0f;
+        minHeight = 0.0f;
         transferFunctionHandler = (TransferFunctionHandler)GameObject.Find("Transfer Function Panel").GetComponent(typeof(TransferFunctionHandler));
 		volumeController = (VolumeController)GameObject.Find("VolumeController").GetComponent(typeof(VolumeController));
 		transferFunction = volumeController.getTransferFunction();
 
-		// Initialize the alpha graph points VectorLine
-		alphaGraphPoints = new VectorLine("alphaGraphPoints", new List<Vector2>(), pointRadius, LineType.Points);
-		alphaGraphPoints.color = Color.white;
-		alphaGraphPoints.SetCanvas(alphaCanvas, false);
-
-		// Initialize the alpha graph line VectorLine
-		alphaGraphLine = new VectorLine("alphaGraphLine", new List<Vector2>(), 2.0f, LineType.Continuous, Joins.Weld);
-		alphaGraphLine.color = Color.red;
-		alphaGraphLine.SetCanvas(alphaCanvas, false);
-
-		// Initialize the alpha graph highlight point
-		alphaGraphHighlightedPoint = new VectorLine("alphaGraphHighlightedPoint", new List<Vector2>(), pointRadius, LineType.Points);
-		alphaGraphHighlightedPoint.color = Color.black;
-		alphaGraphHighlightedPoint.SetCanvas(alphaCanvas, false);
+        // Initialize the control point renderers
+        controlPointRenderers = new List<ControlPointRenderer>();
+        for (int i = 0; i < transferFunction.AlphaPoints.Count; i++)
+        {
+            controlPointRenderers.Add(new ControlPointRenderer(transferFunction.AlphaPoints[i], 
+                                                               createControlPointImage(transferFunction.AlphaPoints[i]))
+                                     );
+        }
     }
 
 	/// <summary>
@@ -78,10 +81,10 @@ public class AlphaPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 		// Get the local position within the alpha panel
 		Vector2 localPosition = getLocalPositionFromScreenPosition(data.position, data.pressEventCamera);
 
-		// Check if there is a control point at the localPosition, and return it if there is one
-		transferFunction.ActiveControlPoint = getClickedPoint(localPosition);
+        transferFunctionHandler.dehighlightPoints();
 
-		transferFunctionHandler.dehighlightPoints();
+        // Check if there is a control point at the localPosition, and return it if there is one
+        transferFunction.ActiveControlPoint = getClickedPoint(localPosition);
 
 		// Left click
 		if (Input.GetMouseButton(0))
@@ -91,6 +94,7 @@ public class AlphaPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 				// If no point is clicked, generate a new point to be added to the transfer function
 				ControlPoint newActivePoint = getAlphaPointFromLocalPosition(localPosition);
 				transferFunction.addAlphaPoint(newActivePoint);
+                controlPointRenderers.Add(new ControlPointRenderer(newActivePoint, createControlPointImage(newActivePoint)));
 				transferFunction.ActiveControlPoint = newActivePoint;
 			}
 		}
@@ -99,7 +103,18 @@ public class AlphaPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 		{
 			if (transferFunction.ActiveControlPoint != null)
 			{
+                // Delete the active point that was clicked
 				transferFunction.removeAlphaPoint(transferFunction.ActiveControlPoint);
+
+                // Delete its associated renderer
+                for (int i = 0; i < controlPointRenderers.Count; i++)
+                {
+                    if (controlPointRenderers[i].CP.Equals(transferFunction.ActiveControlPoint))
+                    {
+                        controlPointRenderers[i].destruct();
+                        controlPointRenderers.Remove(controlPointRenderers[i]);
+                    }
+                }
 			}
 		}
     }
@@ -130,28 +145,30 @@ public class AlphaPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 		transferFunction.finalizeActivePoint();
     }
 
-	/// <summary>
-	/// Updates the alpha Vectrosity graph in the user interface by updating and drawing the points.
-	/// Assumes the transfer function's alpha points are already sorted.
-	/// </summary>
-	public void updateAlphaVectrosityGraph()
-	{
-		// Update the alpha points
-		List<Vector2> updatedPoints = new List<Vector2>();
-		List<ControlPoint> currentAlphaPoints = transferFunction.AlphaPoints;
-		for (int i = 0; i < currentAlphaPoints.Count; i++)
-		{
-			// Convert alpha control points to local space points and store them in the Vectrosity line
-			updatedPoints.Add(getLocalPositionFromAlphaPoint(currentAlphaPoints[i]));
-		}
+    /// <summary>
+    /// Updates the alpha LineRenderer graph in the user interface by updating and drawing the points.
+    /// Assumes the transfer function's alpha points are already sorted.
+    /// </summary>
+    public void updateAlphaLineRendererGraph()
+    {
+        // Update the alpha points
+        List<Vector3> updatedPoints = new List<Vector3>();
+        List<ControlPoint> currentAlphaPoints = transferFunction.AlphaPoints;
+        for (int i = 0; i < currentAlphaPoints.Count; i++)
+        {
+            // Convert alpha control points to local space points
+            updatedPoints.Add(getLocalPositionFromAlphaPoint(currentAlphaPoints[i]));
+        }
 
-		// Have the Vectrosity lines and points reference the same control point positions
-		alphaGraphLine.points2 = updatedPoints;
-		alphaGraphPoints.points2 = updatedPoints;
+        // Replace the old LineRenderer positions with the newly updated points
+        alphaLineRenderer.positionCount = updatedPoints.Count;
+        alphaLineRenderer.SetPositions(updatedPoints.ToArray());
 
-		// Draw Vectrosity graph
-		alphaGraphLine.Draw();
-		alphaGraphPoints.Draw();
+        // Update the positions of the control point renderers
+        for (int i = 0; i < controlPointRenderers.Count; i++)
+        {
+            controlPointRenderers[i].Image.transform.localPosition = getLocalPositionFromAlphaPoint(controlPointRenderers[i].CP);
+        }
 	}
 
 	/// <summary>
@@ -159,23 +176,23 @@ public class AlphaPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 	/// </summary>
 	public void highlightActivePoint()
 	{
-		List<Vector2> highlightedPoint = new List<Vector2>();
+        ControlPointRenderer activePointRenderer = getControlPointRenderer(transferFunction.ActiveControlPoint);
+        if (activePointRenderer != null)
+        {
+            activePointRenderer.Image.GetComponent<Image>().color = pointHighlightColor;
+        }
+    }
 
-		Vector2 activePointPosition = getLocalPositionFromAlphaPoint(transferFunction.ActiveControlPoint);
-		highlightedPoint.Add(activePointPosition);
-		alphaGraphHighlightedPoint.points2 = highlightedPoint;
-
-		alphaGraphHighlightedPoint.Draw();
-	}
- 
-	/// <summary>
-	/// De-highlights the current active point in the transfer function.
-	/// </summary>
-	public void dehighlightPoints()
+    /// <summary>
+    /// De-highlights the current active point in the transfer function.
+    /// </summary>
+    public void dehighlightPoints()
 	{
-		alphaGraphHighlightedPoint.points2 = new List<Vector2>();
-		alphaGraphHighlightedPoint.Draw();
-	}
+        for (int i = 0; i < controlPointRenderers.Count; i++)
+        {
+            controlPointRenderers[i].Image.GetComponent<Image>().color = pointColor;
+        }
+    }
 
 	/// <summary>
 	/// Converts the given alpha control point to the local space within the alpha panel.
@@ -207,7 +224,7 @@ public class AlphaPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 		Vector2 localPosition;
 
 		// Convert to a local position within the alpha panel
-		RectTransformUtility.ScreenPointToLocalPointInRectangle(panelRectTransform, screenPosition, cam, out localPosition);
+		RectTransformUtility.ScreenPointToLocalPointInRectangle(drawCanvasRectTransform, screenPosition, cam, out localPosition);
 
 		// Clamp the position to stay within the alpha panel's borders
 		localPosition = clampToAlphaPanel(localPosition);
@@ -260,4 +277,66 @@ public class AlphaPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 		}
 		return null;
 	}
+
+    /// <summary>
+    /// Creates a new control point image GameObject to use for rendering the given control point on the alpha canvas.
+    /// </summary>
+    /// <param name="cp"></param>
+    /// <returns></returns>
+    private GameObject createControlPointImage(ControlPoint cp)
+    {
+        GameObject newControlPointImage = Instantiate(controlPointImagePrefab);
+        newControlPointImage.transform.SetParent(alphaCanvas.transform);
+        newControlPointImage.transform.localPosition = getLocalPositionFromAlphaPoint(cp);
+        newControlPointImage.transform.rotation = Quaternion.identity;
+        return newControlPointImage;
+    }
+
+    /// <summary>
+    /// Returns the ControlPointRenderer associated with the given ControlPoint
+    /// </summary>
+    /// <returns></returns>
+    private ControlPointRenderer getControlPointRenderer(ControlPoint cp)
+    {
+        for (int i = 0; i < controlPointRenderers.Count; i++)
+        {
+            if (controlPointRenderers[i].CP.Equals(transferFunction.ActiveControlPoint))
+            {
+                return controlPointRenderers[i];
+            }
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Deletes all of the alpha control point renderers.
+    /// </summary>
+    public void deleteAllControlPointRenderers()
+    {
+        // Delete associated rendererers, if there are any
+        if (controlPointRenderers != null)
+        {
+            for (int i = 0; i < controlPointRenderers.Count; i++)
+            {
+                controlPointRenderers[i].destruct();
+            }
+            controlPointRenderers.Clear();
+        }
+    }
+
+    /// <summary>
+    /// Creates a brand new set of control point renderers for each of the alpha control points.
+    /// </summary>
+    public void createNewControlPointRenderers()
+    {
+        if (controlPointRenderers != null)
+        {
+            for (int i = 0; i < transferFunction.AlphaPoints.Count; i++)
+            {
+                controlPointRenderers.Add(new ControlPointRenderer(transferFunction.AlphaPoints[i],
+                                                                   createControlPointImage(transferFunction.AlphaPoints[i]))
+                                         );
+            }
+        }
+    }
 }
