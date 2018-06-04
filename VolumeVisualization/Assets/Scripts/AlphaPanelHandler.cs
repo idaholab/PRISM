@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using UnityEngine.UI.Extensions;
 
 /// <summary>
 /// Provides functionality for handling user input for the alpha portion of the transfer function.
@@ -20,8 +21,8 @@ public class AlphaPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 	//private RectTransform panelRectTransform;				// The RectTransform of the alpha panel.
     private float maxWidth, maxHeight;						// The local maximum width and height of the alpha panel.
 	private float minWidth, minHeight;                      // The local minimum width and height of the alpha panel.
-
-    public LineRenderer alphaLineRenderer;                  // The LineRenderer that will be used to display the alpha graph.
+        
+    public UILineRenderer alphaUILineRenderer;              // The LineRenderer that will be used to display the alpha graph.
     public GameObject controlPointImagePrefab;              // A prefab that will represent the control points visually in the alpha graph.
     private List<ControlPointRenderer> controlPointRenderers; // A reference to all of the wrappers for rendering the control points in the alpha graph.
 
@@ -152,7 +153,7 @@ public class AlphaPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
     public void updateAlphaLineRendererGraph()
     {
         // Update the alpha points
-        List<Vector3> updatedPoints = new List<Vector3>();
+        List<Vector2> updatedPoints = new List<Vector2>();
         List<ControlPoint> currentAlphaPoints = transferFunction.AlphaPoints;
         for (int i = 0; i < currentAlphaPoints.Count; i++)
         {
@@ -160,9 +161,8 @@ public class AlphaPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
             updatedPoints.Add(getLocalPositionFromAlphaPoint(currentAlphaPoints[i]));
         }
 
-        // Replace the old LineRenderer positions with the newly updated points
-        alphaLineRenderer.positionCount = updatedPoints.Count;
-        alphaLineRenderer.SetPositions(updatedPoints.ToArray());
+        // Use the Unity UI Extensions Line renderer to replace the old LineRenderer positions with the newly updated points
+        alphaUILineRenderer.Points = updatedPoints.ToArray();
 
         // Update the positions of the control point renderers
         for (int i = 0; i < controlPointRenderers.Count; i++)
