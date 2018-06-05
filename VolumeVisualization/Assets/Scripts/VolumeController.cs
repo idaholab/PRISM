@@ -15,6 +15,7 @@ public class VolumeController : MonoBehaviour {
 	private ClippingPlane clippingPlane;				// Clipping plane for modifying viewable portion of the volume
 	public Camera mainCamera;							// Main camera in the scene		
 	public string dataPath = "Assets/Data/BoxHz/";		// The path to the data to be loaded into the renderer
+    public bool readRawData = true;                     // Boolean for whether the input data is in raw form
 
 	// Objects to draw for debugging purposes
 	public GameObject clippingPlaneCube;
@@ -32,9 +33,17 @@ public class VolumeController : MonoBehaviour {
 		// 0. Create the default material
 		Shader hzShader = Shader.Find("Custom/HZVolume");
 		Material volumeMaterial = new Material(hzShader);
+        if (readRawData)
+        {
+            volumeMaterial.EnableKeyword("USING_RAW_DATA");
+        }
+        else
+        {
+            volumeMaterial.EnableKeyword("USING_HZ_DATA");
+        }
 
-		// 1. Create the data volume
-		currentVolume = new Volume(dataPath, "metadata.json", volumeMaterial);
+        // 1. Create the data volume
+        currentVolume = new Volume(dataPath, "metadata.json", volumeMaterial);
 
 		// 2. Set up the transfer function
 		int isovalueRange = currentVolume.calculateIsovalueRange();

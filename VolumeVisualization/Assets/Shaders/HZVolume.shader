@@ -50,6 +50,8 @@ Shader "Custom/HZVolume"
 			#pragma vertex vert
 			#pragma fragment frag
 
+			#pragma multi_compile USING_RAW_DATA USING_HZ_DATA
+
 			#include "UnityCG.cginc"
 
 			/********************* DATA *********************/
@@ -267,8 +269,11 @@ Shader "Custom/HZVolume"
 			// Note: This is a wrapper for the other sampling methods.
 			// Note: pos is normalized in [0, 1]
 			float4 sampleIntensity(float3 pos) {
-				float data = sampleIntensityHz3D(pos);
-				//float data = sampleIntensityRaw3D(pos);
+				#ifdef USING_RAW_DATA
+					float data = sampleIntensityRaw3D(pos);
+				#elif USING_HZ_DATA
+					float data = sampleIntensityHz3D(pos);
+				#endif
 				return float4(data, data, data, data);
 			}
 
