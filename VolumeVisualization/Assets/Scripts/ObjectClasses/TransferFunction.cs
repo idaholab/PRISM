@@ -111,24 +111,30 @@ public class TransferFunction
 	/// <returns></returns>
 	public Texture2D generateTransferTexture()
 	{
-		// Initialize the array of colors for the pixels
-		Color[] transferColors = new Color[isovalueRange * 2];
+        // Initialize the array of colors for the pixels
+        //Color[] transferColors = new Color[isovalueRange * 1];
+        //Color[] transferColors = new Color[255 * 255];
+        int texWidth = 256;
+        int texHeight = (int)Math.Round((isovalueRange / (float) texWidth));
+        Color[] transferColors = new Color[texWidth * texHeight];
 
-		// Generate the transfer texture's rgb color values
-		generateTransferTextureColors(transferColors);
+        // Generate the transfer texture's rgb color values
+        generateTransferTextureColors(transferColors);
 
 		// Generate the transfer texture's alpha values
 		generateTransferTextureAlphas(transferColors);
 
-		Texture2D newTransferTexture = new Texture2D(isovalueRange, 2, TextureFormat.RGBA32, false);
-		newTransferTexture.SetPixels(transferColors);
+        //Texture2D newTransferTexture = new Texture2D(isovalueRange, 1, TextureFormat.RGBA32, false);
+        //Texture2D newTransferTexture = new Texture2D(255, 255, TextureFormat.RGBA32, false);
+        Texture2D newTransferTexture = new Texture2D(texWidth, texHeight, TextureFormat.RGBA32, false);
+        newTransferTexture.SetPixels(transferColors);
 		newTransferTexture.Apply();
 
 		return newTransferTexture;
 	}
 
 	/// <summary>
-	/// Generates the color values for the transfer texture.
+	/// Generates the color values for the transfer texture that will be sampled by the shader.
 	/// The color's alpha values will be set 1.0 by this function.
 	/// </summary>
 	/// <param name="transferColors"></param>
@@ -137,56 +143,136 @@ public class TransferFunction
 		// Sort the list in place by increasing isovalues
 		colorPoints.Sort((x, y) => x.isovalue.CompareTo(y.isovalue));
 
-		// Generate the rgb color values
-		int totalDistance = 0;
-		for (int i = 0; i < colorPoints.Count - 1; i++)
-		{
-			// Get the distance for the interpolation interval
-			int distance = colorPoints[i + 1].isovalue - colorPoints[i].isovalue;
-			for (int j = 0; j < distance; j++)
-			{
-				// Perform interpolation between the colors in the current interval
-				transferColors[totalDistance] = Color.Lerp(colorPoints[i].color, colorPoints[i + 1].color, (j / (float)distance));
-				transferColors[totalDistance].a = 1.0f;
-				transferColors[totalDistance + isovalueRange] = transferColors[totalDistance];
-				totalDistance++;
-			}
-		}
+        //// OLD: Generate the rgb color values
+        //int totalDistance = 0;
+        //for (int i = 0; i < colorPoints.Count - 1; i++)
+        //{
+        //	// Get the distance for the interpolation interval
+        //	int distance = colorPoints[i + 1].isovalue - colorPoints[i].isovalue;
+        //	for (int j = 0; j < distance; j++)
+        //	{
+        //		// Perform interpolation between the colors in the current interval
+        //		transferColors[totalDistance] = Color.Lerp(colorPoints[i].color, colorPoints[i + 1].color, (j / (float)distance));
+        //		transferColors[totalDistance].a = 1.0f;
+        //		//transferColors[totalDistance + isovalueRange] = transferColors[totalDistance];
+        //		totalDistance++;
+        //	}
+        //}
+
+        ControlPoint start = colorPoints[0];
+        ControlPoint end = colorPoints[1];
+        int cpIndex = 1;
+        for (int i = 0; i < isovalueRange + 1; i++)
+        {
+            // Check if the we've iterated past the end control point; update range if so
+            if (i > end.isovalue && cpIndex < colorPoints.Count - 1)
+            {
+                cpIndex++;
+                start = end;
+                end = colorPoints[cpIndex]; 
+            }
+
+            float lerpPos = (i - start.isovalue) / (float) (end.isovalue - start.isovalue);
+            transferColors[i] = Color.Lerp(start.color, end.color, lerpPos);
+        }
 	}
 
-	/// <summary>
-	/// Generates the alpha values for the transfer texture.
-	/// </summary>
-	/// <param name="transferColors"></param>
-	public void generateTransferTextureAlphas(Color[] transferColors)
+    /// <summary>
+    /// Generates the alpha values for the transfer texture that will be sampled by the shader.
+    /// </summary>
+    /// <param name="transferColors"></param>
+    public void generateTransferTextureAlphas(Color[] transferColors)
 	{
 		// Sort the list in place by increasing isovalues
 		alphaPoints.Sort((x, y) => x.isovalue.CompareTo(y.isovalue));
 
-		// Generate the alpha values
-		int totalDistance = 0;
-		for (int i = 0; i < alphaPoints.Count - 1; i++)
-		{
-			// Get the distance for the interpolation interval
-			int distance = alphaPoints[i + 1].isovalue - alphaPoints[i].isovalue;
-			for (int j = 0; j < distance; j++)
-			{
-				// Perform interpolation between the alphas in the current interval
-				transferColors[totalDistance].a = Mathf.Lerp(alphaPoints[i].color.a, alphaPoints[i + 1].color.a, (j / (float)distance));
-				transferColors[totalDistance + isovalueRange].a = transferColors[totalDistance].a;
-				totalDistance++;
-			}
-		}
-	}
+        //// OLD: Generate the alpha values
+        //int totalDistance = 0;
+        //for (int i = 0; i < alphaPoints.Count - 1; i++)
+        //{
+        //	// Get the distance for the interpolation interval
+        //	int distance = alphaPoints[i + 1].isovalue - alphaPoints[i].isovalue;
+        //	for (int j = 0; j < distance; j++)
+        //	{
+        //		// Perform interpolation between the alphas in the current interval
+        //		transferColors[totalDistance].a = Mathf.Lerp(alphaPoints[i].color.a, alphaPoints[i + 1].color.a, (j / (float)distance));
+        //		//transferColors[totalDistance + isovalueRange].a = transferColors[totalDistance].a;
+        //		totalDistance++;
+        //	}
+        //}
 
-	/*****************************************************************************
+        ControlPoint start = alphaPoints[0];
+        ControlPoint end = alphaPoints[1];
+        int cpIndex = 1;
+        for (int i = 0; i < isovalueRange + 1; i++)
+        {
+            // Check if the we've iterated past the end control point; update range if so
+            if (i > end.isovalue && cpIndex < alphaPoints.Count - 1)
+            {
+                cpIndex++;
+                start = end;
+                end = alphaPoints[cpIndex];
+            }
+
+            float lerpPos = (i - start.isovalue) / (float)(end.isovalue - start.isovalue);
+            transferColors[i].a = Mathf.Lerp(start.color.a, end.color.a, lerpPos);
+        }
+    }
+
+    /// <summary>
+    /// Generates a transfer texture with size 256 x 2 to be used for display to the Color Panel.
+    /// TODO: NEEDS TO BE IMPLEMENTED
+    /// </summary>
+    /// <returns></returns>
+    public Texture2D generateDisplayTransferTexture()
+    {
+        // Initialize the array of colors for the pixels
+        Color[] transferColors = new Color[255 * 1];
+
+        // Generate the transfer texture's rgb color values
+        generateDisplayTransferTextureColors(transferColors);
+
+        Texture2D newTransferTexture = new Texture2D(255, 1, TextureFormat.RGBA32, false);
+        newTransferTexture.SetPixels(transferColors);
+        newTransferTexture.Apply();
+
+        return newTransferTexture;
+    }
+
+    /// <summary>
+    /// Creates a set of colors based on the transfer function's color control points by normalizing the isovalues range to a texture that is 255 x 2 in size.
+    /// </summary>
+    /// <param name="transferColors"></param>
+    public void generateDisplayTransferTextureColors(Color[] transferColors)
+    {
+        // Sort the list in place by increasing isovalues
+        colorPoints.Sort((x, y) => x.isovalue.CompareTo(y.isovalue));
+
+        // Generate the rgb color values
+        int totalDistance = 0;
+        for (int i = 0; i < colorPoints.Count - 1; i++)
+        {
+            // Get the distance for the interpolation interval
+            int distance = (int) Math.Round((colorPoints[i + 1].isovalue - colorPoints[i].isovalue) / (double) isovalueRange * 255.0f);    // divide by isovalue range and multiply by texture width to normalize values in this range
+            for (int j = 0; j < distance; j++)
+            {
+                // Perform interpolation between the colors in the current interval
+                transferColors[totalDistance] = Color.Lerp(colorPoints[i].color, colorPoints[i + 1].color, (j / (float)distance));
+                transferColors[totalDistance].a = 1.0f;
+                //transferColors[totalDistance + isovalueRange] = transferColors[totalDistance];
+                totalDistance++;
+            }
+        }
+    }
+
+    /*****************************************************************************
 	* CONTROL POINT HANDLERS
 	*****************************************************************************/
-	/// <summary>
-	/// Adds two default points for both the color and alpha points.
-	/// To ensure behavior of the transfer function is defined, endpoints must be placed at 0 and isovalueRange.
-	/// </summary>
-	private void addDefaultPoints()
+    /// <summary>
+    /// Adds two default points for both the color and alpha points.
+    /// To ensure behavior of the transfer function is defined, endpoints must be placed at 0 and isovalueRange.
+    /// </summary>
+    private void addDefaultPoints()
 	{
 		colorPoints.Add(new ControlPoint(0.0f, 0.0f, 0.0f, 0));
 		colorPoints.Add(new ControlPoint(1.0f, 1.0f, 0.85f, isovalueRange));

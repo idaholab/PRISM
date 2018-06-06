@@ -16,6 +16,7 @@ public class Brick
 	private int currentZLevel;                                      // The current Z-Order rendering level for this brick.
 	private uint lastBitMask;                                       // The last bit mask used for accessing the data.
 	private string filename;                                        // The name of the data file associated with this brick.
+    private Volume parentVolume;                                    // The volume that this brick is associated with.
 
 	/* Properties */
 	public GameObject GameObject
@@ -91,6 +92,18 @@ public class Brick
 		}
 	}
 
+    public Volume ParentVolume
+    {
+        get
+        {
+            return parentVolume;
+        }
+        set
+        {
+            parentVolume = value;
+        }
+    }
+
 	/* Constructors*/
 	/// <summary>
 	/// Creates a new instance of a data brick.
@@ -107,10 +120,13 @@ public class Brick
 	/// <param name="_size"></param>
 	/// <param name="_position"></param>
 	/// <param name="mat"></param>
-	public Brick(string _filename, int _size, Vector3 _position, Material mat)
+	public Brick(string _filename, int _size, Vector3 _position, Material mat, Volume _parentVolume)
 	{
-		//Set the name of the data file associated with this brick
+		// Set the name of the data file associated with this brick
 		filename = _filename;
+
+        // Set the volume that this brick is associated with
+        parentVolume = _parentVolume;
 
 		// Initialize a Unity cube to represent the brick
 		gameObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -254,11 +270,60 @@ public class Brick
 
 	}
 
-	/// <summary>
-	/// Generates a struct of the bricks data that can be analyzed in the compute shader.
-	/// </summary>
-	/// <returns></returns>
-	public BrickData getBrickData()
+    /// <summary>
+    /// The file must already have been opened.
+    /// </summary>
+    /// <returns></returns>
+    public Texture3D readRaw16Into3DZLevel()
+    {
+        try
+        {
+            // Get the size of the data based on the currentZLevel rendering level
+            int dataSize = 1 << currentZLevel; // equivalent to 2^currentZLevel
+
+            // Read in the bytes
+            BinaryReader reader = new BinaryReader(new FileStream(filename, FileMode.Open));
+
+            byte[] buffer = new byte[dataSize * dataSize * dataSize * 2];
+            reader.Read(buffer, 0, sizeof(byte) * buffer.Length);
+            reader.Close();
+
+            // Convert the bytes to ushort 
+            // TODO: Figure out a better way to read in ushort rather than doing this... This may not be available on non-Windows platforms
+            ushort[] ushortBuffer = new ushort[buffer.Length / 2];
+            Buffer.BlockCopy(buffer, 0, ushortBuffer, 0, buffer.Length);
+
+            // Scale the scalar values to [0, 1]
+            Color[] scalars;
+            scalars = new Color[ushortBuffer.Length];
+            for (int i = 0; i < ushortBuffer.Length; i++)
+            {
+                scalars[i] = new Color(((float)ushortBuffer[i] / ushort.MaxValue), 0, 0, 0);
+            }
+
+            // Put the intensity scalar values into the Texture3D
+            Texture3D data = new Texture3D(dataSize, dataSize, dataSize, TextureFormat.RHalf, false);
+            data.filterMode = FilterMode.Point;
+            data.SetPixels(scalars);
+            data.Apply();
+
+            // Send the intensity scalar values to the shader
+            gameObject.GetComponent<Renderer>().material.SetTexture("_VolumeDataTexture", data);
+
+            return data;
+        }
+        catch (Exception e)
+        {
+            Debug.Log("Unable to read in the data file into brick: " + e);
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Generates a struct of the bricks data that can be analyzed in the compute shader.
+    /// </summary>
+    /// <returns></returns>
+    public BrickData getBrickData()
 	{
 		BrickData newData;
 
@@ -315,8 +380,11 @@ public class Brick
 		CurrentZLevel = _currentZlevel;
 		gameObject.GetComponent<Renderer>().material.SetInt("_CurrentZLevel", currentZLevel);
 
-		// Read in the appropriate amount of data dependent on the current z level to render to
-		readRaw8Into3DZLevel();
+        // Read in the appropriate amount of data dependent on the current z level to render to
+        if (parentVolume.BytePerPixel == 1)
+            readRaw8Into3DZLevel();
+        else if (parentVolume.BytePerPixel == 2)
+            readRaw16Into3DZLevel();
 	}
 
 	/// <summary>

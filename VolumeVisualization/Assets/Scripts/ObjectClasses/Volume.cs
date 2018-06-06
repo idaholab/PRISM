@@ -22,6 +22,7 @@ public class Volume {
 	private Vector3 position;
 	private Material volumeMaterial;
 	private GameObject volumeCube;
+    private string brickDataType;
 
 	/* Properties */
 	public Brick[] Bricks
@@ -130,12 +131,23 @@ public class Volume {
 			return volumeCube;
 		}
 	}
+    public string BrickDataType
+    {
+        get
+        {
+            return brickDataType;
+        }
+        set
+        {
+            brickDataType = value;
+        }
+    }
 
-	/* Constructors */
-	/// <summary>
-	/// Creates a new instance of a volume.
-	/// </summary>
-	public Volume()
+    /* Constructors */
+    /// <summary>
+    /// Creates a new instance of a volume.
+    /// </summary>
+    public Volume()
 	{
 
 	}
@@ -146,7 +158,7 @@ public class Volume {
 	/// <param name="_dataPath"></param>
 	/// <param name="_metadataFileName"></param>
 	/// <param name="_volumeMaterial"></param>
-	public Volume(string _dataPath, string _metadataFileName, Material _volumeMaterial)
+	public Volume(string _dataPath, string _metadataFileName)
 	{
 		// Set the default position of the volume
 		Position = new Vector3(0.5f, 0.5f, 0.5f);
@@ -159,9 +171,6 @@ public class Volume {
 
 		// Make the Unity game object invisible
 		volumeCube.GetComponent<MeshRenderer>().enabled = false;
-
-		// Set the volume material
-		VolumeMaterial = _volumeMaterial;
 
 		// Load the volume from the JSOn metadata file
 		loadVolume(_dataPath, _metadataFileName);
@@ -199,8 +208,44 @@ public class Volume {
 									 N["globalSize"][2].AsInt };
 			bricks = new Brick[totalBricks];
 
-			// Create and position all of the bricks within a 1 x 1 x 1 cube
-			for (int i = 0; i < bricks.Length; i++)
+            // Load the volume material based on the metadata
+            Shader hzShader;
+            hzShader = Shader.Find("Custom/HZVolume");
+            volumeMaterial = new Material(hzShader);
+            
+            // Ensure that the shader samples correctly based on the number bytes per pixel the volume uses
+            switch (bytesPerPixel)
+            {
+                case 1:
+                    volumeMaterial.EnableKeyword("BIT_8");
+                    break;
+                case 2:
+                    volumeMaterial.EnableKeyword("BIT_16");
+                    break;
+                default:
+                    volumeMaterial.EnableKeyword("BIT_8");
+                    break;
+            }
+
+            // Get the file types being read in and ensure the correct type of sampling is done in the shader
+            string brickDataType = Path.GetExtension(N["bricks"][0]["filename"]);
+            switch (brickDataType)
+            {
+                case ".hz":
+                    volumeMaterial.EnableKeyword("USING_HZ_DATA");
+                    break;
+                case ".raw":
+                    volumeMaterial.EnableKeyword("USING_RAW_DATA");
+                    break;
+                default:
+                    volumeMaterial.EnableKeyword("USING_RAW_DATA");
+                    break;
+            }
+
+            Debug.Log("Volume detected as \"" + brickDataType + "\" type.");
+
+            // Create and position all of the bricks within a 1 x 1 x 1 cube
+            for (int i = 0; i < bricks.Length; i++)
 			{
 				// Read in metadata from the file
 				string newBrickFilename = DataPath + N["bricks"][i]["filename"];
@@ -233,7 +278,7 @@ public class Volume {
 				Vector3 finalBrickPosition = (brickPositionVoxelSpace + brickOffsetVoxelSpace) / maxGlobalSize;
 
 				// Create the brick
-				bricks[i] = new Brick(newBrickFilename, newBrickSize, finalBrickPosition, volumeMaterial);
+				bricks[i] = new Brick(newBrickFilename, newBrickSize, finalBrickPosition, volumeMaterial, this);
 
 				// Scale the bricks to the correct size
 				bricks[i].GameObject.transform.localScale = new Vector3(bricks[i].Size, bricks[i].Size, bricks[i].Size) / maxGlobalSize;

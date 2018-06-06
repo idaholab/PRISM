@@ -2,7 +2,6 @@
 
 using System;
 using UnityEngine;
-using Vectrosity;
 using System.Collections.Generic;
 
 /// <summary>
@@ -15,11 +14,11 @@ public class VolumeController : MonoBehaviour {
 	private ClippingPlane clippingPlane;				// Clipping plane for modifying viewable portion of the volume
 	public Camera mainCamera;							// Main camera in the scene		
 	public string dataPath = "Assets/Data/BoxHz/";		// The path to the data to be loaded into the renderer
-    public bool readRawData = true;                     // Boolean for whether the input data is in raw form
 
 	// Objects to draw for debugging purposes
 	public GameObject clippingPlaneCube;
-	private VectorLine boundingBoxLine;
+	private LineRenderer boundingBoxLine;
+    public bool drawBoundingBox = false;
 
 	// Brick Analysis compute shader
 	public ComputeShader brickAnalysisShader;
@@ -30,36 +29,28 @@ public class VolumeController : MonoBehaviour {
 	/// </summary>
 	private void Awake()
 	{
-		// 0. Create the default material
-		Shader hzShader = Shader.Find("Custom/HZVolume");
-		Material volumeMaterial = new Material(hzShader);
-        if (readRawData)
-        {
-            volumeMaterial.EnableKeyword("USING_RAW_DATA");
-        }
-        else
-        {
-            volumeMaterial.EnableKeyword("USING_HZ_DATA");
-        }
+        // 0. Create the data volume and its rendering material
+        currentVolume = new Volume(dataPath, "metadata.json");
 
-        // 1. Create the data volume
-        currentVolume = new Volume(dataPath, "metadata.json", volumeMaterial);
-
-		// 2. Set up the transfer function
-		int isovalueRange = currentVolume.calculateIsovalueRange();
+        // 1. Set up the transfer function
+        int isovalueRange = currentVolume.calculateIsovalueRange();
 		transferFunction = new TransferFunction(isovalueRange);
 
-		// 3. Set up the clipping plane
+		// 2. Set up the clipping plane
 		clippingPlane = new ClippingPlane(new Vector3(0,0,0), new Vector3(1, 0 ,0), false);
 		updateClippingPlaneAll();
 
-		// 4. Set up the target for the camera controls
+		// 3. Set up the target for the camera controls
 		CameraControls cameraControls = (CameraControls)mainCamera.GetComponent(typeof(CameraControls));
 		cameraControls.target = currentVolume.VolumeCube;
 
 		// DEBUG: Creating a wireframe bounding box cube
-		boundingBoxLine = new VectorLine("boundingCube", new List<Vector3>(24), 2.0f);
-		boundingBoxLine.MakeCube(new Vector3(0.5f, 0.5f, 0.5f), 1, 1, 1);               // Note: Places the corner at (0, 0, 0)
+        if (drawBoundingBox)
+        {
+            boundingBoxLine = createBoundingBoxLineRenderer();
+        }
+
+        //Debug.Log("TextureFormat.RHalf enabled? " + SystemInfo.SupportsTextureFormat(TextureFormat.RHalf));
 
 		// DEBUG: Create a box for the plane
 		//clippingPlaneCube = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -78,9 +69,6 @@ public class VolumeController : MonoBehaviour {
 	/// </summary>
 	private void Update ()
 	{
-		// Draw the 1 x 1 x 1 bounding box for the volume.
-		boundingBoxLine.Draw();
-
 		// Update the Z-order render level as necessary
 		checkZRenderLevelInput();
 
@@ -251,4 +239,46 @@ public class VolumeController : MonoBehaviour {
 		// Return the analyzed data
 		return analyzedData;
 	}
+
+    /// <summary>
+    /// Creates a bounding box Line Renderer to be used for debugging purposes.
+    /// </summary>
+    /// <returns></returns>
+    private LineRenderer createBoundingBoxLineRenderer()
+    {
+        GameObject myLine = new GameObject();
+        myLine.name = "Bounding Box Line Renderer";
+        myLine.transform.position = new Vector3(0,0,0);
+        myLine.AddComponent<LineRenderer>();
+        LineRenderer lr = myLine.GetComponent<LineRenderer>();
+        lr.material = new Material(Shader.Find("Particles/Alpha Blended Premultiply"));
+        lr.startColor = new Color(1.0f, 1.0f, 1.0f, 1.0f);
+        lr.endColor = new Color(1.0f, 1.0f, 1.0f, 1.0f);
+        lr.SetWidth(0.01f, 0.01f);
+        lr.sortingOrder = 100; // sort it to draw on top of most other objects
+
+        lr.positionCount = 16;
+        Vector3[] vertices =
+        {
+            new Vector3(0,0,0),
+            new Vector3(0,1,0),
+            new Vector3(1,1,0),
+            new Vector3(1,0,0),
+            new Vector3(0,0,0),
+            new Vector3(0,0,1),
+            new Vector3(0,1,1),
+            new Vector3(0,1,0),
+            new Vector3(0,1,1),
+            new Vector3(1,1,1),
+            new Vector3(1,1,0),
+            new Vector3(1,1,1),
+            new Vector3(1,0,1),
+            new Vector3(0,0,1),
+            new Vector3(1,0,1),
+            new Vector3(1,0,0),
+        };
+        lr.SetPositions(vertices);
+
+        return lr;
+    }
 }

@@ -117,15 +117,16 @@ public class TransferFunctionHandler : MonoBehaviour {
 		// Buffer over the new transfer texture to each of the materials
 		volumeController.getCurrentVolume().updateMaterialPropTexture2DAll("_TransferFunctionTex", transferFunction.TransferTexture);
 
-		// Generate the texture to display in the user interface
-		Color[] transferColors = new Color[transferFunction.IsovalueRange * 2];
-		transferFunction.generateTransferTextureColors(transferColors);
+        // Generate the texture to display in the user interface
+        //Color[] transferColors = new Color[transferFunction.IsovalueRange * 2];
+        //transferFunction.generateTransferTextureColors(transferColors);
 
-		Texture2D colorTextureDisplay = new Texture2D(transferFunction.IsovalueRange, 2, TextureFormat.RGBA32, false);
-		colorTextureDisplay.SetPixels(transferColors);
-		colorTextureDisplay.Apply();
+        //Texture2D colorTextureDisplay = new Texture2D(transferFunction.IsovalueRange, 2, TextureFormat.RGBA32, false);
+  //      colorTextureDisplay.SetPixels(transferColors);
+		//colorTextureDisplay.Apply();
 
-		transferTextureDisplay.texture = colorTextureDisplay;
+        // Generate the texture to display in the user interface
+		transferTextureDisplay.texture = transferFunction.generateDisplayTransferTexture();
 
 		// Update the Vectrosity graph for the alpha panel
 		alphaPanelHandler.updateAlphaLineRendererGraph();

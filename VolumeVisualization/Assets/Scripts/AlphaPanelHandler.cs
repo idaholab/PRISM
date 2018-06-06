@@ -25,6 +25,7 @@ public class AlphaPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
     public UILineRenderer alphaUILineRenderer;              // The LineRenderer that will be used to display the alpha graph.
     public GameObject controlPointImagePrefab;              // A prefab that will represent the control points visually in the alpha graph.
     private List<ControlPointRenderer> controlPointRenderers; // A reference to all of the wrappers for rendering the control points in the alpha graph.
+    public Text maxIsovalueLabel;                           // A reference to the max isovalue label in the alpha panel area.
 
 	private float pointRadius = 10.0f;						// Radius of the control points when interacting with them in the graph.
 	private float borderSize = 0.0f;                        // Size of the border around the panel. Padding on the internal edges of the panel is added. CAUSES BUGS WHEN NOT 0.0
@@ -51,6 +52,7 @@ public class AlphaPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
         transferFunctionHandler = (TransferFunctionHandler)GameObject.Find("Transfer Function Panel").GetComponent(typeof(TransferFunctionHandler));
 		volumeController = (VolumeController)GameObject.Find("VolumeController").GetComponent(typeof(VolumeController));
 		transferFunction = volumeController.getTransferFunction();
+        maxIsovalueLabel.text = transferFunction.IsovalueRange.ToString();
 
         // Initialize the control point renderers
         controlPointRenderers = new List<ControlPointRenderer>();
