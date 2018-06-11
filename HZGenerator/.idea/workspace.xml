@@ -7,10 +7,15 @@
     <list default="true" id="f8c84ed3-67bb-48db-bf6f-0f3ae124f038" name="Default" comment="Added Parallel Scan and Curving kernels. Added unit tests.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/artifacts/HZGenerator_jar/IDXGenerator.jar" beforeDir="false" afterPath="$PROJECT_DIR$/out/artifacts/HZGenerator_jar/IDXGenerator.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../VolumeVisualization/.vs/VolumeVisualization/v15/Browse.VC.db" beforeDir="false" afterPath="$PROJECT_DIR$/../VolumeVisualization/.vs/VolumeVisualization/v15/Browse.VC.db" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../VolumeVisualization/.vs/VolumeVisualization/v15/Server/sqlite3/storage.ide" beforeDir="false" afterPath="$PROJECT_DIR$/../VolumeVisualization/.vs/VolumeVisualization/v15/Server/sqlite3/storage.ide" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../VolumeVisualization/.vs/VolumeVisualization/v15/Server/sqlite3/storage.ide-shm" beforeDir="false" afterPath="$PROJECT_DIR$/../VolumeVisualization/.vs/VolumeVisualization/v15/Server/sqlite3/storage.ide-shm" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../VolumeVisualization/.vs/VolumeVisualization/v15/Server/sqlite3/storage.ide-wal" beforeDir="false" afterPath="$PROJECT_DIR$/../VolumeVisualization/.vs/VolumeVisualization/v15/Server/sqlite3/storage.ide-wal" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../VolumeVisualization/Assets/Scenes/DesktopDefault.unity" beforeDir="false" afterPath="$PROJECT_DIR$/../VolumeVisualization/Assets/Scenes/DesktopDefault.unity" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../VolumeVisualization/Assets/Scripts/ObjectClasses/Brick.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../VolumeVisualization/Assets/Scripts/ObjectClasses/Brick.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../VolumeVisualization/Assets/Scripts/ObjectClasses/Volume.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../VolumeVisualization/Assets/Scripts/ObjectClasses/Volume.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../VolumeVisualization/Assets/Scripts/VolumeController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../VolumeVisualization/Assets/Scripts/VolumeController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../VolumeVisualization/Assets/Shaders/HZVolume.shader" beforeDir="false" afterPath="$PROJECT_DIR$/../VolumeVisualization/Assets/Shaders/HZVolume.shader" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <ignored path="$PROJECT_DIR$/target/" />
@@ -33,8 +38,8 @@
       <file leaf-file-name="VolumeApportioner.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/VolumeApportioner.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1207">
-              <caret line="87" column="52" selection-start-line="87" selection-start-column="52" selection-end-line="87" selection-end-column="52" />
+            <state relative-caret-position="306">
+              <caret line="98" lean-forward="true" selection-start-line="98" selection-end-line="98" />
             </state>
           </provider>
         </entry>
@@ -42,7 +47,7 @@
       <file leaf-file-name="MortonConverter.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/Kernels/MortonConverter.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="170">
+            <state relative-caret-position="-1003">
               <caret line="17" column="14" selection-start-line="17" selection-start-column="14" selection-end-line="17" selection-end-column="66" />
             </state>
           </provider>
@@ -51,8 +56,8 @@
       <file leaf-file-name="RawVolume.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/RawVolume.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="329">
-              <caret line="54" column="68" selection-start-line="54" selection-start-column="60" selection-end-line="54" selection-end-column="68" />
+            <state relative-caret-position="485">
+              <caret line="59" column="13" selection-start-line="59" selection-start-column="13" selection-end-line="59" selection-end-column="13" />
               <folding>
                 <element signature="method#RawVolume#0;class#RawVolume#0" />
                 <element signature="method#getSliceList#0;class#RawVolume#0" />
@@ -75,12 +80,12 @@
       </file>
       <file leaf-file-name="HZGeneratorGUI.fxml" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/resources/HZGeneratorGUI.fxml">
-          <provider editor-type-id="JavaFX-Scene-Builder" />
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="2210">
               <caret line="130" column="69" selection-start-line="130" selection-start-column="69" selection-end-line="130" selection-end-column="69" />
             </state>
           </provider>
+          <provider editor-type-id="JavaFX-Scene-Builder" />
         </entry>
       </file>
       <file leaf-file-name="MainClass.java" pinned="false" current-in-tab="false">
@@ -88,15 +93,6 @@
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="527">
               <caret line="41" column="49" selection-start-line="41" selection-start-column="49" selection-end-line="41" selection-end-column="49" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="PartitionerResult.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/Kernels/PartitionerResult.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="289">
-              <caret line="24" column="14" selection-start-line="24" selection-start-column="14" selection-end-line="24" selection-end-column="14" />
             </state>
           </provider>
         </entry>
@@ -127,11 +123,20 @@
       <file leaf-file-name="Controller.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/Controller.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="3944">
-              <caret line="256" column="19" selection-start-line="256" selection-start-column="19" selection-end-line="256" selection-end-column="19" />
+            <state relative-caret-position="214">
+              <caret line="307" column="22" selection-start-line="307" selection-start-column="22" selection-end-line="307" selection-end-column="22" />
               <folding>
                 <element signature="method#showAlert#0;class#Controller#0" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="BrickFactory.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/BrickFactory.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1190">
+              <caret line="86" column="85" selection-start-line="86" selection-start-column="85" selection-end-line="86" selection-end-column="85" />
             </state>
           </provider>
         </entry>
@@ -149,8 +154,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>brickPane</find>
-      <find>update3DContent</find>
       <find>openvolume</find>
       <find>tiffFol</find>
       <find>updateRawImage</find>
@@ -177,8 +180,10 @@
       <find>bytesPerPixel</find>
       <find>pvm</find>
       <find>rawpath1</find>
-      <find>endian</find>
       <find>byteorde</find>
+      <find>map</find>
+      <find>mapTo8BPP</find>
+      <find>endian</find>
     </findStrings>
     <replaceStrings>
       <replace />
@@ -229,7 +234,6 @@
         <option value="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/SliceProcessor.java" />
         <option value="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/Volume.java" />
         <option value="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/TiffStack.java" />
-        <option value="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/RawVolume.java" />
         <option value="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/VolumeProcessor.java" />
         <option value="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/VolumePartitioner.java" />
         <option value="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/Kernels/Partitioner.java" />
@@ -242,6 +246,7 @@
         <option value="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/Brick.java" />
         <option value="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/Controller.java" />
         <option value="$PROJECT_DIR$/src/main/resources/HZGeneratorGUI.fxml" />
+        <option value="$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/RawVolume.java" />
       </list>
     </option>
   </component>
@@ -271,8 +276,8 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="PackagesPane" />
       <pane id="AndroidView" />
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -337,7 +342,7 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
+      <pane id="PackagesPane" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -631,35 +636,35 @@
     <layout>
       <window_info anchor="right" id="Palette" order="3" />
       <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Messages" order="10" sideWeight="0.49375" weight="0.31044215" />
       <window_info anchor="right" id="Palette&#9;" order="9" />
       <window_info id="Image Layers" order="7" />
       <window_info anchor="right" id="Capture Analysis" order="6" />
-      <window_info anchor="bottom" id="Event Log" order="7" sideWeight="0.515625" side_tool="true" visible="true" weight="0.23804463" />
+      <window_info anchor="bottom" id="Event Log" order="7" sideWeight="0.5161458" side_tool="true" visible="true" weight="0.23804463" />
       <window_info anchor="right" id="Maven Projects" order="4" />
       <window_info anchor="bottom" id="Version Control" order="8" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.484375" weight="0.23804463" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.48385417" weight="0.23804463" />
       <window_info anchor="bottom" id="Terminal" order="9" />
       <window_info id="Capture Tool" order="3" />
       <window_info id="Designer" order="4" />
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.12864584" />
-      <window_info anchor="bottom" id="Find" order="1" sideWeight="0.49583334" weight="0.27168235" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.12864584" />
+      <window_info anchor="bottom" id="Find" order="1" sideWeight="0.4953125" weight="0.27098832" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info id="UI Designer" order="5" />
       <window_info anchor="right" id="Theme Preview" order="7" />
       <window_info id="Favorites" order="6" side_tool="true" />
       <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49166667" weight="0.39416745" />
-      <window_info anchor="bottom" id="Messages" order="10" sideWeight="0.49375" weight="0.31044215" />
       <window_info anchor="right" id="Time Tracking" order="11" weight="0.2471875" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
-      <window_info anchor="right" id="Database" order="10" />
+      <window_info anchor="bottom" id="Message" order="0" />
       <window_info id="Nl-Palette" order="2" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="right" id="Database" order="10" />
       <window_info anchor="right" id="Coverage" order="8" side_tool="true" weight="0.0925" />
-      <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="right" id="Properties" order="5" />
-      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info anchor="right" id="Properties" order="5" />
     </layout>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -829,13 +834,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/BrickFactory.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1445">
-          <caret line="86" column="85" selection-start-line="86" selection-start-column="85" selection-end-line="86" selection-end-column="85" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/Kernels/PartitionerResult.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="289">
@@ -862,23 +860,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/MainClass.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="527">
-          <caret line="41" column="49" selection-start-line="41" selection-start-column="49" selection-end-line="41" selection-end-column="49" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/Controller.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3944">
-          <caret line="256" column="19" selection-start-line="256" selection-start-column="19" selection-end-line="256" selection-end-column="19" />
-          <folding>
-            <element signature="method#showAlert#0;class#Controller#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/VolumeBricker.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="510">
@@ -890,31 +871,55 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/resources/HZGeneratorGUI.fxml">
-      <provider editor-type-id="JavaFX-Scene-Builder" />
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2210">
           <caret line="130" column="69" selection-start-line="130" selection-start-column="69" selection-end-line="130" selection-end-column="69" />
         </state>
       </provider>
+      <provider editor-type-id="JavaFX-Scene-Builder" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/MainClass.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="527">
+          <caret line="41" column="49" selection-start-line="41" selection-start-column="49" selection-end-line="41" selection-end-column="49" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/Controller.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="214">
+          <caret line="307" column="22" selection-start-line="307" selection-start-column="22" selection-end-line="307" selection-end-column="22" />
+          <folding>
+            <element signature="method#showAlert#0;class#Controller#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/BrickFactory.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1190">
+          <caret line="86" column="85" selection-start-line="86" selection-start-column="85" selection-end-line="86" selection-end-column="85" />
+        </state>
+      </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/VolumeApportioner.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1207">
-          <caret line="87" column="52" selection-start-line="87" selection-start-column="52" selection-end-line="87" selection-end-column="52" />
+        <state relative-caret-position="306">
+          <caret line="98" lean-forward="true" selection-start-line="98" selection-end-line="98" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/Kernels/MortonConverter.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="170">
+        <state relative-caret-position="-1003">
           <caret line="17" column="14" selection-start-line="17" selection-start-column="14" selection-end-line="17" selection-end-column="66" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/gov/inl/HZGenerator/BrickFactory/RawVolume.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="329">
-          <caret line="54" column="68" selection-start-line="54" selection-start-column="60" selection-end-line="54" selection-end-column="68" />
+        <state relative-caret-position="485">
+          <caret line="59" column="13" selection-start-line="59" selection-start-column="13" selection-end-line="59" selection-end-column="13" />
           <folding>
             <element signature="method#RawVolume#0;class#RawVolume#0" />
             <element signature="method#getSliceList#0;class#RawVolume#0" />

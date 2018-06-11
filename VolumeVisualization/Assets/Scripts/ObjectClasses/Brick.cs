@@ -130,9 +130,11 @@ public class Brick
 
 		// Initialize a Unity cube to represent the brick
 		gameObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        gameObject.name = Path.GetFileName(filename);
 
-		// Set the position of the 
-		gameObject.transform.position = _position;
+        // Set the position of the brick
+        gameObject.transform.position = _position;
+        gameObject.transform.parent = parentVolume.VolumeCube.transform;
 
 		// Assign the given material to render the cube with
 		setMaterial(mat);
@@ -236,23 +238,23 @@ public class Brick
 			// Get the size of the data based on the currentZLevel rendering level
 			int dataSize = 1 << currentZLevel; // equivalent to 2^currentZLevel
 
-			// Read in the bytes
-			BinaryReader reader = new BinaryReader(new FileStream(filename, FileMode.Open));
+            // Read in the bytes
+            BinaryReader reader = new BinaryReader(new FileStream(filename, FileMode.Open));
 
 			byte[] buffer = new byte[dataSize * dataSize * dataSize];
 			reader.Read(buffer, 0, sizeof(byte) * buffer.Length);
 			reader.Close();
 
-			// Scale the scalar values to [0, 1]
-			Color[] scalars;
+            // Scale the scalar values to [0, 1]
+            Color[] scalars;
 			scalars = new Color[buffer.Length];
 			for (int i = 0; i < buffer.Length; i++)
 			{
 				scalars[i] = new Color(0, 0, 0, ((float)buffer[i] / byte.MaxValue));
 			}
 
-			// Put the intensity scalar values into the Texture3D
-			Texture3D data = new Texture3D(dataSize, dataSize, dataSize, TextureFormat.Alpha8, false);
+            // Put the intensity scalar values into the Texture3D
+            Texture3D data = new Texture3D(dataSize, dataSize, dataSize, TextureFormat.Alpha8, false);
 			data.filterMode = FilterMode.Point;
 			data.SetPixels(scalars);
 			data.Apply();
@@ -288,8 +290,16 @@ public class Brick
             reader.Read(buffer, 0, sizeof(byte) * buffer.Length);
             reader.Close();
 
-            // Convert the bytes to ushort 
-            // TODO: Figure out a better way to read in ushort rather than doing this... This may not be available on non-Windows platforms
+            // Convert the big endian input data to be little endian for the Buffer.BlockCopy()
+            for (int i = 0; i < buffer.Length; i += 2)
+            {
+                byte temp = buffer[i];
+                buffer[i] = buffer[i + 1];
+                buffer[i + 1] = temp;
+            }
+
+            // Convert the bytes to ushort (Note: Buffer.BlockCopy() assumes data is in little endian format.
+            // TODO: Figure out a better way to read in ushort rather than doing this... This may not be available on non-Windows platforms?
             ushort[] ushortBuffer = new ushort[buffer.Length / 2];
             Buffer.BlockCopy(buffer, 0, ushortBuffer, 0, buffer.Length);
 

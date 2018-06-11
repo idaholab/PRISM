@@ -165,9 +165,10 @@ public class Volume {
 
 		// Create the (non-visible) Unity game object that will represent the volume
 		volumeCube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        volumeCube.name = "Volume";
 
-		// Set the position of the Unity game object
-		volumeCube.transform.position = Position;
+        // Set the position of the Unity game object
+        volumeCube.transform.position = Position;
 
 		// Make the Unity game object invisible
 		volumeCube.GetComponent<MeshRenderer>().enabled = false;

@@ -366,6 +366,17 @@ public class TransferFunction
 			points.alphaPoints = alphaPoints;
 			points.colorPoints = colorPoints;
 
+			//// Scale the transfer function points to the 16-bit range (0-65535)
+			//for (int i = 0; i < points.alphaPoints.Count; i++)
+			//{
+			//	points.alphaPoints[i].isovalue = (int)Mathf.Clamp((float)Math.Round((points.alphaPoints[i].isovalue / (float) isovalueRange) * 65535), 0, 65535);
+			//}
+
+			//for (int i = 0; i < points.colorPoints.Count; i++)
+			//{
+			//	points.colorPoints[i].isovalue = (int)Mathf.Clamp((float)Math.Round((points.colorPoints[i].isovalue / (float) isovalueRange) * 65535), 0, 65535);
+			//}
+
 			// Write the points object to JSON
 			string jsonString = JsonUtility.ToJson(points, true);
 
@@ -400,6 +411,17 @@ public class TransferFunction
 			ControlPointLists newPoints = JsonUtility.FromJson<ControlPointLists>(textFromFile);
 			alphaPoints = newPoints.alphaPoints;
 			colorPoints = newPoints.colorPoints;
+
+			//// Scale the transfer function points to the current isovalue range (added for 16-bit support)
+			//for (int i = 0; i < newPoints.alphaPoints.Count; i++)
+			//{
+			//	newPoints.alphaPoints[i].isovalue = (int) Mathf.Clamp((float)Math.Round((newPoints.alphaPoints[i].isovalue / 65535.0f) * isovalueRange), 0, isovalueRange);
+			//}
+
+			//for (int i = 0; i < newPoints.colorPoints.Count; i++)
+			//{
+			//	newPoints.colorPoints[i].isovalue = (int)Mathf.Clamp((float)Math.Round((newPoints.colorPoints[i].isovalue / 65535.0f) * isovalueRange), 0, isovalueRange);
+			//}
 
 			// Tell the transfer function update
 			transferFunctionChanged = true;

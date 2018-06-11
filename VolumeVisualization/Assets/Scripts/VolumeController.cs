@@ -50,8 +50,6 @@ public class VolumeController : MonoBehaviour {
             boundingBoxLine = createBoundingBoxLineRenderer();
         }
 
-        //Debug.Log("TextureFormat.RHalf enabled? " + SystemInfo.SupportsTextureFormat(TextureFormat.RHalf));
-
 		// DEBUG: Create a box for the plane
 		//clippingPlaneCube = GameObject.CreatePrimitive(PrimitiveType.Cube);
 		//clippingPlaneCube.transform.position = clippingPlane.Position;

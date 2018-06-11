@@ -50,7 +50,10 @@ public class TransferFunctionHandler : MonoBehaviour {
 		colorPaletteHandler = (ColorPalette)colorPalettePanel.GetComponent(typeof(ColorPalette));
 
 		// Set up the transfer function loading drop down menu and load the first transfer function in the list
-		savedTransferFunctionFolderPath = "Assets/Resources/TransferFunctions/";
+		if (transferFunction.IsovalueRange == 255)
+			savedTransferFunctionFolderPath = "Assets/Resources/TransferFunctions8Bit/";
+		else
+			savedTransferFunctionFolderPath = "Assets/Resources/TransferFunctions16Bit/";
 		transferFunctionFileExtension = ".txt";
 		Button loadButton = (GameObject.Find("Load Button").GetComponent<Button>());
 		Button saveButton = (GameObject.Find("Save Button").GetComponent<Button>());

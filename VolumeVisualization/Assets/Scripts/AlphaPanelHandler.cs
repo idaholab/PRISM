@@ -106,18 +106,21 @@ public class AlphaPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 		{
 			if (transferFunction.ActiveControlPoint != null)
 			{
-                // Delete the active point that was clicked
-				transferFunction.removeAlphaPoint(transferFunction.ActiveControlPoint);
+				if (transferFunction.AlphaPoints.Count > 2)
+				{
+					// Delete the active point that was clicked
+					transferFunction.removeAlphaPoint(transferFunction.ActiveControlPoint);
 
-                // Delete its associated renderer
-                for (int i = 0; i < controlPointRenderers.Count; i++)
-                {
-                    if (controlPointRenderers[i].CP.Equals(transferFunction.ActiveControlPoint))
-                    {
-                        controlPointRenderers[i].destruct();
-                        controlPointRenderers.Remove(controlPointRenderers[i]);
-                    }
-                }
+					// Delete its associated renderer
+					for (int i = 0; i < controlPointRenderers.Count; i++)
+					{
+						if (controlPointRenderers[i].CP.Equals(transferFunction.ActiveControlPoint))
+						{
+							controlPointRenderers[i].destruct();
+							controlPointRenderers.Remove(controlPointRenderers[i]);
+						}
+					}
+				}
 			}
 		}
     }

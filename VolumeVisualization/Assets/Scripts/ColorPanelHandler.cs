@@ -102,18 +102,21 @@ public class ColorPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 		{
 			if (transferFunction.ActiveControlPoint != null)
 			{
-                // Delete the active point that was clicked
-				transferFunction.removeColorPoint(transferFunction.ActiveControlPoint);
+				if (transferFunction.ColorPoints.Count > 2)
+				{
+					// Delete the active point that was clicked
+					transferFunction.removeColorPoint(transferFunction.ActiveControlPoint);
 
-                // Delete its associated renderer
-                for (int i = 0; i < controlPointRenderers.Count; i++)
-                {
-                    if (controlPointRenderers[i].CP.Equals(transferFunction.ActiveControlPoint))
-                    {
-                        controlPointRenderers[i].destruct();
-                        controlPointRenderers.Remove(controlPointRenderers[i]);
-                    }
-                }
+					// Delete its associated renderer
+					for (int i = 0; i < controlPointRenderers.Count; i++)
+					{
+						if (controlPointRenderers[i].CP.Equals(transferFunction.ActiveControlPoint))
+						{
+							controlPointRenderers[i].destruct();
+							controlPointRenderers.Remove(controlPointRenderers[i]);
+						}
+					}
+				}
             }
 		}
     }

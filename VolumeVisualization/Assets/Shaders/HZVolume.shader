@@ -294,7 +294,7 @@ Shader "Custom/HZVolume"
 				return tex2Dlod(_TransferFunctionTex, float4(isovalue, 0.0, 0.0, 0.0));
 #elif BIT_16
 				// TODO: Must sample in the x and y dimensions of the texture
-				float sampX = isovalue / 256;
+				float sampX = isovalue / 256.0f;
 				float sampY = isovalue % 256;
 				return tex2Dlod(_TransferFunctionTex, float4(sampX, sampY, 0.0, 0.0));;
 #endif
