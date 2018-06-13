@@ -1,6 +1,7 @@
 package gov.inl.HZGenerator.BrickFactory;
 
 import java.io.IOException;
+import java.nio.ByteOrder;
 import java.util.List;
 
 /**
@@ -39,9 +40,9 @@ public class BrickFactory {
 	}
 
 	/* Opens a raw with the provided dimensions */
-	public List<String> openRaw(String path, int width, int height, int depth, int bitsPerPixel) {
+	public List<String> openRaw(String path, int width, int height, int depth, int bitsPerPixel, ByteOrder byteOrder) {
 		try {
-			volume = new RawVolume(path, width, height, depth, bitsPerPixel);
+			volume = new RawVolume(path, width, height, depth, bitsPerPixel, byteOrder);
 		} catch (Exception e) {
 			return null;
 		}
@@ -50,6 +51,8 @@ public class BrickFactory {
 
 	/* Processes slices, then curves optimized bricks of the volume. Saves at settings.outputpath */
 	public void generateBricks() {
+		volumePartitioner.bytesPerPixel = settings.mapTo8BPP ? 1 : volume.bytesPerPixel;
+
 		/* Brick the volume data, which can be read using the generated json file*/
 		volumePartitioner.partition(volume, settings);
 		try {

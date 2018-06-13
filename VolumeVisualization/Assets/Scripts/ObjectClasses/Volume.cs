@@ -23,6 +23,8 @@ public class Volume {
 	private Material volumeMaterial;
 	private GameObject volumeCube;
     private string brickDataType;
+	private Vector3 scale;
+	public string endianness;
 
 	/* Properties */
 	public Brick[] Bricks
@@ -142,12 +144,34 @@ public class Volume {
             brickDataType = value;
         }
     }
+	public Vector3 Scale
+	{
+		get
+		{
+			return volumeCube.transform.localScale;
+		}
+		set
+		{
+			volumeCube.transform.localScale = value;
+		}
+	}
+	public string Endianness
+	{
+		get
+		{
+			return endianness;
+		}
+		set
+		{
+			endianness = value;
+		}
+	}
 
-    /* Constructors */
-    /// <summary>
-    /// Creates a new instance of a volume.
-    /// </summary>
-    public Volume()
+	/* Constructors */
+	/// <summary>
+	/// Creates a new instance of a volume.
+	/// </summary>
+	public Volume()
 	{
 
 	}
@@ -209,8 +233,11 @@ public class Volume {
 									 N["globalSize"][2].AsInt };
 			bricks = new Brick[totalBricks];
 
-            // Load the volume material based on the metadata
-            Shader hzShader;
+			// Read in the endianness of the bytes (this is mainly relevant for 16-bit data)
+			endianness = N["endianness"];
+
+			// Load the volume material based on the metadata
+			Shader hzShader;
             hzShader = Shader.Find("Custom/HZVolume");
             volumeMaterial = new Material(hzShader);
             
@@ -284,6 +311,11 @@ public class Volume {
 				// Scale the bricks to the correct size
 				bricks[i].GameObject.transform.localScale = new Vector3(bricks[i].Size, bricks[i].Size, bricks[i].Size) / maxGlobalSize;
 			}
+
+			// Transform the volume after the bricks have been created
+			Scale = new Vector3(N["scale"][0].AsFloat,
+					N["scale"][1].AsFloat,
+					N["scale"][2].AsFloat);
 
 			Debug.Log("Metadata read.");
 		}

@@ -1,9 +1,11 @@
 package gov.inl.HZGenerator.BrickFactory;
 
 import javax.imageio.ImageIO;
+import javax.imageio.stream.ImageInputStream;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -31,6 +33,16 @@ public class TiffStack extends Volume {
 		this.width = slice.getWidth();
 		this.depth = tiffs.length;
 		bytesPerPixel = slice.getColorModel().getPixelSize() / 8;
+
+		/* Get the byte order of the tiff stack */
+//		ImageInputStream instream = ImageIO.createImageInputStream(tiffs[0]);
+//		int byteOrder = instream.readUnsignedShort();
+//		if (byteOrder == 0x4d4d) this.byteOrder = ByteOrder.BIG_ENDIAN;
+//		else if (byteOrder == 0x4949) this.byteOrder = ByteOrder.LITTLE_ENDIAN;
+//		instream.close();
+
+		/* Always write tiffs out in big endian since that is how the BufferedImage formats them */
+		this.byteOrder = ByteOrder.BIG_ENDIAN;
 	}
 
 	/* Loads a particular slice and returns it as a buffered image */

@@ -3,6 +3,7 @@ package gov.inl.HZGenerator.BrickFactory;
 import org.joml.*;
 
 import java.awt.image.BufferedImage;
+import java.nio.ByteOrder;
 import java.util.List;
 
 /**
@@ -13,6 +14,7 @@ public abstract class Volume {
 	/* A volume is a region with width, height, and depth */
 	int width, height, depth = 0;
 	int bytesPerPixel = 0;
+	ByteOrder byteOrder = ByteOrder.nativeOrder();
 
 	/* Each volume is capable of returning a slice given an index */
 	public abstract BufferedImage getSlice(int i);
@@ -25,4 +27,5 @@ public abstract class Volume {
 	public int getDepth() {return depth;}
 	public Vector3f getSize() {return new Vector3f(width, height, depth);}
 	public int getBytesPerPixel(){return bytesPerPixel;}
+	public ByteOrder getByteOrder() {return byteOrder;}
 }

@@ -291,12 +291,15 @@ public class Brick
             reader.Close();
 
             // Convert the big endian input data to be little endian for the Buffer.BlockCopy()
-            for (int i = 0; i < buffer.Length; i += 2)
-            {
-                byte temp = buffer[i];
-                buffer[i] = buffer[i + 1];
-                buffer[i + 1] = temp;
-            }
+			if (parentVolume.Endianness == "BIG_ENDIAN")
+			{
+				for (int i = 0; i < buffer.Length; i += 2)
+				{
+					byte temp = buffer[i];
+					buffer[i] = buffer[i + 1];
+					buffer[i + 1] = temp;
+				}
+			}
 
             // Convert the bytes to ushort (Note: Buffer.BlockCopy() assumes data is in little endian format.
             // TODO: Figure out a better way to read in ushort rather than doing this... This may not be available on non-Windows platforms?

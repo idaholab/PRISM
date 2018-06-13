@@ -17,6 +17,7 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
+import java.nio.ByteOrder;
 import java.util.*;
 
 import static java.lang.Thread.sleep;
@@ -58,6 +59,10 @@ public class Controller {
 	@FXML Tab RAWTab;
 	@FXML Tab TIFFTab;
 	@FXML Button btnGenerate;
+	@FXML ChoiceBox rawEndianness;
+	@FXML TextField txtScaleX;
+	@FXML TextField txtScaleY;
+	@FXML TextField txtScaleZ;
 
 	/* Initializes the brick pane, volume processor, and sets up some FXML elements */
 	@FXML public void initialize() throws Exception {
@@ -104,6 +109,23 @@ public class Controller {
 		txtRawZSize.textProperty().addListener((observable, oldValue, newValue) -> {
 			if (!newValue.matches("\\d*")) {
 				txtRawZSize.setText(newValue.replaceAll("[^\\d]", ""));
+			}
+		});
+
+		/* Validate the scale fields to take only digits. */
+		txtScaleX.textProperty().addListener((observable, oldValue, newValue) -> {
+			if (!newValue.matches("^\\d*\\.\\d+|\\d+\\.\\d*$")) {
+				txtScaleX.setText(newValue.replaceAll("^\\d*\\.\\d+|\\d+\\.\\d*$", ""));
+			}
+		});
+		txtScaleY.textProperty().addListener((observable, oldValue, newValue) -> {
+			if (!newValue.matches("^\\d*\\.\\d+|\\d+\\.\\d*$")) {
+				txtScaleY.setText(newValue.replaceAll("^\\d*\\.\\d+|\\d+\\.\\d*$", ""));
+			}
+		});
+		txtScaleZ.textProperty().addListener((observable, oldValue, newValue) -> {
+			if (!newValue.matches("^\\d*\\.\\d+|\\d+\\.\\d*$")) {
+				txtScaleZ.setText(newValue.replaceAll("^\\d*\\.\\d+|\\d+\\.\\d*$", ""));
 			}
 		});
 
@@ -176,6 +198,14 @@ public class Controller {
 		rawBitsPerPixel.getItems().add("8");
 		rawBitsPerPixel.getItems().add("16");
 		rawBitsPerPixel.getSelectionModel().select(0);
+
+		rawEndianness.getItems().add("big");
+		rawEndianness.getItems().add("little");
+		rawEndianness.getSelectionModel().select(0);
+
+		txtScaleX.setText("1");
+		txtScaleY.setText("1");
+		txtScaleZ.setText("1");
 	}
 
 	/* Creates a dialogue and sets the source path for the appropriate type selection */
@@ -230,6 +260,7 @@ public class Controller {
 		List<String> sliceNames = null;
 		String srcPath;
 		int x, y, z;
+
 		try {
 			switch (id) {
 				case "TIFFTab" :
@@ -247,7 +278,9 @@ public class Controller {
 								"Please choose x, y, and z to be greater than or equal to 8. :)" );
 						return;
 					}
-					sliceNames = brickFactory.openRaw(srcPath, x, y, z, bpp);
+					ByteOrder bo = rawEndianness.getValue().toString().equals("little") ? ByteOrder.LITTLE_ENDIAN : ByteOrder.BIG_ENDIAN;
+
+					sliceNames = brickFactory.openRaw(srcPath, x, y, z, bpp, bo);
 					break;
 			}
 		} catch (Exception e) {
@@ -268,6 +301,11 @@ public class Controller {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+
+		/* get the scale parameters for the volume */
+		brickFactory.settings.setScaleX(Double.parseDouble(txtScaleX.getText()));
+		brickFactory.settings.setScaleY(Double.parseDouble(txtScaleY.getText()));
+		brickFactory.settings.setScaleZ(Double.parseDouble(txtScaleZ.getText()));
 
 		/* Determine if the volume can be scaled to 8bpp */
 		if (brickFactory.volume.getBytesPerPixel() <= 1)

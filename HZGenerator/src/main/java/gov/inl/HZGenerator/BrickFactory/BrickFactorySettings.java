@@ -15,6 +15,11 @@ public class BrickFactorySettings {
 	private int minBrickSize = 1 << 6;
 	private int maxBrickSize = 1 << 9;
 
+	/* Scale factors for rendering the volume proportionally */
+	private double scaleX = 1;
+	private double scaleY = 1;
+	private double scaleZ = 1;
+
 	/* Where to save the final curved volume */
 	public String outputPath;
 
@@ -35,4 +40,12 @@ public class BrickFactorySettings {
 	}
 	public int getMinBrickSize() {return minBrickSize;}
 	public int getMaxBrickSize() {return maxBrickSize;}
+
+	public void setScaleX(double x) {scaleX = x;}
+	public void setScaleY(double y) {scaleY = y;}
+	public void setScaleZ(double z) {scaleZ = z;}
+
+	public double getScaleX() {return scaleX;}
+	public double getScaleY() {return scaleY;}
+	public double getScaleZ() {return scaleZ;}
 }

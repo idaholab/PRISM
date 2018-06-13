@@ -1,1 +1,1 @@
-{"minLevel":64,"maxLevel":512,"bricks":[{"filename":"0.hz","size":128,"position":[0,0,0]}],"totalBricks":1,"bytesPerPixel":1,"globalSize":[128,128,128]}
+{"minLevel":64,"maxLevel":512,"bricks":[{"filename":"0.hz","size":128,"position":[0,0,0]}],"totalBricks":1,"bytesPerPixel":1,"scale":[1,1,1],"endianness":"BIG_ENDIAN","globalSize":[128,128,128]}

@@ -39,7 +39,7 @@ public class MainClass extends Application {
 
 		this.stage = stage;
 		stage.setTitle("HZ Volume Generator");
-		Scene scene = new Scene(root, 1080, 517);
+		Scene scene = new Scene(root, 1080, 683);
 		scene.getStylesheets().add("HZGeneratorGUI.css");
 		stage.setScene(scene);
 		stage.show();

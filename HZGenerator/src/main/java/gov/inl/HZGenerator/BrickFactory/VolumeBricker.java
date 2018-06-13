@@ -22,6 +22,7 @@ public class VolumeBricker {
 	Volume lastVolume;
 	int minBrickSize, maxBrickSize = 0;
 	int bytesPerPixel;
+	double scaleX, scaleY, scaleZ;
 	public PartitionerResult pr = null;
 
 	/* This method uses the GPU to accelerate partitioning, returning a list of bricks */
@@ -40,6 +41,9 @@ public class VolumeBricker {
 		int height = volume.getHeight();
 		int depth = volume.getDepth();
 		bytesPerPixel = (settings.mapTo8BPP == true) ? 1 : lastVolume.getBytesPerPixel();
+		scaleX = settings.getScaleX();
+		scaleY = settings.getScaleY();
+		scaleZ = settings.getScaleZ();
 		pr = new PartitionerResult();
 		Partitioner.CombineBricks(width, height, depth, minBrickSize,
 				maxBrickSize, pr );
@@ -87,6 +91,12 @@ public class VolumeBricker {
 			json.put("bricks", bricks);
 			json.put("octree", pr.octree.toJson());
 			json.put("totalOctnodes", OctNode.getTotalNodes(pr.octree));
+			JSONArray scale = new JSONArray();
+			scale.put(scaleX);
+			scale.put(scaleY);
+			scale.put(scaleZ);
+			json.put("scale", scale);
+			json.put("endianness", lastVolume.getByteOrder().toString());
 			File f = new File(outputPath + "/metadata.json");
 			f.delete();
 			Boolean success = f.createNewFile();

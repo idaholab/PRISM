@@ -19,7 +19,7 @@ public class RawVolume extends Volume {
 	File rawFile;
 
 	/* Constructor */
-	public RawVolume(String path, int width, int height, int depth, int bitsPerPixel) throws Exception {
+	public RawVolume(String path, int width, int height, int depth, int bitsPerPixel, ByteOrder byteOrder) throws Exception {
 		rawFile = new File(path);
 		if (rawFile == null) throw new Exception("invalid raw path provided");
 		if (width <= 0 || height <= 0 || depth <= 0)
@@ -30,6 +30,7 @@ public class RawVolume extends Volume {
 		this.height = height;
 		this.depth = depth;
 		this.bytesPerPixel = bitsPerPixel / 8;
+		this.byteOrder = byteOrder;
 	}
 
 	/* Seeks to an offset dependent on width and height, and then reads either shorts or bytes to a buffered image */
@@ -52,7 +53,7 @@ public class RawVolume extends Volume {
 				raf.seek(zOffset);
 				byte[] data = new byte[2 * width * height];
 				raf.read(data, 0, 2 * width * height);
-				ByteBuffer bb = ByteBuffer.wrap(data).order(ByteOrder.BIG_ENDIAN);
+				ByteBuffer bb = ByteBuffer.wrap(data).order(this.byteOrder);
 				for (int j = 0; j < width * height; ++j)
 					rawBytes[j] = (short)(((data[2 * j + 0] & 0xff) << 8) + (data[2 * j +  1] & 0xff));
 				return currentSlice;

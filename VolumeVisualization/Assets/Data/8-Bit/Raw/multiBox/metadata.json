@@ -76,6 +76,8 @@
     },
   ],
   "totalBricks": 8,
+  "scale":[1,1,1],
+  "endianness":"BIG_ENDIAN",
   "bytesPerPixel": 1,
   "globalSize": [
     128,

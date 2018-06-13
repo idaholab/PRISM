@@ -41,6 +41,8 @@
   ],
   "totalBricks": 4,
   "bytesPerPixel": 1,
+  "scale":[1,1,1],
+  "endianness":"BIG_ENDIAN",
   "globalSize": [
     512,
     512,
