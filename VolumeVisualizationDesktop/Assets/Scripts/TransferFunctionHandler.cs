@@ -39,7 +39,8 @@ public class TransferFunctionHandler : MonoBehaviour {
 	/// </summary>
 	void Start () {
 		// Set up the reference to the VolumeController
-		volumeController = (VolumeController) GameObject.Find("VolumeController").GetComponent(typeof(VolumeController));
+		//volumeController = (VolumeController) GameObject.Find("VolumeController").GetComponent(typeof(VolumeController));
+		volumeController = (VolumeController)GameObject.Find("Main Camera").GetComponent(typeof(VolumeController));
 
 		// Initialize the reference to the transfer function stored in the volume controller
 		transferFunction = volumeController.getTransferFunction();

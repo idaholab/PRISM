@@ -17,6 +17,8 @@ public class Brick
 	private uint lastBitMask;                                       // The last bit mask used for accessing the data.
 	private string filename;                                        // The name of the data file associated with this brick.
     private Volume parentVolume;                                    // The volume that this brick is associated with.
+	private Vector3 boxMin;											// The position of the brick's front, bottom, left corner
+	private Vector3 boxMax;											// The position of the brick's back, top, right corner
 
 	/* Properties */
 	public GameObject GameObject
@@ -104,6 +106,30 @@ public class Brick
         }
     }
 
+	public Vector3 BoxMin
+	{
+		get
+		{
+			return boxMin;
+		}
+		set
+		{
+			boxMin = value;
+		}
+	}
+
+	public Vector3 BoxMax
+	{
+		get
+		{
+			return boxMax;
+		}
+		set
+		{
+			boxMax = value;
+		}
+	}
+
 	/* Constructors*/
 	/// <summary>
 	/// Creates a new instance of a data brick.
@@ -120,7 +146,7 @@ public class Brick
 	/// <param name="_size"></param>
 	/// <param name="_position"></param>
 	/// <param name="mat"></param>
-	public Brick(string _filename, int _size, Vector3 _position, Material mat, Volume _parentVolume)
+	public Brick(string _filename, int _size, Vector3 _position, Material mat, Vector3 _boxMin, Vector3 _boxMax, Volume _parentVolume)
 	{
 		// Set the name of the data file associated with this brick
 		filename = _filename;
@@ -148,8 +174,14 @@ public class Brick
 		// Set the last bit mask this brick uses
 		updateLastBitMask(calculateLastBitMask());
 
+		// Set the brick's min and max corner positions
+		BoxMin = _boxMin;
+		BoxMax = _boxMax;
+
 		// Set the default level of detail that this brick renders to
 		updateCurrentZLevel(0);
+
+		gameObject.GetComponent<MeshRenderer>().enabled = false;
 	}
 
 	/*****************************************************************************
@@ -183,6 +215,26 @@ public class Brick
 		return lbm;
 	}
 
+	/// <summary>
+	/// Generates a struct of the bricks data that can be analyzed in the compute shader.
+	/// </summary>
+	/// <returns></returns>
+	public BrickData getBrickData()
+	{
+		BrickData newData;
+
+		newData.size = size;
+		newData.position = gameObject.transform.position;
+		newData.maxZLevel = maxZLevel;
+		newData.currentZLevel = currentZLevel;
+		newData.updateData = false;
+
+		return newData;
+	}
+
+	/*****************************************************************************
+	 * DATA READING FUNCTIONS
+	 *****************************************************************************/
 	/// <summary>
 	/// The file must already have been opened.
 	/// </summary>
@@ -332,21 +384,109 @@ public class Brick
         }
     }
 
-    /// <summary>
-    /// Generates a struct of the bricks data that can be analyzed in the compute shader.
-    /// </summary>
-    /// <returns></returns>
-    public BrickData getBrickData()
+	/// <summary>
+	/// Reads a certain amount of the brick's associated data into a byte array. The amount is dependent on the current z level of the brick.
+	/// </summary>
+	/// <returns></returns>
+	public byte[] readRaw8Into3DZLevelBuffer()
 	{
-		BrickData newData;
+		try
+		{
+			// Get the size of the data based on the currentZLevel rendering level
+			int dataSize = 1 << currentZLevel; // equivalent to 2^currentZLevel
 
-		newData.size = size;
-		newData.position = gameObject.transform.position;
-		newData.maxZLevel = maxZLevel;
-		newData.currentZLevel = currentZLevel;
-		newData.updateData = false;
+			// Read in the bytes
+			BinaryReader reader = new BinaryReader(new FileStream(filename, FileMode.Open));
 
-		return newData;
+			byte[] buffer = new byte[dataSize * dataSize * dataSize];
+			reader.Read(buffer, 0, sizeof(byte) * buffer.Length);
+			reader.Close();
+
+			return buffer;
+		}
+		catch (Exception e)
+		{
+			Debug.Log("Unable to read in the data file into brick: " + e);
+			return null;
+		}
+	}
+
+	/// <summary>
+	/// Reads a certain amount of the brick's associated data into a byte array. The amount is dependent on the current z level of the brick.
+	/// </summary>
+	/// <returns></returns>
+	public uint[] readRaw8Into3DZLevelBufferUint()
+	{
+		try
+		{
+			// Get the size of the data based on the currentZLevel rendering level
+			int dataSize = 1 << currentZLevel; // equivalent to 2^currentZLevel
+
+			// Read in the bytes
+			BinaryReader reader = new BinaryReader(new FileStream(filename, FileMode.Open));
+
+			int totalDataSize = dataSize * dataSize * dataSize;
+			byte[] buffer = new byte[totalDataSize];
+			reader.Read(buffer, 0, sizeof(byte) * buffer.Length);
+			reader.Close();
+
+			uint[] uintBuffer = new uint[totalDataSize];
+			for (int i = 0; i < totalDataSize; i++)
+			{
+				uintBuffer[i] = buffer[i];
+			}
+				
+
+			return uintBuffer;
+		}
+		catch (Exception e)
+		{
+			Debug.Log("Unable to read in the data file into brick: " + e);
+			return null;
+		}
+	}
+
+	/// <summary>
+	/// Reads a certain amount of the brick's associated data into a byte array. The amount is dependent on the current z level of the brick.
+	/// </summary>
+	/// <returns></returns>
+	public ushort[] readRaw16Into3DZLevelBuffer()
+	{
+		try
+		{
+			// Get the size of the data based on the currentZLevel rendering level
+			int dataSize = 1 << currentZLevel; // equivalent to 2^currentZLevel
+
+			// Read in the bytes
+			BinaryReader reader = new BinaryReader(new FileStream(filename, FileMode.Open));
+
+			byte[] buffer = new byte[dataSize * dataSize * dataSize * 2];
+			reader.Read(buffer, 0, sizeof(byte) * buffer.Length);
+			reader.Close();
+
+			// Convert the big endian input data to be little endian for the Buffer.BlockCopy()
+			if (parentVolume.Endianness == "BIG_ENDIAN")
+			{
+				for (int i = 0; i < buffer.Length; i += 2)
+				{
+					byte temp = buffer[i];
+					buffer[i] = buffer[i + 1];
+					buffer[i + 1] = temp;
+				}
+			}
+
+			// Convert the bytes to ushort (Note: Buffer.BlockCopy() assumes data is in little endian format.
+			// TODO: Figure out a better way to read in ushort rather than doing this... This may not be available on non-Windows platforms?
+			ushort[] ushortBuffer = new ushort[buffer.Length / 2];
+			Buffer.BlockCopy(buffer, 0, ushortBuffer, 0, buffer.Length);
+
+			return ushortBuffer;
+		}
+		catch (Exception e)
+		{
+			Debug.Log("Unable to read in the data file into brick: " + e);
+			return null;
+		}
 	}
 
 	/*****************************************************************************
@@ -394,10 +534,10 @@ public class Brick
 		gameObject.GetComponent<Renderer>().material.SetInt("_CurrentZLevel", currentZLevel);
 
         // Read in the appropriate amount of data dependent on the current z level to render to
-        if (parentVolume.BytePerPixel == 1)
-            readRaw8Into3DZLevel();
-        else if (parentVolume.BytePerPixel == 2)
-            readRaw16Into3DZLevel();
+        //if (parentVolume.BytePerPixel == 1)
+        //    readRaw8Into3DZLevel();
+        //else if (parentVolume.BytePerPixel == 2)
+        //    readRaw16Into3DZLevel();
 	}
 
 	/// <summary>
@@ -419,6 +559,25 @@ public class Brick
 		LastBitMask = _lastBitMask;
 		gameObject.GetComponent<Renderer>().material.SetInt("_LastBitMask", (int)lastBitMask);
 	}
+
+	/// <summary>
+	/// Returns a struct that contains information about this brick to be passed to the compute shader.
+	/// </summary>
+	/// <returns></returns>
+	public MetaBrick getMetaBrick()
+	{
+		MetaBrick mb;
+		mb.position = gameObject.transform.position;
+		mb.size = size;
+		mb.bufferIndex = -1;
+		mb.maxZLevel = maxZLevel;
+		mb.currentZLevel = 0;
+		mb.id = -1;
+		mb.boxMin = BoxMin;
+		mb.boxMax = BoxMax;
+		mb.lastBitMask = 0;
+		return mb;
+	}
 }
 
 /* BrickData | Marko Sterbentz 7/18/2017 */
@@ -429,6 +588,7 @@ public class Brick
 /// </summary>
 public struct BrickData
 {
+	// DEPRECATED: DO NOT USE
 	public int size;                    // 4 bytes							
 	public Vector3 position;            // 4 x 3 = 12 bytes
 	public int maxZLevel;               // 4 bytes

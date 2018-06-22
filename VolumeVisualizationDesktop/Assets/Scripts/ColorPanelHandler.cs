@@ -44,7 +44,8 @@ public class ColorPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
         minWidth = 0.0f;
         minHeight = 0.0f;
         transferFunctionHandler = (TransferFunctionHandler)GameObject.Find("Transfer Function Panel").GetComponent(typeof(TransferFunctionHandler));
-		volumeController = (VolumeController)GameObject.Find("VolumeController").GetComponent(typeof(VolumeController));
+		//volumeController = (VolumeController)GameObject.Find("VolumeController").GetComponent(typeof(VolumeController));
+		volumeController = (VolumeController)GameObject.Find("Main Camera").GetComponent(typeof(VolumeController));
 		transferFunction = volumeController.getTransferFunction();
 
         // Initialize the control point renderers

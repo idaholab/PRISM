@@ -20,7 +20,8 @@ public class GeneralControlsHandler : MonoBehaviour {
 	/// </summary>
     void Start () {
 		// Set up the reference to the VolumeController
-		volumeController = (VolumeController)GameObject.Find("VolumeController").GetComponent(typeof(VolumeController));
+		//volumeController = (VolumeController)GameObject.Find("VolumeController").GetComponent(typeof(VolumeController));
+		volumeController = (VolumeController)GameObject.Find("Main Camera").GetComponent(typeof(VolumeController));
 
 		// Initialize the user interface text fields
 		maxStepsValueText.text = GameObject.Find("Max Steps Slider").GetComponent<Slider>().value.ToString();
