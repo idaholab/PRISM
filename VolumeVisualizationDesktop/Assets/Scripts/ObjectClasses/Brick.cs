@@ -430,12 +430,24 @@ public class Brick
 			reader.Read(buffer, 0, sizeof(byte) * buffer.Length);
 			reader.Close();
 
-			uint[] uintBuffer = new uint[totalDataSize];
-			for (int i = 0; i < totalDataSize; i++)
+			//// Don't pack bytes
+			//uint[] uintBuffer = new uint[buffer.Length];
+			//for (int i = 0; i < uintBuffer.Length; i++)
+			//{
+			//	uintBuffer[i] = buffer[i];
+			//}
+
+			// Pack the bytes that were read into a uint array
+			uint[] uintBuffer = new uint[Mathf.CeilToInt(totalDataSize / 4.0f)];
+			//int[] byteShifts = { 24, 16, 8, 0};	// use for big endian
+			int[] byteShifts = { 0, 8, 16, 24 };    // use for little endian
+			int maskIndex = 0;
+			for (int i = 0; i < buffer.Length; i++)
 			{
-				uintBuffer[i] = buffer[i];
+				uint val = buffer[i];
+				uintBuffer[i / 4] = uintBuffer[i / 4] | (val << byteShifts[maskIndex]);
+				maskIndex = (maskIndex + 1) % 4;
 			}
-				
 
 			return uintBuffer;
 		}

@@ -384,6 +384,7 @@ public class Volume {
 		mv.numBricks = totalBricks;
 		mv.isHz = BrickDataType == ".hz" ? 1 : 0;
 		mv.numBits = BitsPerPixel;
+		mv.maxGlobalSize = Mathf.Max(GlobalSize);
 		return mv;
 	}
 

@@ -29,6 +29,9 @@ public class VolumeController : MonoBehaviour {
 	public Material renderMaterial;
 	public ComputeShader renderingShader;
 	private int rendererKernelID;
+	ComputeBuffer metaBrickBuffer;
+	ComputeBuffer metaVolumeBuffer;
+	ComputeBuffer dataBuffer;
 
 	/// <summary>
 	/// Initialization function for the VolumeController. Ensures that the global variables needed by other objects are initialized first.
@@ -78,8 +81,16 @@ public class VolumeController : MonoBehaviour {
 	{
 		// Update the Z-order render level as necessary
 		//checkZRenderLevelInput();
+	}
 
-
+	/// <summary>
+	/// Dispose of all compute buffers when the application quits
+	/// </summary>
+	private void OnApplicationQuit()
+	{
+		metaBrickBuffer.Dispose();
+		metaVolumeBuffer.Dispose();
+		dataBuffer.Dispose();
 	}
 
 	/*****************************************************************************
@@ -315,25 +326,33 @@ public class VolumeController : MonoBehaviour {
 		// Initialize the dataBuffer (contains the actual data)
 		int totalData = 0;
 		for (int i = 0; i < numData.Length; i++) totalData += numData[i];
-		ComputeBuffer dataBuffer = new ComputeBuffer(totalData, 32); // currentVolume.BitsPerPixel);
+		//dataBuffer = new ComputeBuffer(totalData, 32);
+		dataBuffer = new ComputeBuffer(totalData / 4, 32);
 
 		int currentBufferIndex = 0;
 
 		if (currentVolume.BitsPerPixel == 8)
 		{
-			uint[] rawData = new uint[totalData];						// TODO: This might need to be uints for now... D:
+			//uint[] rawData = new uint[totalData];
+			uint[] rawData = new uint[totalData / 4];
 
 			for (int i = 0; i < currentVolume.Bricks.Length; i++)
 			{
 				// Read the data and load it into the data buffer
 				uint[] newData = currentVolume.Bricks[i].readRaw8Into3DZLevelBufferUint();
-				Buffer.BlockCopy(newData, 0, rawData, currentBufferIndex, numData[i]);// newData.Length);
+				//Buffer.BlockCopy(newData, 4 * 0, rawData, 4 * currentBufferIndex, newData.Length * 4);//4 * numData[i]);	// CRITICAL NOTE: These indices are byte offsets, not index offsets. Must multiply each offset by the size of the data being copied (i.e. 32 bit int = mulit by 4 bytes)
+
+				// Copy the packed new data to the data buffer
+				for (int j = 0; j < newData.Length; j++)
+				{
+					rawData[currentBufferIndex + j] = newData[j];
+				}
 
 				// Set the metaBricks' bufferIndices
 				metaBricks[i].bufferIndex = currentBufferIndex;
 
 				// Move the currentIndex to the end of the data that was just read in
-				currentBufferIndex += numData[i];
+				currentBufferIndex += newData.Length; // numData[i];
 			}
 
 			dataBuffer.SetData(rawData);
@@ -359,19 +378,15 @@ public class VolumeController : MonoBehaviour {
 		//}
 
 		// Set the necessary parameters in the compute shader (the two metadata buffers, the data buffer, camera matrices, etc.) 
-		ComputeBuffer metaBrickBuffer = new ComputeBuffer(metaBricks.Length, 60);       // n MetaBricks with a size of 60 bytes each
+		metaBrickBuffer = new ComputeBuffer(metaBricks.Length, 60);       // n MetaBricks with a size of 60 bytes each
 		metaBrickBuffer.SetData(metaBricks);
 
-		ComputeBuffer metaVolumeBuffer = new ComputeBuffer(1, 60);                      // 1 MetaVolume with a size of 60 bytes each
+		metaVolumeBuffer = new ComputeBuffer(1, 64);                      // 1 MetaVolume with a size of 60 bytes each
 		metaVolumeBuffer.SetData(metaVolumes);
 
 		renderingShader.SetBuffer(rendererKernelID, "_MetaBrickBuffer", metaBrickBuffer);
 		renderingShader.SetBuffer(rendererKernelID, "_MetaVolumeBuffer", metaVolumeBuffer);
 		renderingShader.SetBuffer(rendererKernelID, "_DataBuffer", dataBuffer);
-
-		//metaBrickBuffer.Dispose();
-		//metaVolumeBuffer.Dispose();
-		//dataBuffer.Dispose();
 	}
 
 	/// <summary>

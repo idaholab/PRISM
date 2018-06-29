@@ -25,6 +25,7 @@ struct MetaVolume
 	int numBricks;
 	int isHz;
 	int numBits;
+	int maxGlobalSize;
 };
 
 struct Ray
@@ -53,7 +54,15 @@ RWStructuredBuffer<uint> _DataBuffer;
 /*********************************************
 *		     Newly Defined Variables
 **********************************************/
-const static int MAX_BRICKS = 5;										// TODO: Figure out why making this too big drastically decreases performance
+const static int MAX_BRICKS = 20;										// TODO: Figure out why making this too big drastically decreases performance
+
+// big endian
+//const static uint MASKS_8BIT[] = {0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF};
+//const static int BYTE_SHIFTS[] = { 24, 16, 8, 0 };
+
+// little endian
+const static uint MASKS_8BIT[] = { 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000 };
+const static int BYTE_SHIFTS[] = { 0, 8, 16, 24 };
 
 /*********************************************
 *			   Ray Init Functions
@@ -205,8 +214,19 @@ uint computeMaskedZIndex(uint zIndex, int currentZLevel, int maxZLevel)
 /*********************************************
 *		  Intensity Sampling Functions
 **********************************************/
+// Samples from the data buffer with the assumption that each data point is 8 bit stored in a 32 bit uint
+float sampleDataBuffer8Bit(uint bufferOffset, uint byteIndex) 
+{
+	uint uintIndex = bufferOffset + ceil(byteIndex / 4.0);				// Find the index of the desired uint
+	uint uintIndexOffset = 3- (byteIndex % 4);						// Find the offset into the desired uint
+	return (_DataBuffer[uintIndex] & MASKS_8BIT[uintIndexOffset]) >> BYTE_SHIFTS[uintIndexOffset];
+
+	//return _DataBuffer[uintIndex] & 0x000000FF;
+}
+
 // Samples from the data buffer as if it were filled with raw ordered data.
 // Formula: x + (y * width) + (z * width * height)
+// pos is assumed to in local brick space
 float sampleIntensityRaw(float3 pos, int width, int height, int depth, int bufferOffset)
 {
 	// Convert from texture coordinates to 3d cartesian
@@ -217,13 +237,15 @@ float sampleIntensityRaw(float3 pos, int width, int height, int depth, int buffe
 	//int index = round(pos.x + width * (pos.y + (pos.z * height)));
 
 	// TESTING
-	uint x = floor(lerp(0, width, pos.x));
-	uint y = floor(lerp(0, height, pos.y));
-	uint z = floor(lerp(0, depth, pos.z));
+	uint x = floor(lerp(0, width - 1, pos.x));
+	uint y = floor(lerp(0, height - 1, 1-pos.y));	// flip the y coordinate due to how the data is stored (0 is top, 1 is bottom)
+	uint z = floor(lerp(0, depth - 1, pos.z));
 	uint index = (x + width * (y + (z * height)));
 	// END TESTING
 
-	return _DataBuffer[bufferOffset + index];
+	//return _DataBuffer[bufferOffset + index];
+
+	return sampleDataBuffer8Bit(bufferOffset, index);
 }
 
 // Samples from the data buffer as if it were filled with HZ ordered data.
@@ -232,11 +254,15 @@ float sampleIntensityHz(float3 pos, MetaBrick brick)
 	uint zIndex = morton3D(pos, brick.size);												// Get the Z order index		
 	uint maskedZIndex = computeMaskedZIndex(zIndex, brick.currentZLevel, brick.maxZLevel);	// Get the masked Z index
 	uint hzIndex = getHZIndex(maskedZIndex, brick.lastBitMask);								// Find the hz order index
-	return _DataBuffer[brick.bufferIndex + hzIndex];
+	//return _DataBuffer[brick.bufferIndex + hzIndex];
+	return sampleDataBuffer8Bit(brick.bufferIndex, hzIndex);
 }
 
 float sampleIntensity(float3 pos, MetaBrick brick, bool isHz)
 {
+	// Transform pos from world space to local brick space
+	pos = (pos - brick.boxMin) * (_MetaVolumeBuffer[0].maxGlobalSize / brick.size);
+
 	if (isHz)
 		return sampleIntensityHz(pos, brick);
 	else
@@ -263,8 +289,8 @@ float4 sampleTransferFunction(float isovalue)
 	//	return float4(1, 0, 1, alpha);
 	//return float4(1, 1, 1, alpha);
 
-	float4 startColor = float4(1,0,0,0);
-	float4 endColor = float4(0,0,1,1);
+	float4 startColor = float4(1, 0, 0, 0);
+	float4 endColor = float4(0, 0, 1, 0.5);
 	return lerp(startColor, endColor, isovalue / 255.0);
 }
 
@@ -288,8 +314,8 @@ void insertionSort(inout BrickIntersection a[MAX_BRICKS], int length)							// T
 /*********************************************
 *			  Main Function Kernel
 **********************************************/
-[numthreads(32,32,1)]
-void CSMain (uint3 id : SV_DispatchThreadID)
+[numthreads(32, 32, 1)]
+void CSMain(uint3 id : SV_DispatchThreadID)
 {
 	// Get the dimensions of the RenderTexture
 	uint width, height;
@@ -298,7 +324,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	// Transform pixel to [-1,1] range
 	float2 uv = float2((id.xy + float2(0.5f, 0.5f)) / float2(width, height) * 2.0f - 1.0f);
 
-	Result[id.xy] = float4(1,0,0,1);
+	Result[id.xy] = float4(1, 0, 0, 1);
 
 	// Get a ray for the UVs
 	Ray ray = CreateCameraRay(uv);
@@ -310,9 +336,10 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	float volume_tNear, volume_tFar;
 	bool hit = IntersectBox(ray.origin, ray.direction, boxMin, boxMax, volume_tNear, volume_tFar);
 
+	// If there was no intersection with the volume, color the pixel black and do nothing
 	if (!hit)
 	{
-		Result[id.xy] = float4(0, 0, 0, 1);
+		Result[id.xy] = float4(0, 0, 0, 0);
 		return;
 	}
 	//else
@@ -335,11 +362,11 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 			numIntersections++;
 		}
 	}
-	
+
 	// Ensure that some brick was hit by the ray
 	if (numIntersections == 0)
 	{
-		Result[id.xy] = float4(0, 0, 1, 1);
+		Result[id.xy] = float4(0, 1, 0, 1);
 		return;
 	}
 	//else
@@ -363,74 +390,18 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	// TODO: Set up the step size
 	int _Steps = 128;
 
-	// ORIGINAL
-	//// Set up ray stepping size and step vector
-	//float distancePerStep = sqrt(3) / (float) _Steps;
-	//float3 ray_step = ray.direction * distancePerStep;
-
-	//float totalDistance = global_tFar - global_tNear;
-	//float globalDistanceTraveled = 0.0f;
-	//float localDistanceTraveled = 0.0f;
-	//int currentIntersectionIndex = 0;
-	//float3 localRayStart = (ray.origin + ray.direction * intersections[currentIntersectionIndex].tNear) - _MetaBrickBuffer[intersections[currentIntersectionIndex].id].boxMin;
-	//float3 localRayEnd = (ray.origin + ray.direction * intersections[currentIntersectionIndex].tFar) - _MetaBrickBuffer[intersections[currentIntersectionIndex].id].boxMin;
-	//float3 local_ray_pos = localRayStart;
-
-	//// Perform the ray marching
-	//float4 fColor = 0;
-	//for (int k = 0; k < _Steps; k++)
-	//{
-	//	// Determine the value at this point on the current ray
-	//	float intensity = sampleIntensity(local_ray_pos, _MetaBrickBuffer[currentIntersectionIndex], _MetaVolumeBuffer[0].isHz);
-
-	//	// Sample from the texture generated by the transfer function
-	//	float4 sampleColor = sampleTransferFunction(intensity);				// TODO: Add a transfer function sampler
-
-	//	// Front to back blending function
-	//	fColor.rgb = fColor.rgb + (1 - fColor.a) * sampleColor.a * sampleColor.rgb;
-	//	fColor.a = fColor.a + (1 - fColor.a) * sampleColor.a;
-
-	//	// March along the ray
-	//	local_ray_pos += ray_step;
-
-	//	// Update the distance traveled
-	//	globalDistanceTraveled += distancePerStep;
-	//	localDistanceTraveled += distancePerStep;
-
-	//	// Check if we have marched out of the volume
-	//	if (globalDistanceTraveled > totalDistance)
-	//		break;
-
-	//	// Check if we have marched out of the current brick and update the current brick/ray information if so
-	//	if (localDistanceTraveled > intersections[currentIntersectionIndex].tFar && currentIntersectionIndex != numIntersections)
-	//	{
-	//		currentIntersectionIndex++;
-	//		float3 localRayStart = (ray.origin + ray.direction * intersections[currentIntersectionIndex].tNear) - _MetaBrickBuffer[intersections[currentIntersectionIndex].id].boxMin;
-	//		float3 localRayEnd = (ray.origin + ray.direction * intersections[currentIntersectionIndex].tFar) - _MetaBrickBuffer[intersections[currentIntersectionIndex].id].boxMin;
-	//		local_ray_pos = localRayStart;
-	//	}
-	//	else
-	//		break;
-
-	//	// Check if accumulated alpha is greater than 1.0
-	//	if (fColor.a > 1.0) break;
-	//}
-
-	////Result[id.xy] = float4(0, fColor.a, 0, 1);
-	//Result[id.xy] = fColor;
-	
-	// END ORIGINAL
-
 	// BEGIN TESTING
 	int currentBrickIndex = 0;
 	MetaBrick currentBrick = _MetaBrickBuffer[intersections[currentBrickIndex].id];
 	MetaVolume currentVolume = _MetaVolumeBuffer[0];
 
-	float3 pNear = ray.origin + (ray.direction * volume_tNear);
-	float3 pFar = ray.origin + (ray.direction * volume_tFar);
+	//float3 pNear = ray.origin + (ray.direction * volume_tNear);
+	//float3 pFar = ray.origin + (ray.direction * volume_tFar);
+	float3 pNear = ray.origin + (ray.direction * intersections[currentBrickIndex].tNear);
+	float3 pFar = ray.origin + (ray.direction * intersections[currentBrickIndex].tFar);
 
 	float3 rayStart = pNear;
-	float3 rayStop = pNear;
+	//float3 rayStop = pFar;
 
 	float3 vol_ray_pos = rayStart;
 	float3 brick_ray_pos = vol_ray_pos - currentBrick.boxMin;
@@ -440,16 +411,17 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	float4 fColor = 0;
 	for (int k = 0; k < _Steps; k++)
 	{
-		float isovalue = sampleIntensity(brick_ray_pos, currentBrick, currentVolume.isHz);
+		float isovalue = sampleIntensity(vol_ray_pos, currentBrick, currentVolume.isHz);
 
 		float4 sampleColor = sampleTransferFunction(isovalue);
-		
+
 		// Front to back blending function
 		fColor.rgb = fColor.rgb + (1 - fColor.a) * sampleColor.a * sampleColor.rgb;
 		fColor.a = fColor.a + (1 - fColor.a) * sampleColor.a;
 
 		vol_ray_pos += ray_step;
 		brick_ray_pos += ray_step;
+		//brick_ray_pos = vol_ray_pos - currentBrick.boxMin;
 
 		// Check if we have marched out of the volume
 		if (vol_ray_pos.x < currentVolume.boxMin.x || vol_ray_pos.y < currentVolume.boxMin.y || vol_ray_pos.z < currentVolume.boxMin.z)
@@ -458,22 +430,29 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 			break;
 
 		// Check if we have marched out of the current brick
-		if (brick_ray_pos.x < currentBrick.boxMin.x || brick_ray_pos.y < currentBrick.boxMin.y || brick_ray_pos.z < currentBrick.boxMin.z
-			|| brick_ray_pos.x > currentBrick.boxMax.x || brick_ray_pos.y > currentBrick.boxMax.y || brick_ray_pos.z > currentBrick.boxMax.z)
+		if (vol_ray_pos.x < currentBrick.boxMin.x || vol_ray_pos.y < currentBrick.boxMin.y || vol_ray_pos.z < currentBrick.boxMin.z
+			|| vol_ray_pos.x > currentBrick.boxMax.x || vol_ray_pos.y > currentBrick.boxMax.y || vol_ray_pos.z > currentBrick.boxMax.z)
 		{
+			//Result[id.xy] = float4(vol_ray_pos, 1.0);
+			//Result[id.xy] = float4(1/ (float) currentBrick.id, 0,0, 1.0);
+			//return;
 			if (currentBrickIndex < numIntersections)
 			{
 				currentBrickIndex++;
 				currentBrick = _MetaBrickBuffer[intersections[currentBrickIndex].id];
-				brick_ray_pos = vol_ray_pos - currentBrick.boxMin;
+				//brick_ray_pos = vol_ray_pos - currentBrick.boxMin;
 			}
 			else
 				break;
 		}
 
 		// Check if accumulated alpha is greater than 1.0
-		if (fColor.a > 1.0) 
+		if (fColor.a > 1.0)
+		{
+			//Result[id.xy] = float4(1, 1, 1, 1);
+			//return;
 			break;
+		}
 	}
 
 	Result[id.xy] = fColor;

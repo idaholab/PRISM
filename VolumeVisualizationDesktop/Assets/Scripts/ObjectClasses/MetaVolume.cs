@@ -2,7 +2,7 @@
 
 /// <summary>
 /// Represents the meta data of a volume in the compute shader.
-/// Size: 60 bytes
+/// Size: 64 bytes
 /// </summary>
 public struct MetaVolume
 {
@@ -12,5 +12,6 @@ public struct MetaVolume
 	public Vector3 scale;           // 4 x 3 = 12 bytes
 	public int numBricks;           // 4 bytes
 	public int isHz;                // 4 bytes
-	public int numBits;				// 4 bytes
+	public int numBits;             // 4 bytes
+	public int maxGlobalSize;		// 4 bytes
 }
