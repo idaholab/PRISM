@@ -13,25 +13,36 @@ public class VolumeController : MonoBehaviour {
 	private TransferFunction transferFunction;			// Transfer function for modifying visuals
 	private ClippingPlane clippingPlane;				// Clipping plane for modifying viewable portion of the volume
 	public Camera mainCamera;							// Main camera in the scene		
-	public string dataPath = "Assets/Data/BoxHz/";		// The path to the data to be loaded into the renderer
+	public string dataPath = "Assets/Data/BoxHz/";      // The path to the data to be loaded into the renderer
 
 	// Objects to draw for debugging purposes
 	public GameObject clippingPlaneCube;
 	private LineRenderer boundingBoxLine;
     public bool drawBoundingBox = false;
 
-	// Brick Analysis compute shader
-	//public ComputeShader brickAnalysisShader;
-	//private int analysisKernelID;
-
 	// Objects for rendering with the compute shader
-	public CustomRenderTexture _target;
-	public Material renderMaterial;
-	public ComputeShader renderingShader;
 	private int rendererKernelID;
-	ComputeBuffer metaBrickBuffer;
-	ComputeBuffer metaVolumeBuffer;
-	ComputeBuffer dataBuffer;
+	private ComputeBuffer metaBrickBuffer;
+	private ComputeBuffer metaVolumeBuffer;
+
+	private CustomRenderTexture _target;
+	[Tooltip("The compute shader file that contains the volume rendering kernel.")]
+	public ComputeShader renderingShader;
+	[Tooltip("The material used to draw the render texture to the screen.")]
+	public Material renderMaterial;
+	[Tooltip("Max size of a single RWStructuredBuffer. (in bytes)"), Range(10000000,300000000)]
+	public int maxBufferSize = 200000000;
+	[Tooltip("The maximum number of data buffers to use."), Range(1, 10)]
+	public int numberOfBuffers = 2;
+
+	private int maxNumberOfBuffers = 3;
+
+	private ComputeBuffer[] dataBuffers;
+	private Dictionary<int, string> dataBufferNames = new Dictionary<int, string>{
+		{ 0, "_DataBufferZero"},
+		{ 1, "_DataBufferOne" },
+		{ 2, "_DataBufferTwo" }
+	};
 
 	/// <summary>
 	/// Initialization function for the VolumeController. Ensures that the global variables needed by other objects are initialized first.
@@ -61,17 +72,6 @@ public class VolumeController : MonoBehaviour {
         {
             boundingBoxLine = createBoundingBoxLineRenderer();
         }
-
-		// DEBUG: Create a box for the plane
-		//clippingPlaneCube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-		//clippingPlaneCube.transform.position = clippingPlane.Position;
-		//clippingPlaneCube.GetComponent<Renderer>().material = new Material(Shader.Find("Standard"));
-		//clippingPlaneCube.transform.position = clippingPlane.Position;
-		//clippingPlaneCube.transform.localScale = new Vector3(2.1f, 2.1f, 0.01f);
-		//clippingPlaneCube.transform.rotation = Quaternion.LookRotation(clippingPlane.Normal);
-
-		// Load the compute shader kernel
-		//analysisKernelID = brickAnalysisShader.FindKernel("BrickAnalysis");
 	}
 
 	/// <summary>
@@ -79,8 +79,7 @@ public class VolumeController : MonoBehaviour {
 	/// </summary>
 	private void Update ()
 	{
-		// Update the Z-order render level as necessary
-		//checkZRenderLevelInput();
+
 	}
 
 	/// <summary>
@@ -90,69 +89,15 @@ public class VolumeController : MonoBehaviour {
 	{
 		metaBrickBuffer.Dispose();
 		metaVolumeBuffer.Dispose();
-		dataBuffer.Dispose();
+		for (int i = 0; i < dataBuffers.Length; i++)
+		{
+			dataBuffers[i].Dispose();
+		}
 	}
 
 	/*****************************************************************************
 	 * UTILITY METHODS
 	 *****************************************************************************/
-	/// <summary>
-	/// Updates the Z-order render level of all bricks in the current volume based on user input.
-	/// </summary>
-	public void checkZRenderLevelInput()
-	{
-		if (Input.GetKeyDown("0"))
-		{
-			for (int i = 0; i < currentVolume.Bricks.Length; i++)
-				currentVolume.Bricks[i].updateCurrentZLevel(0);
-		}
-		if (Input.GetKeyDown("1"))
-		{
-			for (int i = 0; i < currentVolume.Bricks.Length; i++)
-				currentVolume.Bricks[i].updateCurrentZLevel(1);
-		}
-		if (Input.GetKeyDown("2"))
-		{
-			for (int i = 0; i < currentVolume.Bricks.Length; i++)
-				currentVolume.Bricks[i].updateCurrentZLevel(2);
-		}
-		if (Input.GetKeyDown("3"))
-		{
-			for (int i = 0; i < currentVolume.Bricks.Length; i++)
-				currentVolume.Bricks[i].updateCurrentZLevel(3);
-		}
-		if (Input.GetKeyDown("4"))
-		{
-			for (int i = 0; i < currentVolume.Bricks.Length; i++)
-				currentVolume.Bricks[i].updateCurrentZLevel(4);
-		}
-		if (Input.GetKeyDown("5"))
-		{
-			for (int i = 0; i < currentVolume.Bricks.Length; i++)
-				currentVolume.Bricks[i].updateCurrentZLevel(5);
-		}
-		if (Input.GetKeyDown("6"))
-		{
-			for (int i = 0; i < currentVolume.Bricks.Length; i++)
-				currentVolume.Bricks[i].updateCurrentZLevel(6);
-		}
-		if (Input.GetKeyDown("7"))
-		{
-			for (int i = 0; i < currentVolume.Bricks.Length; i++)
-				currentVolume.Bricks[i].updateCurrentZLevel(7);
-		}
-		if (Input.GetKeyDown("8"))
-		{
-			for (int i = 0; i < currentVolume.Bricks.Length; i++)
-				currentVolume.Bricks[i].updateCurrentZLevel(8);
-		}
-		if (Input.GetKeyDown("9"))
-		{
-			for (int i = 0; i < currentVolume.Bricks.Length; i++)
-				currentVolume.Bricks[i].updateCurrentZLevel(9);
-		}
-	}
-
 	/*****************************************************************************
 	 * SHADER BUFFERING METHODS WRAPPERS
 	 *****************************************************************************/
@@ -249,44 +194,23 @@ public class VolumeController : MonoBehaviour {
 		return clippingPlane;
 	}
 
-	/*****************************************************************************
-	* OLD: COMPUTE METHODS
-	*****************************************************************************/
 	/// <summary>
-	/// An example of how to use compute shaders in Unity. 
-	/// Does not perform any useful function with regards to rendering the volume.
+	/// Returns a reference to the rendering compute shader used by the volume controller.
 	/// </summary>
 	/// <returns></returns>
-	//public BrickData[] runBrickAnalysis()
-	//{
-	//	// Create the brick data
-	//	BrickData[] computeData = new BrickData[currentVolume.Bricks.Length];
-	//	for (int i = 0; i < currentVolume.Bricks.Length; i++)
-	//	{
-	//		computeData[i] = currentVolume.Bricks[i].getBrickData();
-	//	}
+	public ComputeShader getRenderingComputeShader()
+	{
+		return renderingShader;
+	}
 
-	//	// Put the brick data into a compute buffer
-	//	ComputeBuffer buffer = new ComputeBuffer(computeData.Length, 28); // Note: 28 is the number of bytes in a BrickData struct
-	//	buffer.SetData(computeData);
-
-	//	// Send the compute buffer data to the GPU
-	//	brickAnalysisShader.SetBuffer(analysisKernelID, "dataBuffer", buffer);
-
-	//	// Send the camera's position to the GPU
-	//	brickAnalysisShader.SetVector("cameraPosition", new Vector4(mainCamera.transform.position.x, mainCamera.transform.position.y, mainCamera.transform.position.z, 0.0f));
-
-	//	// Run the kernel
-	//	brickAnalysisShader.Dispatch(analysisKernelID, computeData.Length, 1, 1);
-
-	//	// Retrieve the data
-	//	BrickData[] analyzedData = new BrickData[currentVolume.Bricks.Length];
-	//	buffer.GetData(analyzedData);
-	//	buffer.Dispose();
-
-	//	// Return the analyzed data
-	//	return analyzedData;
-	//}
+	/// <summary>
+	/// Returns the id of the renderer kernel in the compute shader.
+	/// </summary>
+	/// <returns></returns>
+	public int getRendererKernelID()
+	{
+		return rendererKernelID;
+	}
 
 	/*****************************************************************************
 	* NEW: COMPUTE RENDERING METHODS
@@ -301,92 +225,195 @@ public class VolumeController : MonoBehaviour {
 		rendererKernelID = renderingShader.FindKernel("CSMain");
 
 		// Initialize the brickBuffer (the metadata buffer)
+		MetaBrick[] metaBricks = initMetaBrickBuffer();
+
+		// Initialize the volumeBuffer (the metadata buffer)
+		MetaVolume[] metaVolumes = initMetaVolumeBuffer();
+
+		// BEGIN NEW TEST CODE
+		initDataBuffers(metaBricks);
+
+		// Set the necessary parameters in the compute shader
+		metaBrickBuffer = new ComputeBuffer(metaBricks.Length, 64);       // n MetaBricks with a size of 64 bytes each
+		metaBrickBuffer.SetData(metaBricks);
+
+		metaVolumeBuffer = new ComputeBuffer(1, 64);                      // 1 MetaVolume with a size of 64 bytes each
+		metaVolumeBuffer.SetData(metaVolumes);
+
+		renderingShader.SetBuffer(rendererKernelID, "_MetaBrickBuffer", metaBrickBuffer);
+		renderingShader.SetBuffer(rendererKernelID, "_MetaVolumeBuffer", metaVolumeBuffer);
+
+		// Set other rendering properties
+		renderingShader.SetInt("_Steps", 128);
+		// END NEW TEST CODE
+
+		// BEGIN ORIGINAL CODE
+		//// Initialize the dataBuffer (contains the actual data)
+		//int totalData = 0;
+		//for (int i = 0; i < metaBricks.Length; i++)
+		//	totalData += getMetaBrickDataSize(metaBricks[i]);
+		////dataBufferZero = new ComputeBuffer(totalData, 32);
+		//dataBufferZero = new ComputeBuffer( (int) Math.Ceiling(totalData / 4.0), 32);
+
+		//int currentBufferIndex = 0;
+
+		//if (currentVolume.BitsPerPixel == 8)
+		//{
+		//	//uint[] rawData = new uint[totalData];
+		//	uint[] rawData = new uint[(int) Math.Ceiling(totalData / 4.0)];
+
+		//	for (int i = 0; i < currentVolume.Bricks.Length; i++)
+		//	{
+		//		// Read the data and load it into the data buffer
+		//		uint[] newData = currentVolume.Bricks[i].readRaw8Into3DZLevelBufferUint();
+		//		//Buffer.BlockCopy(newData, 4 * 0, rawData, 4 * currentBufferIndex, newData.Length * 4);//4 * numData[i]);	// CRITICAL NOTE: These indices are byte offsets, not index offsets. Must multiply each offset by the size of the data being copied (i.e. 32 bit int = mulit by 4 bytes)
+
+		//		// Copy the packed new data to the data buffer
+		//		for (int j = 0; j < newData.Length; j++)
+		//		{
+		//			rawData[currentBufferIndex + j] = newData[j];
+		//		}
+
+		//		// Set the metaBricks' bufferIndices
+		//		metaBricks[i].bufferOffset = currentBufferIndex;
+
+		//		// Move the currentIndex to the end of the data that was just read in
+		//		currentBufferIndex += newData.Length; // numData[i];
+		//	}
+
+		//	dataBufferZero.SetData(rawData);
+		//}
+
+		//// Set the necessary parameters in the compute shader (the two metadata buffers, the data buffer, camera matrices, etc.) 
+		//metaBrickBuffer = new ComputeBuffer(metaBricks.Length, 64);       // n MetaBricks with a size of 60 bytes each
+		//metaBrickBuffer.SetData(metaBricks);
+
+		//metaVolumeBuffer = new ComputeBuffer(1, 64);                      // 1 MetaVolume with a size of 64 bytes each
+		//metaVolumeBuffer.SetData(metaVolumes);
+
+		//renderingShader.SetBuffer(rendererKernelID, "_MetaBrickBuffer", metaBrickBuffer);
+		//renderingShader.SetBuffer(rendererKernelID, "_MetaVolumeBuffer", metaVolumeBuffer);
+		//renderingShader.SetBuffer(rendererKernelID, "_DataBufferZero", dataBufferZero);
+		// END ORIGINAL CODE
+	}
+
+	/// <summary>
+	/// Create the array of brick metadata for use in the compute shader based on the bricks in the currentVolume.
+	/// </summary>
+	/// <returns></returns>
+	private MetaBrick[] initMetaBrickBuffer()
+	{
 		MetaBrick[] metaBricks = new MetaBrick[currentVolume.Bricks.Length];
-		int[] numData = new int[metaBricks.Length];										// holds the number of data voxels to be read in by brick with corresponding id
 		for (int i = 0; i < metaBricks.Length; i++)
 		{
 			// Create the MetaBrick
 			metaBricks[i] = currentVolume.Bricks[i].getMetaBrick();
-			metaBricks[i].currentZLevel = metaBricks[i].maxZLevel;						// TODO: Change this; it shouldn't necessarily be max level to begin with
+			metaBricks[i].currentZLevel = metaBricks[i].maxZLevel;                      // TODO: Change this; it shouldn't necessarily be max level to begin with
 			metaBricks[i].id = i;
 			metaBricks[i].lastBitMask = currentVolume.Bricks[i].calculateLastBitMask();
 
 			// Set some parameters in the brick
 			currentVolume.Bricks[i].CurrentZLevel = metaBricks[i].currentZLevel;
+		}
+		return metaBricks;
+	}
 
-			// Determine the amount of voxels to be read in for this brick
-			numData[i] = 1 << metaBricks[i].currentZLevel;								// equivalent to 2^currentZLevel
-			numData[i] = numData[i] * numData[i] * numData[i];
+	/// <summary>
+	/// Determine the amount of data voxels to be read in for the given brick.
+	/// </summary>
+	/// <param name="br"></param>
+	/// <returns></returns>
+	private int getMetaBrickDataSize(MetaBrick br)
+	{
+		int numData = 1 << br.currentZLevel;
+		return (numData * numData * numData);
+
+	}
+
+	/// <summary>
+	/// Create the "array" of volume metadata for use in the compute shader.
+	/// </summary>
+	private MetaVolume[] initMetaVolumeBuffer()
+	{
+		MetaVolume[] metaVolume = new MetaVolume[1];
+		metaVolume[0] = currentVolume.getMetaVolume();
+		return metaVolume;
+	}
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="mb"></param>
+	private void initDataBuffers(MetaBrick[] mb)
+	{
+		// Ensure that extra compute buffers are not unnecessarily initialized
+		if (currentVolume.Bricks.Length < numberOfBuffers)
+			numberOfBuffers = currentVolume.Bricks.Length;
+
+		dataBuffers = new ComputeBuffer[maxNumberOfBuffers];	// The compute buffers that will hold the data
+		int[] bufferDataSizes = new int[maxNumberOfBuffers];	// Total size of the data to be put in the ith buffer
+
+		// Initialize the lists of bricks associated with each buffer
+		Dictionary<int, List<int>> bricksInBuffer = new Dictionary<int, List<int>>();
+		for (int i = 0; i < numberOfBuffers; i++)
+		{
+			bricksInBuffer.Add(i, new List<int>());
 		}
 
-		// Initialize the volumeBuffer (the metadata buffer)
-		MetaVolume[] metaVolumes = new MetaVolume[1];
-		metaVolumes[0] = currentVolume.getMetaVolume();
-
-		// Initialize the dataBuffer (contains the actual data)
-		int totalData = 0;
-		for (int i = 0; i < numData.Length; i++) totalData += numData[i];
-		//dataBuffer = new ComputeBuffer(totalData, 32);
-		dataBuffer = new ComputeBuffer(totalData / 4, 32);
-
-		int currentBufferIndex = 0;
-
-		if (currentVolume.BitsPerPixel == 8)
+		// Pre-compute the sizes of the compute buffers and which bricks will go inside of each
+		for (int i = 0; i < mb.Length; i++)
 		{
-			//uint[] rawData = new uint[totalData];
-			uint[] rawData = new uint[totalData / 4];
+			int currentBrickSize = getMetaBrickDataSize(mb[i]);					// Get the amount of data points in the current brick	
+			currentBrickSize = (int) Math.Ceiling(currentBrickSize / 4.0);		// Account for any padding when packing the bytes into uints
+			bufferDataSizes[i % numberOfBuffers] += currentBrickSize;			// Ensure there is room for the ith brick in this buffer
+			bricksInBuffer[i % numberOfBuffers].Add(i);							// Note the index of the brick to be added to the buffer
+		}
 
-			for (int i = 0; i < currentVolume.Bricks.Length; i++)
+		// Allocate the compute buffers, read in the data, copy the data into the buffer, and send the data to the compute shader
+		for (int bufIdx = 0; bufIdx < numberOfBuffers; bufIdx++)
+		{
+			dataBuffers[bufIdx] = new ComputeBuffer(bufferDataSizes[bufIdx], sizeof(uint)); // new ComputeBuffer((int)Math.Ceiling(bufferDataSizes[bufIdx] / 4.0), 32);
+			int currentBufferOffset = 0;
+
+			uint[] rawData = new uint[bufferDataSizes[bufIdx]]; // new uint[(int)Math.Ceiling(bufferDataSizes[bufIdx] / 4.0)];
+			for (int j = 0; j < bricksInBuffer[bufIdx].Count; j++)
 			{
-				// Read the data and load it into the data buffer
-				uint[] newData = currentVolume.Bricks[i].readRaw8Into3DZLevelBufferUint();
-				//Buffer.BlockCopy(newData, 4 * 0, rawData, 4 * currentBufferIndex, newData.Length * 4);//4 * numData[i]);	// CRITICAL NOTE: These indices are byte offsets, not index offsets. Must multiply each offset by the size of the data being copied (i.e. 32 bit int = mulit by 4 bytes)
+				int brIdx = bricksInBuffer[bufIdx][j];
 
-				// Copy the packed new data to the data buffer
-				for (int j = 0; j < newData.Length; j++)
+				// Read the data and load it into the data buffer
+				uint[] newData = currentVolume.Bricks[brIdx].readRaw8Into3DZLevelBufferUint();
+
+				// Copy the packed new data to the data buffer													// TODO: Change this loop copy to Buffer.BlockCopy()
+				for (int k = 0; k < newData.Length; k++)
 				{
-					rawData[currentBufferIndex + j] = newData[j];
+					rawData[currentBufferOffset + k] = newData[k];
 				}
 
-				// Set the metaBricks' bufferIndices
-				metaBricks[i].bufferIndex = currentBufferIndex;
+				// Set the bufferOffset of the current meta brick
+				mb[brIdx].bufferOffset = currentBufferOffset;
 
-				// Move the currentIndex to the end of the data that was just read in
-				currentBufferIndex += newData.Length; // numData[i];
+				// Set the bufferIndex of the current meta brick
+				mb[brIdx].bufferIndex = bufIdx;
+
+				// Update the currentBufferOffset 
+				currentBufferOffset += newData.Length;
 			}
 
-			dataBuffer.SetData(rawData);
+			// Set the data in the current compute buffer
+			dataBuffers[bufIdx].SetData(rawData);
+
+			// Send the data in the compute buffer to the compute shader
+			renderingShader.SetBuffer(rendererKernelID, dataBufferNames[bufIdx], dataBuffers[bufIdx]);
 		}
-		//else
-		//{
-		//	ushort[] rawData = new ushort[totalData * currentVolume.BitsPerPixel];
 
-		//	for (int i = 0; i < currentVolume.Bricks.Length; i++)
-		//	{
-		//		// Read the data and load it into the data buffer
-		//		ushort[] newData = currentVolume.Bricks[i].readRaw16Into3DZLevelBuffer();
-		//		Buffer.BlockCopy(newData, 0, rawData, currentBufferIndex, newData.Length);
-
-		//		// Set the metaBricks' bufferIndices
-		//		metaBricks[i].bufferIndex = currentBufferIndex;
-
-		//		// Move the currentIndex to the end of the data that was just read in
-		//		currentBufferIndex += numData[i];
-		//	}
-
-		//	dataBuffer.SetData(rawData);
-		//}
-
-		// Set the necessary parameters in the compute shader (the two metadata buffers, the data buffer, camera matrices, etc.) 
-		metaBrickBuffer = new ComputeBuffer(metaBricks.Length, 60);       // n MetaBricks with a size of 60 bytes each
-		metaBrickBuffer.SetData(metaBricks);
-
-		metaVolumeBuffer = new ComputeBuffer(1, 64);                      // 1 MetaVolume with a size of 60 bytes each
-		metaVolumeBuffer.SetData(metaVolumes);
-
-		renderingShader.SetBuffer(rendererKernelID, "_MetaBrickBuffer", metaBrickBuffer);
-		renderingShader.SetBuffer(rendererKernelID, "_MetaVolumeBuffer", metaVolumeBuffer);
-		renderingShader.SetBuffer(rendererKernelID, "_DataBuffer", dataBuffer);
+		// Initialize any extra buffers to contain 1 single element
+		for (int i = numberOfBuffers; i < maxNumberOfBuffers; i++)
+		{
+			uint[] rawData = new uint[]{ 0 };
+			dataBuffers[i] = new ComputeBuffer(1, sizeof(uint));
+			dataBuffers[i].SetData(rawData);
+			renderingShader.SetBuffer(rendererKernelID, dataBufferNames[i], dataBuffers[i]);
+		}
 	}
 
 	/// <summary>
@@ -436,6 +463,4 @@ public class VolumeController : MonoBehaviour {
 		// Blit the results to the screen and finalize the render
 		Graphics.Blit(_target, destination);
 	}
-
-
 }

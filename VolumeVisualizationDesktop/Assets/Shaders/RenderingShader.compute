@@ -7,6 +7,7 @@ struct MetaBrick
 {
 	float3 position;
 	int size;
+	int bufferOffset;
 	int bufferIndex;
 	int maxZLevel;
 	int currentZLevel;
@@ -49,7 +50,12 @@ float4x4 _CameraToWorld;
 float4x4 _CameraInverseProjection;
 RWStructuredBuffer<MetaBrick> _MetaBrickBuffer;
 RWStructuredBuffer<MetaVolume> _MetaVolumeBuffer;
-RWStructuredBuffer<uint> _DataBuffer;
+RWStructuredBuffer<uint> _DataBufferZero;
+RWStructuredBuffer<uint> _DataBufferOne;
+RWStructuredBuffer<uint> _DataBufferTwo;
+int _Steps = 128;
+Texture2D<float4> _TransferFunctionTexture;
+SamplerState sampler_TransferFunctionTexture;
 
 /*********************************************
 *		     Newly Defined Variables
@@ -57,12 +63,12 @@ RWStructuredBuffer<uint> _DataBuffer;
 const static int MAX_BRICKS = 20;										// TODO: Figure out why making this too big drastically decreases performance
 
 // big endian
-//const static uint MASKS_8BIT[] = {0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF};
-//const static int BYTE_SHIFTS[] = { 24, 16, 8, 0 };
+const static uint MASKS_8BIT[] = {0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF};
+const static int BYTE_SHIFTS[] = { 24, 16, 8, 0 };
 
 // little endian
-const static uint MASKS_8BIT[] = { 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000 };
-const static int BYTE_SHIFTS[] = { 0, 8, 16, 24 };
+//const static uint MASKS_8BIT[] = { 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000 };
+//const static int BYTE_SHIFTS[] = { 0, 8, 16, 24 };
 
 /*********************************************
 *			   Ray Init Functions
@@ -120,52 +126,6 @@ bool IntersectBox(float3 ray_o, float3 ray_d, float3 boxMin, float3 boxMax, out 
 /*********************************************
 *			  HZ Curving Functions
 **********************************************/
-uint Compact1By2(uint x)
-{
-	x &= 0x09249249;                  // x = ---- 9--8 --7- -6-- 5--4 --3- -2-- 1--0
-	x = (x ^ (x >> 2)) & 0x030c30c3; // x = ---- --98 ---- 76-- --54 ---- 32-- --10
-	x = (x ^ (x >> 4)) & 0x0300f00f; // x = ---- --98 ---- ---- 7654 ---- ---- 3210
-	x = (x ^ (x >> 8)) & 0xff0000ff; // x = ---- --98 ---- ---- ---- ---- 7654 3210
-	x = (x ^ (x >> 16)) & 0x000003ff; // x = ---- ---- ---- ---- ---- --98 7654 3210
-	return x;
-}
-
-uint DecodeMorton3X(uint code)
-{
-	return Compact1By2(code >> 2);
-}
-
-uint DecodeMorton3Y(uint code)
-{
-	return Compact1By2(code >> 1);
-}
-
-uint DecodeMorton3Z(uint code)
-{
-	return Compact1By2(code >> 0);
-}
-
-uint3 decode(uint c, uint lastBitMask)
-{
-	uint3 cartEquiv = uint3(0, 0, 0);
-	c = c << 1 | 1;
-	uint i = c | c >> 1;
-	i |= i >> 2;
-	i |= i >> 4;
-	i |= i >> 8;
-	i |= i >> 16;
-
-	i -= i >> 1;
-
-	c *= lastBitMask / i;
-	c &= (~lastBitMask);
-	cartEquiv.x = DecodeMorton3X(c);
-	cartEquiv.y = DecodeMorton3Y(c);
-	cartEquiv.z = DecodeMorton3Z(c);
-
-	return cartEquiv;
-}
-
 // Expands an 8-bit integer into 24 bits by inserting 2 zeros after each bit
 // Taken from: https://webcache.googleusercontent.com/search?q=cache:699-OSphYRkJ:https://fgiesen.wordpress.com/2009/12/13/decoding-morton-codes/+&cd=1&hl=en&ct=clnk&gl=us
 uint Part1By2(uint x)
@@ -195,14 +155,6 @@ uint morton3D(float3 pos, int brickSize)
 	return zz << 2 | yy << 1 | xx;
 }
 
-// Return the index into the hz-ordered array of data given a quantized point within the volume
-uint getHZIndex(uint zIndex, uint lastBitMask)
-{
-	uint hzIndex = (zIndex | lastBitMask);		// set leftmost one
-	hzIndex /= hzIndex & -hzIndex;				// remove trailing zeros
-	return (hzIndex >> 1);						// remove rightmost one
-}
-
 // Returns the masked z index, allowing for the the data to be quantized to a level of detail specified by the _CurrentZLevel.
 uint computeMaskedZIndex(uint zIndex, int currentZLevel, int maxZLevel)
 {
@@ -211,23 +163,81 @@ uint computeMaskedZIndex(uint zIndex, int currentZLevel, int maxZLevel)
 	return zIndex & zMask;
 }
 
+// Return the index into the hz-ordered array of data given a quantized point within the volume
+uint getHZIndex(uint zIndex, uint lastBitMask)
+{
+	uint hzIndex = (zIndex | lastBitMask);		// set leftmost one
+	hzIndex /= hzIndex & -hzIndex;				// remove trailing zeros
+	return (hzIndex >> 1);						// remove rightmost one
+}
+
 /*********************************************
 *		  Intensity Sampling Functions
 **********************************************/
 // Samples from the data buffer with the assumption that each data point is 8 bit stored in a 32 bit uint
 float sampleDataBuffer8Bit(uint bufferOffset, uint byteIndex) 
 {
-	uint uintIndex = bufferOffset + ceil(byteIndex / 4.0);				// Find the index of the desired uint
+	uint uintIndex = bufferOffset + ceil(byteIndex / 4.0);				// Find the index of the desired uint								// PROBLEM: Does the ceil() function need to be cast to uint before adding it to the bufferOffset?
 	uint uintIndexOffset = 3- (byteIndex % 4);						// Find the offset into the desired uint
-	return (_DataBuffer[uintIndex] & MASKS_8BIT[uintIndexOffset]) >> BYTE_SHIFTS[uintIndexOffset];
+	return (_DataBufferZero[uintIndex] & MASKS_8BIT[uintIndexOffset]) >> BYTE_SHIFTS[uintIndexOffset];
 
-	//return _DataBuffer[uintIndex] & 0x000000FF;
+	//return _DataBufferZero[uintIndex] & 0x000000FF;
+}
+
+float sampleBuffers(uint bufferIndex, uint bufferOffset, uint byteIndex)
+{
+	//uint uintIndex = bufferOffset + ceil(byteIndex / 4.0);				// Find the index of the desired uint
+	//uint uintIndex = bufferOffset + (byteIndex / 4);
+	uint uintIndex = bufferOffset + byteIndex;
+	uint uintIndexOffset = 3 - (byteIndex % 4);						// Find the offset into the desired uint
+
+	if (bufferIndex == 0)
+	{
+		return _DataBufferZero[uintIndex];
+		//return (_DataBufferZero[uintIndex] & MASKS_8BIT[uintIndexOffset]) >> BYTE_SHIFTS[uintIndexOffset];
+	}
+	else if (bufferIndex == 1)
+	{
+		return _DataBufferOne[uintIndex];
+		//return (_DataBufferOne[uintIndex] & MASKS_8BIT[uintIndexOffset]) >> BYTE_SHIFTS[uintIndexOffset];
+	}
+	else if (bufferIndex == 2)
+	{
+		return _DataBufferTwo[uintIndex];
+		//return (_DataBufferTwo[uintIndex] & MASKS_8BIT[uintIndexOffset]) >> BYTE_SHIFTS[uintIndexOffset];
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+float samplePackedBuffers(uint bufferIndex, uint bufferOffset, uint byteIndex)
+{
+	uint uintIndex = bufferOffset + (byteIndex / 4);
+	uint uintIndexOffset = byteIndex % 4;
+	if (bufferIndex == 0)
+	{
+		return (_DataBufferZero[uintIndex] & MASKS_8BIT[uintIndexOffset]) >> BYTE_SHIFTS[uintIndexOffset];
+	}
+	else if (bufferIndex == 1)
+	{
+		return (_DataBufferOne[uintIndex] & MASKS_8BIT[uintIndexOffset]) >> BYTE_SHIFTS[uintIndexOffset];
+	}
+	else if (bufferIndex == 2)
+	{
+		return (_DataBufferTwo[uintIndex] & MASKS_8BIT[uintIndexOffset]) >> BYTE_SHIFTS[uintIndexOffset];
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 // Samples from the data buffer as if it were filled with raw ordered data.
 // Formula: x + (y * width) + (z * width * height)
 // pos is assumed to in local brick space
-float sampleIntensityRaw(float3 pos, int width, int height, int depth, int bufferOffset)
+float sampleIntensityRaw(float3 pos, int width, int height, int depth, int bufferIndex, int bufferOffset)
 {
 	// Convert from texture coordinates to 3d cartesian
 	//uint x = round(pos.x);// / (float)width);
@@ -236,16 +246,22 @@ float sampleIntensityRaw(float3 pos, int width, int height, int depth, int buffe
 	//uint index = (x + width * (y + (z * height)));
 	//int index = round(pos.x + width * (pos.y + (pos.z * height)));
 
-	// TESTING
 	uint x = floor(lerp(0, width - 1, pos.x));
-	uint y = floor(lerp(0, height - 1, 1-pos.y));	// flip the y coordinate due to how the data is stored (0 is top, 1 is bottom)
+	uint y = floor(lerp(0, height - 1, pos.y));	// flip the y coordinate due to how the data is stored (0 is top, 1 is bottom)
 	uint z = floor(lerp(0, depth - 1, pos.z));
 	uint index = (x + width * (y + (z * height)));
-	// END TESTING
 
-	//return _DataBuffer[bufferOffset + index];
+	// ORIGINAl
+	//return _DataBufferZero[bufferOffset + index];
 
-	return sampleDataBuffer8Bit(bufferOffset, index);
+	// TESTING BYTES PACKED INTO UINTS
+	//return sampleDataBuffer8Bit(bufferOffset, index);
+
+	// TESTING MULTIPLE UINT BUFFERS
+	//return sampleBuffers(bufferIndex, bufferOffset, index);
+
+	// TESTING MULTIPLE PACKED UINT BUFFERS
+	return samplePackedBuffers(bufferIndex, bufferOffset, index);
 }
 
 // Samples from the data buffer as if it were filled with HZ ordered data.
@@ -254,8 +270,8 @@ float sampleIntensityHz(float3 pos, MetaBrick brick)
 	uint zIndex = morton3D(pos, brick.size);												// Get the Z order index		
 	uint maskedZIndex = computeMaskedZIndex(zIndex, brick.currentZLevel, brick.maxZLevel);	// Get the masked Z index
 	uint hzIndex = getHZIndex(maskedZIndex, brick.lastBitMask);								// Find the hz order index
-	//return _DataBuffer[brick.bufferIndex + hzIndex];
-	return sampleDataBuffer8Bit(brick.bufferIndex, hzIndex);
+	//return _DataBufferZero[brick.bufferOffset + hzIndex];
+	return sampleDataBuffer8Bit(brick.bufferOffset, hzIndex);
 }
 
 float sampleIntensity(float3 pos, MetaBrick brick, bool isHz)
@@ -266,7 +282,7 @@ float sampleIntensity(float3 pos, MetaBrick brick, bool isHz)
 	if (isHz)
 		return sampleIntensityHz(pos, brick);
 	else
-		return sampleIntensityRaw(pos, brick.size, brick.size, brick.size, brick.bufferIndex);
+		return sampleIntensityRaw(pos, brick.size, brick.size, brick.size, brick.bufferIndex, brick.bufferOffset);
 }
 
 /*********************************************
@@ -289,9 +305,35 @@ float4 sampleTransferFunction(float isovalue)
 	//	return float4(1, 0, 1, alpha);
 	//return float4(1, 1, 1, alpha);
 
-	float4 startColor = float4(1, 0, 0, 0);
-	float4 endColor = float4(0, 0, 1, 0.5);
-	return lerp(startColor, endColor, isovalue / 255.0);
+	// Hot to cold transfer function
+	//float4 startColor = float4(1.0, 1.0, 0.0, 0.0);
+	//float4 endColor = float4(0.8, 0.0, 0.8, 0.2);
+	//return lerp(startColor, endColor, isovalue / 255.0);
+
+	//// Determine the proper color
+	//float3 startColor = float3(1.0, 1.0, 0.0);
+	//float3 endColor = float3(0.8, 0.0, 0.8);
+	//float3 lerpColor = lerp(startColor, endColor, isovalue / 255.0);
+
+	//// Determine the proper alpha
+	//float startAlpha = 0;
+	//float endAlpha = 0;
+	//if (isovalue < 50)
+	//{
+	//	startAlpha = 0.0;
+	//	endAlpha = 1.0;
+	//}
+	//else
+	//{
+	//	startAlpha = 1.0;
+	//	endAlpha = 0.0; 
+	//}
+	//float lerpAlpha = lerp(startAlpha, endAlpha, isovalue / 255.0);
+	//
+	//return float4(lerpColor, lerpAlpha); 
+
+	// Only need to sample along the x axis of the texture (8-BIT ONLY)
+	return _TransferFunctionTexture.SampleLevel(sampler_TransferFunctionTexture, float2(isovalue/255, 0.0), 0.0);
 }
 
 
@@ -324,7 +366,7 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 	// Transform pixel to [-1,1] range
 	float2 uv = float2((id.xy + float2(0.5f, 0.5f)) / float2(width, height) * 2.0f - 1.0f);
 
-	Result[id.xy] = float4(1, 0, 0, 1);
+	Result[id.xy] = float4(0, 0, 0, 1);
 
 	// Get a ray for the UVs
 	Ray ray = CreateCameraRay(uv);
@@ -366,7 +408,7 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 	// Ensure that some brick was hit by the ray
 	if (numIntersections == 0)
 	{
-		Result[id.xy] = float4(0, 1, 0, 1);
+		Result[id.xy] = float4(1, 0, 0, 1);
 		return;
 	}
 	//else
@@ -387,9 +429,6 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 	// Sort the bricks by smallest nearT
 	insertionSort(intersections, numIntersections);
 
-	// TODO: Set up the step size
-	int _Steps = 128;
-
 	// BEGIN TESTING
 	int currentBrickIndex = 0;
 	MetaBrick currentBrick = _MetaBrickBuffer[intersections[currentBrickIndex].id];
@@ -400,7 +439,7 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 	float3 pNear = ray.origin + (ray.direction * intersections[currentBrickIndex].tNear);
 	float3 pFar = ray.origin + (ray.direction * intersections[currentBrickIndex].tFar);
 
-	float3 rayStart = pNear;
+	float3 rayStart = pNear; 
 	//float3 rayStop = pFar;
 
 	float3 vol_ray_pos = rayStart;
@@ -414,6 +453,7 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 		float isovalue = sampleIntensity(vol_ray_pos, currentBrick, currentVolume.isHz);
 
 		float4 sampleColor = sampleTransferFunction(isovalue);
+		//float4 sampleColor = float4(1.0, 0.0, 0.0, 0.005);
 
 		// Front to back blending function
 		fColor.rgb = fColor.rgb + (1 - fColor.a) * sampleColor.a * sampleColor.rgb;
@@ -424,35 +464,26 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 		//brick_ray_pos = vol_ray_pos - currentBrick.boxMin;
 
 		// Check if we have marched out of the volume
-		if (vol_ray_pos.x < currentVolume.boxMin.x || vol_ray_pos.y < currentVolume.boxMin.y || vol_ray_pos.z < currentVolume.boxMin.z)
-			break;
-		if (vol_ray_pos.x > currentVolume.boxMax.x || vol_ray_pos.y > currentVolume.boxMax.y || vol_ray_pos.z > currentVolume.boxMax.z)
+		if (vol_ray_pos.x < currentVolume.boxMin.x || vol_ray_pos.y < currentVolume.boxMin.y || vol_ray_pos.z < currentVolume.boxMin.z
+			|| vol_ray_pos.x > currentVolume.boxMax.x || vol_ray_pos.y > currentVolume.boxMax.y || vol_ray_pos.z > currentVolume.boxMax.z)
 			break;
 
 		// Check if we have marched out of the current brick
 		if (vol_ray_pos.x < currentBrick.boxMin.x || vol_ray_pos.y < currentBrick.boxMin.y || vol_ray_pos.z < currentBrick.boxMin.z
 			|| vol_ray_pos.x > currentBrick.boxMax.x || vol_ray_pos.y > currentBrick.boxMax.y || vol_ray_pos.z > currentBrick.boxMax.z)
 		{
-			//Result[id.xy] = float4(vol_ray_pos, 1.0);
-			//Result[id.xy] = float4(1/ (float) currentBrick.id, 0,0, 1.0);
-			//return;
 			if (currentBrickIndex < numIntersections)
 			{
 				currentBrickIndex++;
 				currentBrick = _MetaBrickBuffer[intersections[currentBrickIndex].id];
-				//brick_ray_pos = vol_ray_pos - currentBrick.boxMin;
 			}
 			else
 				break;
 		}
 
-		// Check if accumulated alpha is greater than 1.0
-		if (fColor.a > 1.0)
-		{
-			//Result[id.xy] = float4(1, 1, 1, 1);
-			//return;
+		// If alpha is completely saturated for this pixel, stop ray-marching
+		if (fColor.a > 1.0) 
 			break;
-		}
 	}
 
 	Result[id.xy] = fColor;

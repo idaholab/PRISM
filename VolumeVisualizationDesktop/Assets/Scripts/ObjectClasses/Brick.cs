@@ -439,8 +439,8 @@ public class Brick
 
 			// Pack the bytes that were read into a uint array
 			uint[] uintBuffer = new uint[Mathf.CeilToInt(totalDataSize / 4.0f)];
-			//int[] byteShifts = { 24, 16, 8, 0};	// use for big endian
-			int[] byteShifts = { 0, 8, 16, 24 };    // use for little endian
+			int[] byteShifts = { 24, 16, 8, 0 };    // use for big endian
+			//int[] byteShifts = { 0, 8, 16, 24 };    // use for little endian
 			int maskIndex = 0;
 			for (int i = 0; i < buffer.Length; i++)
 			{
@@ -581,7 +581,8 @@ public class Brick
 		MetaBrick mb;
 		mb.position = gameObject.transform.position;
 		mb.size = size;
-		mb.bufferIndex = -1;
+		mb.bufferOffset = 0;
+		mb.bufferIndex = 0;
 		mb.maxZLevel = maxZLevel;
 		mb.currentZLevel = 0;
 		mb.id = -1;

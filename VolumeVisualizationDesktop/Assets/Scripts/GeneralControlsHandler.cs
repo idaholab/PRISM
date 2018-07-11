@@ -36,7 +36,7 @@ public class GeneralControlsHandler : MonoBehaviour {
 	/// <param name="newVal"></param>
     public void updateStepsValue(float newVal)
     {
-		volumeController.getCurrentVolume().updateMaterialPropFloatAll("_Steps", newVal);
+		volumeController.getRenderingComputeShader().SetInt("_Steps", (int) newVal);
         maxStepsValueText.text = newVal.ToString();
     }
 

@@ -119,7 +119,8 @@ public class TransferFunctionHandler : MonoBehaviour {
 		transferFunction.TransferTexture = transferFunction.generateTransferTexture();
 
 		// Buffer over the new transfer texture to each of the materials
-		volumeController.getCurrentVolume().updateMaterialPropTexture2DAll("_TransferFunctionTex", transferFunction.TransferTexture);
+		//volumeController.getCurrentVolume().updateMaterialPropTexture2DAll("_TransferFunctionTex", transferFunction.TransferTexture);
+		volumeController.getRenderingComputeShader().SetTexture(volumeController.getRendererKernelID(), "_TransferFunctionTexture", transferFunction.TransferTexture);
 
         // Generate the texture to display in the user interface
         //Color[] transferColors = new Color[transferFunction.IsovalueRange * 2];
