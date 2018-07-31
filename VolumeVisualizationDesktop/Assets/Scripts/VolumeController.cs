@@ -67,6 +67,12 @@ public class VolumeController : MonoBehaviour {
 		// 4. Initialize the render texture, compute shader, and other objects needed for rendering
 		initializeComputeRenderer();
 
+		// 5.  Unbound the framerate of this application
+		Application.targetFrameRate = -1;
+
+		// Turn off v-sync
+		QualitySettings.vSyncCount = 0;
+
 		// DEBUG: Creating a wireframe bounding box cube
 		if (drawBoundingBox)
         {

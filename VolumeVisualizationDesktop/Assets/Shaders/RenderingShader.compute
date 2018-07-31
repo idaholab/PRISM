@@ -60,7 +60,7 @@ SamplerState sampler_TransferFunctionTexture;
 /*********************************************
 *		     Newly Defined Variables
 **********************************************/
-const static int MAX_BRICKS = 20;										// TODO: Figure out why making this too big drastically decreases performance
+const static int MAX_BRICKS = 100;										// TODO: Figure out why making this too big drastically decreases performance
 
 // big endian
 const static uint MASKS_8BIT[] = {0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF};
@@ -408,7 +408,7 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 	// Ensure that some brick was hit by the ray
 	if (numIntersections == 0)
 	{
-		Result[id.xy] = float4(1, 0, 0, 1);
+		Result[id.xy] = float4(0, 0, 0, 1);
 		return;
 	}
 	//else
