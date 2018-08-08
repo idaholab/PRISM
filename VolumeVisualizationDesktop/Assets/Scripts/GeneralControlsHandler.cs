@@ -36,7 +36,7 @@ public class GeneralControlsHandler : MonoBehaviour {
 	/// <param name="newVal"></param>
     public void updateStepsValue(float newVal)
     {
-		volumeController.getRenderingComputeShader().SetInt("_Steps", (int) newVal);
+		volumeController.RenderingComputeShader.SetInt("_Steps", (int) newVal);
         maxStepsValueText.text = newVal.ToString();
     }
 
@@ -46,7 +46,8 @@ public class GeneralControlsHandler : MonoBehaviour {
 	/// <param name="newVal"></param>
 	public void updateNormPerRay(float newVal)
     {
-		volumeController.getCurrentVolume().updateMaterialPropFloatAll("_NormPerRay", newVal);
+		//volumeController.CurrentVolume.updateMaterialPropFloatAll("_NormPerRay", newVal);
+		volumeController.RenderingComputeShader.SetFloat("_NormPerRay", newVal);
         normPerRayValueText.text = newVal.ToString("0.00");
     }
 
@@ -56,7 +57,7 @@ public class GeneralControlsHandler : MonoBehaviour {
 	/// <param name="newVal"></param>
 	public void updateHZRenderLevel(float newVal)
     {
-		volumeController.getCurrentVolume().updateMaterialPropIntAll("_HZRenderLevel", (int) newVal);
+		//volumeController.CurrentVolume.updateMaterialPropIntAll("_HZRenderLevel", (int) newVal);
         hzRenderLevelValueText.text = newVal.ToString();
     }
 }

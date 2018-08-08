@@ -39,20 +39,14 @@ public class AlphaPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
 	/// </summary>
     void Start()
     {
-		//panelRectTransform = transform as RectTransform;
         drawCanvasRectTransform = alphaCanvas.transform as RectTransform;
-        //maxWidth = panelRectTransform.rect.width - borderSize;
-        //maxHeight = panelRectTransform.rect.height - borderSize;
-        //minWidth =  borderSize;
-        //minHeight = borderSize;
         maxWidth = drawCanvasRectTransform.rect.width;
         maxHeight = drawCanvasRectTransform.rect.height;
         minWidth = 0.0f;
         minHeight = 0.0f;
         transferFunctionHandler = (TransferFunctionHandler)GameObject.Find("Transfer Function Panel").GetComponent(typeof(TransferFunctionHandler));
-		//volumeController = (VolumeController)GameObject.Find("VolumeController").GetComponent(typeof(VolumeController));
 		volumeController = (VolumeController)GameObject.Find("Main Camera").GetComponent(typeof(VolumeController));
-		transferFunction = volumeController.getTransferFunction();
+		transferFunction = volumeController.TransferFunction;
         maxIsovalueLabel.text = transferFunction.IsovalueRange.ToString();
 
         // Initialize the control point renderers

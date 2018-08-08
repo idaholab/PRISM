@@ -112,8 +112,6 @@ public class TransferFunction
 	public Texture2D generateTransferTexture()
 	{
         // Initialize the array of colors for the pixels
-        //Color[] transferColors = new Color[isovalueRange * 1];
-        //Color[] transferColors = new Color[255 * 255];
         int texWidth = 256;
         int texHeight = (int)Math.Round((isovalueRange / (float) texWidth));
         Color[] transferColors = new Color[texWidth * texHeight];
@@ -124,8 +122,6 @@ public class TransferFunction
 		// Generate the transfer texture's alpha values
 		generateTransferTextureAlphas(transferColors);
 
-        //Texture2D newTransferTexture = new Texture2D(isovalueRange, 1, TextureFormat.RGBA32, false);
-        //Texture2D newTransferTexture = new Texture2D(255, 255, TextureFormat.RGBA32, false);
         Texture2D newTransferTexture = new Texture2D(texWidth, texHeight, TextureFormat.RGBA32, false);
         newTransferTexture.SetPixels(transferColors);
 		newTransferTexture.Apply();
@@ -143,22 +139,7 @@ public class TransferFunction
 		// Sort the list in place by increasing isovalues
 		colorPoints.Sort((x, y) => x.isovalue.CompareTo(y.isovalue));
 
-        //// OLD: Generate the rgb color values
-        //int totalDistance = 0;
-        //for (int i = 0; i < colorPoints.Count - 1; i++)
-        //{
-        //	// Get the distance for the interpolation interval
-        //	int distance = colorPoints[i + 1].isovalue - colorPoints[i].isovalue;
-        //	for (int j = 0; j < distance; j++)
-        //	{
-        //		// Perform interpolation between the colors in the current interval
-        //		transferColors[totalDistance] = Color.Lerp(colorPoints[i].color, colorPoints[i + 1].color, (j / (float)distance));
-        //		transferColors[totalDistance].a = 1.0f;
-        //		//transferColors[totalDistance + isovalueRange] = transferColors[totalDistance];
-        //		totalDistance++;
-        //	}
-        //}
-
+        // Generate the rgb color values
         ControlPoint start = colorPoints[0];
         ControlPoint end = colorPoints[1];
         int cpIndex = 1;
@@ -186,21 +167,7 @@ public class TransferFunction
 		// Sort the list in place by increasing isovalues
 		alphaPoints.Sort((x, y) => x.isovalue.CompareTo(y.isovalue));
 
-        //// OLD: Generate the alpha values
-        //int totalDistance = 0;
-        //for (int i = 0; i < alphaPoints.Count - 1; i++)
-        //{
-        //	// Get the distance for the interpolation interval
-        //	int distance = alphaPoints[i + 1].isovalue - alphaPoints[i].isovalue;
-        //	for (int j = 0; j < distance; j++)
-        //	{
-        //		// Perform interpolation between the alphas in the current interval
-        //		transferColors[totalDistance].a = Mathf.Lerp(alphaPoints[i].color.a, alphaPoints[i + 1].color.a, (j / (float)distance));
-        //		//transferColors[totalDistance + isovalueRange].a = transferColors[totalDistance].a;
-        //		totalDistance++;
-        //	}
-        //}
-
+        // Generate the alpha values
         ControlPoint start = alphaPoints[0];
         ControlPoint end = alphaPoints[1];
         int cpIndex = 1;
@@ -221,7 +188,6 @@ public class TransferFunction
 
     /// <summary>
     /// Generates a transfer texture with size 256 x 2 to be used for display to the Color Panel.
-    /// TODO: NEEDS TO BE IMPLEMENTED
     /// </summary>
     /// <returns></returns>
     public Texture2D generateDisplayTransferTexture()
@@ -259,7 +225,6 @@ public class TransferFunction
                 // Perform interpolation between the colors in the current interval
                 transferColors[totalDistance] = Color.Lerp(colorPoints[i].color, colorPoints[i + 1].color, (j / (float)distance));
                 transferColors[totalDistance].a = 1.0f;
-                //transferColors[totalDistance + isovalueRange] = transferColors[totalDistance];
                 totalDistance++;
             }
         }
@@ -366,17 +331,6 @@ public class TransferFunction
 			points.alphaPoints = alphaPoints;
 			points.colorPoints = colorPoints;
 
-			//// Scale the transfer function points to the 16-bit range (0-65535)
-			//for (int i = 0; i < points.alphaPoints.Count; i++)
-			//{
-			//	points.alphaPoints[i].isovalue = (int)Mathf.Clamp((float)Math.Round((points.alphaPoints[i].isovalue / (float) isovalueRange) * 65535), 0, 65535);
-			//}
-
-			//for (int i = 0; i < points.colorPoints.Count; i++)
-			//{
-			//	points.colorPoints[i].isovalue = (int)Mathf.Clamp((float)Math.Round((points.colorPoints[i].isovalue / (float) isovalueRange) * 65535), 0, 65535);
-			//}
-
 			// Write the points object to JSON
 			string jsonString = JsonUtility.ToJson(points, true);
 
@@ -411,17 +365,6 @@ public class TransferFunction
 			ControlPointLists newPoints = JsonUtility.FromJson<ControlPointLists>(textFromFile);
 			alphaPoints = newPoints.alphaPoints;
 			colorPoints = newPoints.colorPoints;
-
-			//// Scale the transfer function points to the current isovalue range (added for 16-bit support)
-			//for (int i = 0; i < newPoints.alphaPoints.Count; i++)
-			//{
-			//	newPoints.alphaPoints[i].isovalue = (int) Mathf.Clamp((float)Math.Round((newPoints.alphaPoints[i].isovalue / 65535.0f) * isovalueRange), 0, isovalueRange);
-			//}
-
-			//for (int i = 0; i < newPoints.colorPoints.Count; i++)
-			//{
-			//	newPoints.colorPoints[i].isovalue = (int)Mathf.Clamp((float)Math.Round((newPoints.colorPoints[i].isovalue / 65535.0f) * isovalueRange), 0, isovalueRange);
-			//}
 
 			// Tell the transfer function update
 			transferFunctionChanged = true;

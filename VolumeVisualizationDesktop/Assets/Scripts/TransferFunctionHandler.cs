@@ -39,11 +39,10 @@ public class TransferFunctionHandler : MonoBehaviour {
 	/// </summary>
 	void Start () {
 		// Set up the reference to the VolumeController
-		//volumeController = (VolumeController) GameObject.Find("VolumeController").GetComponent(typeof(VolumeController));
 		volumeController = (VolumeController)GameObject.Find("Main Camera").GetComponent(typeof(VolumeController));
 
 		// Initialize the reference to the transfer function stored in the volume controller
-		transferFunction = volumeController.getTransferFunction();
+		transferFunction = volumeController.TransferFunction;
 
 		// Initialize the panel script references
 		alphaPanelHandler = (AlphaPanelHandler)alphaPanel.GetComponent(typeof(AlphaPanelHandler));
@@ -120,7 +119,7 @@ public class TransferFunctionHandler : MonoBehaviour {
 
 		// Buffer over the new transfer texture to each of the materials
 		//volumeController.getCurrentVolume().updateMaterialPropTexture2DAll("_TransferFunctionTex", transferFunction.TransferTexture);
-		volumeController.getRenderingComputeShader().SetTexture(volumeController.getRendererKernelID(), "_TransferFunctionTexture", transferFunction.TransferTexture);
+		volumeController.RenderingComputeShader.SetTexture(volumeController.RendererKernelID, "_TransferFunctionTexture", transferFunction.TransferTexture);
 
         // Generate the texture to display in the user interface
         //Color[] transferColors = new Color[transferFunction.IsovalueRange * 2];

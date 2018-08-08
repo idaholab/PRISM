@@ -37,16 +37,12 @@ public class ColorPanelHandler : MonoBehaviour, IDragHandler, IPointerDownHandle
     void Start () {
 		panelRectTransform = transform as RectTransform;
         drawCanvasRectTransform = colorCanvas.transform as RectTransform;
-        //maxWidth = panelRectTransform.rect.width - borderSize;
-        //minWidth = borderSize;
-        //minHeight = borderSize;
         maxWidth = drawCanvasRectTransform.rect.width;
         minWidth = 0.0f;
         minHeight = 0.0f;
         transferFunctionHandler = (TransferFunctionHandler)GameObject.Find("Transfer Function Panel").GetComponent(typeof(TransferFunctionHandler));
-		//volumeController = (VolumeController)GameObject.Find("VolumeController").GetComponent(typeof(VolumeController));
 		volumeController = (VolumeController)GameObject.Find("Main Camera").GetComponent(typeof(VolumeController));
-		transferFunction = volumeController.getTransferFunction();
+		transferFunction = volumeController.TransferFunction;
 
         // Initialize the control point renderers
         controlPointRenderers = new List<ControlPointRenderer>();

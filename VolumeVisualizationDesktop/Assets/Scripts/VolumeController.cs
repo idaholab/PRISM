@@ -8,17 +8,21 @@ using System.Collections.Generic;
 /// This class is the medium between the data and the volume rendering, and handles requests between the two.
 /// </summary>
 public class VolumeController : MonoBehaviour {
-	
-	private Volume currentVolume;						// The data volume that will be rendered
-	private TransferFunction transferFunction;			// Transfer function for modifying visuals
-	private ClippingPlane clippingPlane;				// Clipping plane for modifying viewable portion of the volume
-	public Camera mainCamera;							// Main camera in the scene		
+
+	private Volume currentVolume;                       // The data volume that will be rendered
+	private TransferFunction transferFunction;          // Transfer function for modifying visuals
+	private ClippingPlane clippingPlane;                // Clipping plane for modifying viewable portion of the volume
+	public Camera mainCamera;                           // Main camera in the scene		
+
+	[Tooltip("The path to the data relative to the base directory of the Unity project.")]
 	public string dataPath = "Assets/Data/BoxHz/";      // The path to the data to be loaded into the renderer
 
 	// Objects to draw for debugging purposes
 	public GameObject clippingPlaneCube;
 	private LineRenderer boundingBoxLine;
-    public bool drawBoundingBox = false;
+
+	[Tooltip("Draws a wireframe bounding box around the volume.")]
+	public bool drawBoundingBox = false;
 
 	// Objects for rendering with the compute shader
 	private int rendererKernelID;
@@ -26,19 +30,23 @@ public class VolumeController : MonoBehaviour {
 	private ComputeBuffer metaVolumeBuffer;
 
 	private CustomRenderTexture _target;
+
 	[Tooltip("The compute shader file that contains the volume rendering kernel.")]
 	public ComputeShader renderingShader;
+
 	[Tooltip("The material used to draw the render texture to the screen.")]
 	public Material renderMaterial;
-	[Tooltip("Max size of a single RWStructuredBuffer. (in bytes)"), Range(10000000,300000000)]
+
+	[Tooltip("Max size of a single RWStructuredBuffer. (in bytes)"), Range(10000000, 300000000)]
 	public int maxBufferSize = 200000000;
+
 	[Tooltip("The maximum number of data buffers to use."), Range(1, 10)]
 	public int numberOfBuffers = 2;
 
 	private int maxNumberOfBuffers = 3;
 
 	private ComputeBuffer[] dataBuffers;
-	private Dictionary<int, string> dataBufferNames = new Dictionary<int, string>{
+	private Dictionary<int, string> dataBufferNames = new Dictionary<int, string> {
 		{ 0, "_DataBufferZero"},
 		{ 1, "_DataBufferOne" },
 		{ 2, "_DataBufferTwo" }
@@ -49,15 +57,15 @@ public class VolumeController : MonoBehaviour {
 	/// </summary>
 	private void Awake()
 	{
-        // 0. Create the data volume and its rendering material
-        currentVolume = new Volume(dataPath, "metadata.json");
+		// 0. Create the data volume and its rendering material
+		currentVolume = new Volume(dataPath, "metadata.json");
 
-        // 1. Set up the transfer function
-        int isovalueRange = currentVolume.calculateIsovalueRange();
+		// 1. Set up the transfer function
+		int isovalueRange = currentVolume.calculateIsovalueRange();
 		transferFunction = new TransferFunction(isovalueRange);
 
 		// 2. Set up the clipping plane
-		clippingPlane = new ClippingPlane(new Vector3(0,0,0), new Vector3(1, 0 ,0), false);
+		clippingPlane = new ClippingPlane(new Vector3(0, 0, 0), new Vector3(1, 0, 0), false);
 		updateClippingPlaneAll();
 
 		// 3. Set up the target for the camera controls
@@ -70,20 +78,20 @@ public class VolumeController : MonoBehaviour {
 		// 5.  Unbound the framerate of this application
 		Application.targetFrameRate = -1;
 
-		// Turn off v-sync
+		// 6. Turn off v-sync
 		QualitySettings.vSyncCount = 0;
 
 		// DEBUG: Creating a wireframe bounding box cube
 		if (drawBoundingBox)
-        {
-            boundingBoxLine = createBoundingBoxLineRenderer();
-        }
+		{
+			boundingBoxLine = createBoundingBoxLineRenderer();
+		}
 	}
 
 	/// <summary>
 	/// Updates the VolumeController once per frame.
 	/// </summary>
-	private void Update ()
+	private void Update()
 	{
 
 	}
@@ -102,32 +110,51 @@ public class VolumeController : MonoBehaviour {
 	}
 
 	/*****************************************************************************
-	 * UTILITY METHODS
+	 *									PROPERTIES
 	 *****************************************************************************/
-	/*****************************************************************************
-	 * SHADER BUFFERING METHODS WRAPPERS
-	 *****************************************************************************/
-	/// <summary>
-	/// Sends the values in the VolumeController's ClippingPlane to all bricks' materials.
-	/// </summary>
-	public void updateClippingPlaneAll()
+	public Volume CurrentVolume
 	{
-		for (int i = 0; i < currentVolume.Bricks.Length; i++)
+		get
 		{
-			// Transform the clipping plane from world to local space of the current brick, accounting for scale
-			Vector3 localClippingPlanePosition = currentVolume.Bricks[i].GameObject.transform.InverseTransformPoint(clippingPlane.Position);
-
-			// Send the transformed clipping plane location to the current brick's material shader
-			currentVolume.updateMaterialPropVector3("_ClippingPlanePosition", localClippingPlanePosition, i);;
+			return currentVolume;
 		}
-
-		// Update the clipping plane's normal for all bricks 
-		currentVolume.updateMaterialPropVector3All("_ClippingPlaneNormal", clippingPlane.Normal);
-
-		// Update the clipping plane's enabled status for all bricks
-		currentVolume.updateMaterialPropIntAll("_ClippingPlaneEnabled", Convert.ToInt32(clippingPlane.Enabled));
 	}
 
+	public TransferFunction TransferFunction
+	{
+		get
+		{
+			return transferFunction;
+		}
+	}
+
+	public ClippingPlane ClippingPlane
+	{
+		get
+		{
+			return clippingPlane;
+		}
+	}
+
+	public ComputeShader RenderingComputeShader
+	{
+		get
+		{
+			return renderingShader;
+		}
+	}
+
+	public int RendererKernelID
+	{
+		get
+		{
+			return rendererKernelID;
+		}
+	}
+
+	/*****************************************************************************
+	 *								 UTILITY METHODS
+	 *****************************************************************************/
 	/// <summary>
 	/// Creates a bounding box Line Renderer to be used for debugging purposes.
 	/// </summary>
@@ -171,55 +198,31 @@ public class VolumeController : MonoBehaviour {
 	}
 
 	/*****************************************************************************
-	 * ACCESSORS AND MUTATORS
+	 * SHADER BUFFERING METHODS WRAPPERS
 	 *****************************************************************************/
 	/// <summary>
-	/// Returns the transfer function used by the volume controller.
+	/// Sends the values in the VolumeController's ClippingPlane to all bricks' materials.
 	/// </summary>
-	/// <returns></returns>
-	public TransferFunction getTransferFunction()
+	public void updateClippingPlaneAll()
 	{
-		return transferFunction;
-	}
+		for (int i = 0; i < currentVolume.Bricks.Length; i++)
+		{
+			// Transform the clipping plane from world to local space of the current brick, accounting for scale
+			Vector3 localClippingPlanePosition = currentVolume.Bricks[i].GameObject.transform.InverseTransformPoint(clippingPlane.Position);
 
-	/// <summary>
-	/// Returns the current volume used by the volume controller.
-	/// </summary>
-	/// <returns></returns>
-	public Volume getCurrentVolume()
-	{
-		return currentVolume;
-	}
+			// Send the transformed clipping plane location to the current brick's material shader
+			//currentVolume.updateMaterialPropVector3("_ClippingPlanePosition", localClippingPlanePosition, i);;
+		}
 
-	/// <summary>
-	/// Returns the clipping plane used by the volume controller.
-	/// </summary>
-	/// <returns></returns>
-	public ClippingPlane getClippingPlane()
-	{
-		return clippingPlane;
-	}
+		// Update the clipping plane's normal for all bricks 
+		//currentVolume.updateMaterialPropVector3All("_ClippingPlaneNormal", clippingPlane.Normal);
 
-	/// <summary>
-	/// Returns a reference to the rendering compute shader used by the volume controller.
-	/// </summary>
-	/// <returns></returns>
-	public ComputeShader getRenderingComputeShader()
-	{
-		return renderingShader;
-	}
-
-	/// <summary>
-	/// Returns the id of the renderer kernel in the compute shader.
-	/// </summary>
-	/// <returns></returns>
-	public int getRendererKernelID()
-	{
-		return rendererKernelID;
+		// Update the clipping plane's enabled status for all bricks
+		//currentVolume.updateMaterialPropIntAll("_ClippingPlaneEnabled", Convert.ToInt32(clippingPlane.Enabled));
 	}
 
 	/*****************************************************************************
-	* NEW: COMPUTE RENDERING METHODS
+	* COMPUTE SHADER RENDERING METHODS
 	*****************************************************************************/
 	/// <summary>
 	/// Creates a compute shader for rendering the volume.
@@ -236,7 +239,7 @@ public class VolumeController : MonoBehaviour {
 		// Initialize the volumeBuffer (the metadata buffer)
 		MetaVolume[] metaVolumes = initMetaVolumeBuffer();
 
-		// BEGIN NEW TEST CODE
+		// Initialize the data buffers
 		initDataBuffers(metaBricks);
 
 		// Set the necessary parameters in the compute shader
@@ -251,56 +254,7 @@ public class VolumeController : MonoBehaviour {
 
 		// Set other rendering properties
 		renderingShader.SetInt("_Steps", 128);
-		// END NEW TEST CODE
-
-		// BEGIN ORIGINAL CODE
-		//// Initialize the dataBuffer (contains the actual data)
-		//int totalData = 0;
-		//for (int i = 0; i < metaBricks.Length; i++)
-		//	totalData += getMetaBrickDataSize(metaBricks[i]);
-		////dataBufferZero = new ComputeBuffer(totalData, 32);
-		//dataBufferZero = new ComputeBuffer( (int) Math.Ceiling(totalData / 4.0), 32);
-
-		//int currentBufferIndex = 0;
-
-		//if (currentVolume.BitsPerPixel == 8)
-		//{
-		//	//uint[] rawData = new uint[totalData];
-		//	uint[] rawData = new uint[(int) Math.Ceiling(totalData / 4.0)];
-
-		//	for (int i = 0; i < currentVolume.Bricks.Length; i++)
-		//	{
-		//		// Read the data and load it into the data buffer
-		//		uint[] newData = currentVolume.Bricks[i].readRaw8Into3DZLevelBufferUint();
-		//		//Buffer.BlockCopy(newData, 4 * 0, rawData, 4 * currentBufferIndex, newData.Length * 4);//4 * numData[i]);	// CRITICAL NOTE: These indices are byte offsets, not index offsets. Must multiply each offset by the size of the data being copied (i.e. 32 bit int = mulit by 4 bytes)
-
-		//		// Copy the packed new data to the data buffer
-		//		for (int j = 0; j < newData.Length; j++)
-		//		{
-		//			rawData[currentBufferIndex + j] = newData[j];
-		//		}
-
-		//		// Set the metaBricks' bufferIndices
-		//		metaBricks[i].bufferOffset = currentBufferIndex;
-
-		//		// Move the currentIndex to the end of the data that was just read in
-		//		currentBufferIndex += newData.Length; // numData[i];
-		//	}
-
-		//	dataBufferZero.SetData(rawData);
-		//}
-
-		//// Set the necessary parameters in the compute shader (the two metadata buffers, the data buffer, camera matrices, etc.) 
-		//metaBrickBuffer = new ComputeBuffer(metaBricks.Length, 64);       // n MetaBricks with a size of 60 bytes each
-		//metaBrickBuffer.SetData(metaBricks);
-
-		//metaVolumeBuffer = new ComputeBuffer(1, 64);                      // 1 MetaVolume with a size of 64 bytes each
-		//metaVolumeBuffer.SetData(metaVolumes);
-
-		//renderingShader.SetBuffer(rendererKernelID, "_MetaBrickBuffer", metaBrickBuffer);
-		//renderingShader.SetBuffer(rendererKernelID, "_MetaVolumeBuffer", metaVolumeBuffer);
-		//renderingShader.SetBuffer(rendererKernelID, "_DataBufferZero", dataBufferZero);
-		// END ORIGINAL CODE
+		renderingShader.SetFloat("_NormPerRay", 1.0f);
 	}
 
 	/// <summary>
@@ -347,7 +301,7 @@ public class VolumeController : MonoBehaviour {
 	}
 
 	/// <summary>
-	/// 
+	/// Sends data buffers initialized with the volume data to the compute shader. 
 	/// </summary>
 	/// <param name="mb"></param>
 	private void initDataBuffers(MetaBrick[] mb)
@@ -369,27 +323,35 @@ public class VolumeController : MonoBehaviour {
 		// Pre-compute the sizes of the compute buffers and which bricks will go inside of each
 		for (int i = 0; i < mb.Length; i++)
 		{
-			int currentBrickSize = getMetaBrickDataSize(mb[i]);					// Get the amount of data points in the current brick	
-			currentBrickSize = (int) Math.Ceiling(currentBrickSize / 4.0);		// Account for any padding when packing the bytes into uints
-			bufferDataSizes[i % numberOfBuffers] += currentBrickSize;			// Ensure there is room for the ith brick in this buffer
-			bricksInBuffer[i % numberOfBuffers].Add(i);							// Note the index of the brick to be added to the buffer
+			int currentBrickSize = getMetaBrickDataSize(mb[i]);																									// Get the amount of data points in the current brick	
+			currentBrickSize = currentVolume.BitsPerPixel == 8 ? (int) Math.Ceiling(currentBrickSize / 4.0) : (int) Math.Ceiling(currentBrickSize / 2.0);		// Account for any padding when packing the bytes into uints			// TODO: Change this to a divide by 2 if the data is 16-bit
+			bufferDataSizes[i % numberOfBuffers] += currentBrickSize;																							// Ensure there is room for the ith brick in this buffer
+			bricksInBuffer[i % numberOfBuffers].Add(i);																											// Note the index of the brick to be added to the buffer
 		}
 
 		// Allocate the compute buffers, read in the data, copy the data into the buffer, and send the data to the compute shader
 		for (int bufIdx = 0; bufIdx < numberOfBuffers; bufIdx++)
 		{
-			dataBuffers[bufIdx] = new ComputeBuffer(bufferDataSizes[bufIdx], sizeof(uint)); // new ComputeBuffer((int)Math.Ceiling(bufferDataSizes[bufIdx] / 4.0), 32);
+			dataBuffers[bufIdx] = new ComputeBuffer(bufferDataSizes[bufIdx], sizeof(uint));
 			int currentBufferOffset = 0;
 
-			uint[] rawData = new uint[bufferDataSizes[bufIdx]]; // new uint[(int)Math.Ceiling(bufferDataSizes[bufIdx] / 4.0)];
+			uint[] rawData = new uint[bufferDataSizes[bufIdx]]; 
 			for (int j = 0; j < bricksInBuffer[bufIdx].Count; j++)
 			{
 				int brIdx = bricksInBuffer[bufIdx][j];
 
 				// Read the data and load it into the data buffer
-				uint[] newData = currentVolume.Bricks[brIdx].readRaw8Into3DZLevelBufferUint();
+				uint[] newData;
+				if (currentVolume.BitsPerPixel == 8)
+				{
+					newData = currentVolume.Bricks[brIdx].readRaw8Into3DZLevelBufferUint();
+				}	
+				else
+				{
+					newData = currentVolume.Bricks[brIdx].readRaw16Into3DZLevelBufferUint();
+				}
 
-				// Copy the packed new data to the data buffer													// TODO: Change this loop copy to Buffer.BlockCopy()
+				// Copy the packed new data to the data buffer													// TODO: Change this loop copy to Buffer.BlockCopy() for faster memory copying
 				for (int k = 0; k < newData.Length; k++)
 				{
 					rawData[currentBufferOffset + k] = newData[k];
@@ -434,7 +396,6 @@ public class VolumeController : MonoBehaviour {
 				_target.Release();
 
 			// Get a render target for Ray Tracing
-			//displayTexture = new RenderTexture(Screen.width, Screen.height, 0, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
 			_target = new CustomRenderTexture(Screen.width, Screen.height, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
 			_target.material = renderMaterial;
 			_target.enableRandomWrite = true;
@@ -442,20 +403,32 @@ public class VolumeController : MonoBehaviour {
 		}
 	}
 
+	/// <summary>
+	/// A method called by Unity after all rendering is complete. Allows for post-processing effects.
+	/// </summary>
+	/// <param name="source"></param>
+	/// <param name="destination"></param>
 	private void OnRenderImage(RenderTexture source, RenderTexture destination)
 	{
-		SetShaderParameters();
-		Render(destination);
+		setShaderParameters();
+		render(destination);
 	}
 
-	private void SetShaderParameters()
+	/// <summary>
+	/// Sets some shader parameters needed for performing ray marching.
+	/// </summary>
+	private void setShaderParameters()
 	{
 		// Set the necessary parameters in the compute shader
 		renderingShader.SetMatrix("_CameraToWorld", mainCamera.cameraToWorldMatrix);
 		renderingShader.SetMatrix("_CameraInverseProjection", mainCamera.projectionMatrix.inverse);
 	}
 
-	private void Render(RenderTexture destination)
+	/// <summary>
+	/// Calls the rendering kernel and outputs the results to the screen.
+	/// </summary>
+	/// <param name="destination"></param>
+	private void render(RenderTexture destination)
 	{
 		// Initialize the render texture
 		initRenderTexture();

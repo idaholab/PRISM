@@ -36,7 +36,7 @@ public class ColorPalette : MonoBehaviour
 
 		//volumeController = (VolumeController)GameObject.Find("VolumeController").GetComponent(typeof(VolumeController));
 		volumeController = (VolumeController)GameObject.Find("Main Camera").GetComponent(typeof(VolumeController));
-		transferFunction = volumeController.getTransferFunction();
+		transferFunction = volumeController.TransferFunction;
 
 		currentColor = new Color(0, 0, 0, 1);
 
