@@ -1,0 +1,87 @@
+{
+  "minLevel": 64,
+  "maxLevel": 64,
+  "bricks": [
+    {
+      "filename": "box0.raw",
+      "size": 64,
+      "position": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "filename": "box1.raw",
+      "size": 64,
+      "position": [
+        64,
+        0,
+        0
+      ]
+    },
+    {
+      "filename": "box2.raw",
+      "size": 64,
+      "position": [
+        0,
+        64,
+        0
+      ]
+    },
+    {
+      "filename": "box3.raw",
+      "size": 64,
+      "position": [
+        64,
+        64,
+        0
+      ]
+    },
+    {
+      "filename": "box4.raw",
+      "size": 64,
+      "position": [
+        0,
+        0,
+        64
+      ]
+    },
+    {
+      "filename": "box5.raw",
+      "size": 64,
+      "position": [
+        64,
+        0,
+        64
+      ]
+    },
+    {
+      "filename": "box6.raw",
+      "size": 64,
+      "position": [
+        0,
+        64,
+        64
+      ]
+    },
+    {
+      "filename": "box7.raw",
+      "size": 64,
+      "position": [
+        64,
+        64,
+        64
+      ]
+    },
+  ],
+  "totalBricks": 8,
+  "scale":[1,1,1],
+  "endianness":"BIG_ENDIAN",
+  "bytesPerPixel": 1,
+  "globalSize": [
+    128,
+    128,
+    128
+  ]
+}

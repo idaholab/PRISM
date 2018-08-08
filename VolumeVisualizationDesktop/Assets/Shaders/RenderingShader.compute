@@ -69,8 +69,8 @@ SamplerState sampler_TransferFunctionTexture;
 **********************************************/
 const static int MAX_BRICKS = 20;	// Note: Making this too large decreases performance
 
-const static uint MASKS_8BIT[] = {0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF};				// TODO: Add masks for 16-bit support
-const static int BYTE_SHIFTS_8BIT[] = { 24, 16, 8, 0 };												// TODO: Add byte shifts for 16-bit support
+const static uint MASKS_8BIT[] = {0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF};
+const static int BYTE_SHIFTS_8BIT[] = { 24, 16, 8, 0 };
 
 const static uint MASKS_16BIT[] = {0xFFFF0000, 0x0000FFFF};
 const static int BYTE_SHIFTS_16BIT[] = { 16, 0 };
@@ -112,7 +112,10 @@ Ray createCameraRay(float2 uv)
 /*********************************************
 *			 Intersection function(s)
 **********************************************/
-// Calculates intersection between a ray and a box
+/*
+ * Intersect Box | Marko Sterbentz, summer 2017
+ * Calculates intersection between a ray and an axis aligned bounding box.
+ */
 bool IntersectBox(float3 ray_o, float3 ray_d, float3 boxMin, float3 boxMax, out float tNear, out float tFar)
 {
 	// Compute intersection of ray with all six bbox planes
@@ -142,7 +145,7 @@ bool IntersectBox(float3 ray_o, float3 ray_d, float3 boxMin, float3 boxMax, out 
 **********************************************/
 /*
  * Part 1 by 2 | Marko Sterbentz, summer 2017
- *  Expands an 8-bit integer into 24 bits by inserting 2 zeros after each bit
+ * Expands an 8-bit integer into 24 bits by inserting 2 zeros after each bit
  * Taken from: https://webcache.googleusercontent.com/search?q=cache:699-OSphYRkJ:https://fgiesen.wordpress.com/2009/12/13/decoding-morton-codes/+&cd=1&hl=en&ct=clnk&gl=us
  */
 uint Part1By2(uint x)
