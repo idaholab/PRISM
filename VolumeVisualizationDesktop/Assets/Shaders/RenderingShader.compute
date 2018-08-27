@@ -287,6 +287,9 @@ float sampleIntensityHz(float3 pos, MetaBrick brick, int bitsPerPixel)
 	uint zIndex = morton3D(pos, brick.size);												// Get the Z order index		
 	uint maskedZIndex = computeMaskedZIndex(zIndex, brick.currentZLevel, brick.maxZLevel);	// Get the masked Z index
 	uint hzIndex = getHZIndex(maskedZIndex, brick.lastBitMask);								// Find the hz order index
+
+	//hzIndex = 8;
+
 	return samplePackedBuffers(brick.bufferIndex, brick.bufferOffset, hzIndex, bitsPerPixel);
 }
 
@@ -367,6 +370,7 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 
 	// Calculate eye ray intersection with cube bounding box
 	float3 boxMin = _MetaVolumeBuffer[0].boxMin;
+	//float3 boxMin = _MetaVolumeBuffer[0].boxMax;
 	float3 boxMax = _MetaVolumeBuffer[0].boxMax;
 
 	float volume_tNear, volume_tFar;
@@ -406,6 +410,9 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 	// Initialize variables to keep track of the current brick being considered
 	int currentBrickIndex = 0;
 	MetaBrick currentBrick = _MetaBrickBuffer[intersections[currentBrickIndex].id];
+
+	//currentBrick.currentZLevel = 12; 
+
 	MetaVolume currentVolume = _MetaVolumeBuffer[0];
 
 	// Set up ray marching variables/vectors

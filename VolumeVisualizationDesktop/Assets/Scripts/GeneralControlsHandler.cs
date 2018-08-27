@@ -57,7 +57,24 @@ public class GeneralControlsHandler : MonoBehaviour {
 	/// <param name="newVal"></param>
 	public void updateHZRenderLevel(float newVal)
     {
+        MetaBrick brickToUpdate;
+        for(int i= 0; i < 4; i++)
+        {
+            //volumeController.RenderingComputeShader.SetInt("_MetaBrickBuffer[i].currentZLevel", (int)newVal);
+
+            //volumeController.CurrentVolume.Bricks[i].CurrentZLevel = (int) newVal; 
+            volumeController.CurrentVolume.Bricks[i].CurrentZLevel =  (int)newVal;
+            brickToUpdate = volumeController.CurrentVolume.Bricks[i].getMetaBrick();
+            brickToUpdate.currentZLevel = (int)newVal;
+
+            Debug.Log("This is the Z-level of metaBrick number " + i + ": " + brickToUpdate.currentZLevel); 
+
+            Debug.Log("This is the value of brick " + i + ": " + volumeController.CurrentVolume.Bricks[i].CurrentZLevel); 
+           // Debug.Log("Trying to set brick number " + i + " to the value " + newVal); 
+            hzRenderLevelValueText.text = newVal.ToString();
+            //We need to find a way to make these bricks push their info to the associated meta brick. 
+        }
 		//volumeController.CurrentVolume.updateMaterialPropIntAll("_HZRenderLevel", (int) newVal);
-        hzRenderLevelValueText.text = newVal.ToString();
+        
     }
 }

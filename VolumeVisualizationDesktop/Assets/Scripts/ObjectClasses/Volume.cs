@@ -296,18 +296,20 @@ public class Volume {
 				Vector3 brickMax = finalBrickPosition + ((new Vector3(newBrickSize, newBrickSize, newBrickSize) / 2.0f) / maxGlobalSize);
 
 				// Create the brick
-				bricks[i] = new Brick(newBrickFilename, newBrickSize, finalBrickPosition, brickMin, brickMax, this);
+				bricks[i] = new Brick(newBrickFilename, newBrickSize, 0, finalBrickPosition, brickMin, brickMax, this);
 
 				// Scale the bricks to the correct size
 				bricks[i].GameObject.transform.localScale = new Vector3(bricks[i].Size, bricks[i].Size, bricks[i].Size) / maxGlobalSize;
-			}
+              
+                Debug.Log("Size for this brick was " + newBrickSize);
+            }
 
 			// Transform the volume after the bricks have been created
 			Scale = new Vector3(N["scale"][0].AsFloat,
 					N["scale"][1].AsFloat,
 					N["scale"][2].AsFloat);
 
-			Debug.Log("Metadata read.");
+			Debug.Log("Metadata read. SCALE"+ Scale);
 		}
 		catch (Exception e)
 		{
@@ -328,7 +330,7 @@ public class Volume {
 	/// Returns a struct containing information about this volume to be passed to the compute shader.
 	/// </summary>
 	/// <returns></returns>
-	public MetaVolume getMetaVolume()
+	public MetaVolume getMetaVolume()//The MetaVolume struct is defined in RenderingShader.compute
 	{
 		MetaVolume mv;
 		mv.position = Position;

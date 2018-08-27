@@ -1,4 +1,5 @@
-﻿/* Volume Controller | Marko Sterbentz 7/3/2017 */
+﻿/* Volume Controller | Marko Sterbentz 07/03/2017
+ *                   | Randall Reese   08/27/2018 */
 
 using System;
 using UnityEngine;
@@ -268,8 +269,10 @@ public class VolumeController : MonoBehaviour {
 		{
 			// Create the MetaBrick
 			metaBricks[i] = currentVolume.Bricks[i].getMetaBrick();
-			metaBricks[i].currentZLevel = metaBricks[i].maxZLevel;                      // TODO: Change this; it shouldn't necessarily be max level to begin with
-			metaBricks[i].id = i;
+            metaBricks[i].currentZLevel = ((i * 23) + 5) % 9; //metaBricks[i].maxZLevel;                      // TODO: Change this; it shouldn't necessarily be max level to begin with
+            Debug.Log("HZ Level for this brick was " + ((i * 23)+5) % 9);
+
+            metaBricks[i].id = i;
 			metaBricks[i].lastBitMask = currentVolume.Bricks[i].calculateLastBitMask();
 
 			// Set some parameters in the brick

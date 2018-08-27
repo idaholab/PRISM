@@ -146,7 +146,7 @@ public class Brick
 	/// <param name="_size"></param>
 	/// <param name="_position"></param>
 	/// <param name="mat"></param>
-	public Brick(string _filename, int _size, Vector3 _position, Vector3 _boxMin, Vector3 _boxMax, Volume _parentVolume)
+	public Brick(string _filename, int _size,  int _zlevel, Vector3 _position, Vector3 _boxMin, Vector3 _boxMax, Volume _parentVolume)
 	{
 		// Set the name of the data file associated with this brick
 		filename = _filename;
@@ -176,7 +176,7 @@ public class Brick
 		BoxMax = _boxMax;
 
 		// Set the default level of detail that this brick renders to
-		CurrentZLevel = 0;
+		CurrentZLevel = _zlevel;
 
 		// Disable the mesh of this cube so it doesn't render
 		gameObject.GetComponent<MeshRenderer>().enabled = false;
