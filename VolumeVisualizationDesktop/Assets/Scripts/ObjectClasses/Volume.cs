@@ -256,6 +256,23 @@ public class Volume {
 			brickDataType = Path.GetExtension(N["bricks"][0]["filename"]);
 			Debug.Log("Volume detected as \"" + brickDataType + "\" type.");
 
+
+            // Generate boundingVolumeCorner and boundingVolumeCenter (IN WORLD SPACE)
+            float maxGlobalSize = Mathf.Max(globalSize);
+            Vector3 boundingVolumeCenter = new Vector3(maxGlobalSize, maxGlobalSize, maxGlobalSize) / 2.0f;
+            Vector3 boundingVolumeCorner = new Vector3(0, 0, 0);
+            Vector3 b = boundingVolumeCenter - boundingVolumeCorner;
+
+            // Find volumeCenter and volumeCorner of the data (IN WORLD SPACE)
+            Vector3 volumeCenter = new Vector3(globalSize[0], globalSize[1], globalSize[2]) / 2.0f;
+            Vector3 volumeCorner = new Vector3(0, 0, 0);
+            Vector3 c = volumeCenter - volumeCorner;
+
+            // Calculate vector a: the bottom left corner of the volume (IN VOXEL SPACE)
+            Vector3 volumeCornerVoxelSpace = b - c;
+
+
+
             // Create and position all of the bricks within a 1 x 1 x 1 cube
             for (int i = 0; i < bricks.Length; i++)
 			{
@@ -265,7 +282,7 @@ public class Volume {
 				Vector3 newBrickPosition = new Vector3(N["bricks"][i]["position"][0].AsInt,
 													   N["bricks"][i]["position"][1].AsInt,
 													   N["bricks"][i]["position"][2].AsInt);
-
+                /*
 				// Generate boundingVolumeCorner and boundingVolumeCenter (IN WORLD SPACE)
 				float maxGlobalSize = Mathf.Max(globalSize);
 				Vector3 boundingVolumeCenter = new Vector3(maxGlobalSize, maxGlobalSize, maxGlobalSize) / 2.0f;
@@ -279,6 +296,8 @@ public class Volume {
 
 				// Calculate vector a: the bottom left corner of the volume (IN VOXEL SPACE)
 				Vector3 volumeCornerVoxelSpace = b - c;
+    
+                */
 
 				// Calculate the position for each brick (IN VOXEL SPACE)
 				Vector3 brickPositionVoxelSpace = volumeCornerVoxelSpace + newBrickPosition;
@@ -301,13 +320,16 @@ public class Volume {
 				// Scale the bricks to the correct size
 				bricks[i].GameObject.transform.localScale = new Vector3(bricks[i].Size, bricks[i].Size, bricks[i].Size) / maxGlobalSize;
               
-                Debug.Log("Size for this brick was " + newBrickSize);
+              //  Debug.Log("Size for this brick was " + bricks[i].Size);
+                Debug.Log("Local Scale for this brick was " + bricks[i].GameObject.transform.localScale);
+                Debug.Log("Min and Max are as follows: " + brickMin + " and " + brickMax);
+
             }
 
 			// Transform the volume after the bricks have been created
 			Scale = new Vector3(N["scale"][0].AsFloat,
 					N["scale"][1].AsFloat,
-					N["scale"][2].AsFloat);
+					N["scale"][2].AsFloat);//Where is this scale ever actually used?
 
 			Debug.Log("Metadata read. SCALE"+ Scale);
 		}

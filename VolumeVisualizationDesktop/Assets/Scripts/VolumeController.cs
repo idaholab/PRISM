@@ -265,12 +265,16 @@ public class VolumeController : MonoBehaviour {
 	private MetaBrick[] initMetaBrickBuffer()
 	{
 		MetaBrick[] metaBricks = new MetaBrick[currentVolume.Bricks.Length];
-		for (int i = 0; i < metaBricks.Length; i++)
+
+      
+
+        for (int i = 0; i < metaBricks.Length; i++)
 		{
 			// Create the MetaBrick
 			metaBricks[i] = currentVolume.Bricks[i].getMetaBrick();
-            metaBricks[i].currentZLevel = ((i * 23) + 5) % 9; //metaBricks[i].maxZLevel;                      // TODO: Change this; it shouldn't necessarily be max level to begin with
-            Debug.Log("HZ Level for this brick was " + ((i * 23)+5) % 9);
+            metaBricks[i].currentZLevel =  metaBricks[i].maxZLevel;//    // TODO: Change this; it shouldn't necessarily be max level to begin with
+            //metaBricks[i].currentZLevel = ((i * 23) + 5) % 9; //metaBricks[i].maxZLevel; 
+            //Debug.Log("HZ Level for this brick was " + ((i * 23)+5) % 9);
 
             metaBricks[i].id = i;
 			metaBricks[i].lastBitMask = currentVolume.Bricks[i].calculateLastBitMask();
@@ -278,7 +282,17 @@ public class VolumeController : MonoBehaviour {
 			// Set some parameters in the brick
 			currentVolume.Bricks[i].CurrentZLevel = metaBricks[i].currentZLevel;
 		}
-		return metaBricks;
+        //       
+        /*
+        metaBricks[0] = currentVolume.Bricks[0].getMetaBrick();
+        metaBricks[0].currentZLevel = 8;
+        metaBricks[0].id = 0;
+
+        metaBricks[0].lastBitMask = currentVolume.Bricks[0].calculateLastBitMask();
+
+        currentVolume.Bricks[0].CurrentZLevel = metaBricks[0].currentZLevel;//*/
+
+        return metaBricks;
 	}
 
 	/// <summary>
@@ -298,7 +312,7 @@ public class VolumeController : MonoBehaviour {
 	/// </summary>
 	private MetaVolume[] initMetaVolumeBuffer()
 	{
-		MetaVolume[] metaVolume = new MetaVolume[1];
+		MetaVolume[] metaVolume = new MetaVolume[1];//Why do we need a MetaVolume array of a single element? What's the point of using an array of a single element?
 		metaVolume[0] = currentVolume.getMetaVolume();
 		return metaVolume;
 	}
@@ -311,7 +325,10 @@ public class VolumeController : MonoBehaviour {
 	{
 		// Ensure that extra compute buffers are not unnecessarily initialized
 		if (currentVolume.Bricks.Length < numberOfBuffers)
-			numberOfBuffers = currentVolume.Bricks.Length;
+        {
+            numberOfBuffers = currentVolume.Bricks.Length;
+        }
+			
 
 		dataBuffers = new ComputeBuffer[maxNumberOfBuffers];	// The compute buffers that will hold the data
 		int[] bufferDataSizes = new int[maxNumberOfBuffers];	// Total size of the data to be put in the ith buffer
@@ -327,7 +344,8 @@ public class VolumeController : MonoBehaviour {
 		for (int i = 0; i < mb.Length; i++)
 		{
 			int currentBrickSize = getMetaBrickDataSize(mb[i]);																									// Get the amount of data points in the current brick	
-			currentBrickSize = currentVolume.BitsPerPixel == 8 ? (int) Math.Ceiling(currentBrickSize / 4.0) : (int) Math.Ceiling(currentBrickSize / 2.0);		// Account for any padding when packing the bytes into uints			// TODO: Change this to a divide by 2 if the data is 16-bit
+			currentBrickSize = currentVolume.BitsPerPixel == 8 ? (int) Math.Ceiling(currentBrickSize / 4.0) : (int) Math.Ceiling(currentBrickSize / 2.0);		// Account for any padding when packing the bytes into uints			
+            // TODO: Change this to a divide by 2 if the data is 16-bit
 			bufferDataSizes[i % numberOfBuffers] += currentBrickSize;																							// Ensure there is room for the ith brick in this buffer
 			bricksInBuffer[i % numberOfBuffers].Add(i);																											// Note the index of the brick to be added to the buffer
 		}
@@ -377,7 +395,8 @@ public class VolumeController : MonoBehaviour {
 			renderingShader.SetBuffer(rendererKernelID, dataBufferNames[bufIdx], dataBuffers[bufIdx]);
 		}
 
-		// Initialize any extra buffers to contain 1 single element
+		// Initialize any extra buffers to contain 1 single element.
+        // Why would we need extra buffers?
 		for (int i = numberOfBuffers; i < maxNumberOfBuffers; i++)
 		{
 			uint[] rawData = new uint[]{ 0 };
