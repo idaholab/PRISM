@@ -321,8 +321,8 @@ public class Volume {
 				bricks[i].GameObject.transform.localScale = new Vector3(bricks[i].Size, bricks[i].Size, bricks[i].Size) / maxGlobalSize;
               
               //  Debug.Log("Size for this brick was " + bricks[i].Size);
-                Debug.Log("Local Scale for this brick was " + bricks[i].GameObject.transform.localScale);
-                Debug.Log("Min and Max are as follows: " + brickMin + " and " + brickMax);
+                Debug.Log("Local Scale for this brick was " +bricks[i].GameObject.transform.localScale.ToString("G4"));
+                Debug.Log("Min and Max are as follows: " + brickMin.ToString("G4") + " and " + brickMax.ToString("G4"));
 
             }
 

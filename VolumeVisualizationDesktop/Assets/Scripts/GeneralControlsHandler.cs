@@ -58,7 +58,7 @@ public class GeneralControlsHandler : MonoBehaviour {
 	public void updateHZRenderLevel(float newVal)
     {
         MetaBrick brickToUpdate;
-        for(int i= 0; i < 4; i++)
+        for(int i= 0; i < volumeController.CurrentVolume.Bricks.Length; i++)
         {
             //volumeController.RenderingComputeShader.SetInt("_MetaBrickBuffer[i].currentZLevel", (int)newVal);
 
