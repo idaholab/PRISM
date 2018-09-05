@@ -37,7 +37,7 @@ struct MetaVolume
 
 struct Ray
 {
-	float3 origin;
+	float3 origin;//The origin of the ray. 
 	float3 direction;
 };
 
@@ -52,10 +52,11 @@ struct BrickIntersection
 *			   Variables from C#
 **********************************************/
 RWTexture2D<float4> Result;
-float4x4 _CameraToWorld;
+float4x4 _CameraToWorld;//When does this become initialized?
 float4x4 _CameraInverseProjection;
 RWStructuredBuffer<MetaBrick> _MetaBrickBuffer;
-RWStructuredBuffer<MetaVolume> _MetaVolumeBuffer;
+RWStructuredBuffer<MetaVolume> _MetaVolumeBuffer;//This volume buffer seems to only ever hold a single volume. Must volumes be passed via buffers? Why not just make this a metavolume object?
+//Essentially, what is the point of wrapping this MetaVolume in a buffer? I guess that all data passed to the shader needs to be wrapped in a buffer perhaps. 
 RWStructuredBuffer<uint> _DataBufferZero;
 RWStructuredBuffer<uint> _DataBufferOne;
 RWStructuredBuffer<uint> _DataBufferTwo;
@@ -97,7 +98,9 @@ Ray createRay(float3 origin, float3 direction)
 Ray createCameraRay(float2 uv)
 {
 	// Transform the camera origin to world space
-	float3 origin = mul(_CameraToWorld, float4(0.0f, 0.0f, 0.0f, 1.0f)).xyz;
+	float3 origin = mul(_CameraToWorld, float4(0.0f, 0.0f, 0.0f, 1.0f)).xyz;// mul(A,B) does A %*% B as matrices. (%*% meaning 'matrix multiplication'). 
+	// If either of the arguments are vectors, they are treated as a row (first arg) or column (second arg) vector ands multiplied accordingly. 
+	// Here _CameraToWorld (and _CameraInverseProjection) are 4 by 4 matrices. 
 
 	// Invert the perspective projection of the view-space position
 	float3 direction = mul(_CameraInverseProjection, float4(uv, 0.0f, 1.0f)).xyz;
@@ -335,17 +338,22 @@ float4 sampleTransferFunction(float isovalue, int bitsPerPixel)
 **********************************************/
 /* 
  * Insertion Sort | Marko Sterbentz, summer 2018
- * Uses the interstion sort algorithm to sort the given array of intersection data.
+ * Uses the interstion sort algorithm to sort the given array of intersection data
+ * This insertion sort matches with what is given on Wikipedia. 
  */
 void insertionSort(inout BrickIntersection a[MAX_BRICKS], int length)
 {
 	int i, j;
 	BrickIntersection value;
-	for (i = 1; i < length; i++)
+	for (i = 1; i < length ; i++)
 	{
 		value = a[i];
-		for (j = i - 1; j >= 0 && a[j].tNear > value.tNear; j--)
+
+		for (j = i-1; j >= 0 && a[j].tNear > value.tNear; j--)
+		{
 			a[j + 1] = a[j];
+		}
+			
 		a[j + 1] = value;
 	}
 }
@@ -361,7 +369,7 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 	Result.GetDimensions(width, height);
 
 	// Transform pixel to [-1,1] range
-	float2 uv = float2((id.xy + float2(0.5f, 0.5f)) / float2(width, height) * 2.0f - 1.0f);
+	float2 uv = float2(((id.xy + float2(0.5f, 0.5f)) / float2(width, height)) * 2.0f - 1.0f);
 
 	Result[id.xy] = float4(0, 0, 0, 1);
 
@@ -370,8 +378,8 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 
 	// Calculate eye ray intersection with cube bounding box
 	float3 boxMin = _MetaVolumeBuffer[0].boxMin;
-	//float3 boxMin = _MetaVolumeBuffer[0].boxMax;
-	float3 boxMax = _MetaVolumeBuffer[0].boxMax;
+	
+	float3 boxMax = _MetaVolumeBuffer[0].boxMax ;
 
 	float volume_tNear, volume_tFar;
 	bool hit = IntersectBox(ray.origin, ray.direction, boxMin, boxMax, volume_tNear, volume_tFar);
@@ -384,15 +392,27 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 	}
 
 	// Check intersections with all each of the bricks
-	BrickIntersection intersections[MAX_BRICKS];
+	BrickIntersection intersections[MAX_BRICKS];//An array of BrickIntersection objects defined in the struct above.  
+
 	int numIntersections = 0;
+	
 	for (int i = 0; i < _MetaVolumeBuffer[0].numBricks; i++)
 	{
-		BrickIntersection newIntersection;
+		BrickIntersection newIntersection; //Is the tNear value or the tFar value ever set for this intersection?
+		//We use the newIntersection.tNear and newIntersection.tFar values directly below. But as far as I can tell, they are never set. 
+		//Okay, the newIntersection.tNear and newIntersection.tFar are indeed set in the IntersectBox() function.
+		//We pass in two parmeters (newIntersection.tNear, newIntersection.tFar) and the function outputs the associated values to those input variables. 
+		//You essentially hand in to the function the variable you want to set (in our case, we are handing in newIntersection.tNear, newIntersection.tFar to IntersectionBox()).
+		//these values are then set internally by the function. So indeed newIntersection.tFar and newIntersection.tNear are being set. 
+
 		if (IntersectBox(ray.origin, ray.direction, _MetaBrickBuffer[i].boxMin, _MetaBrickBuffer[i].boxMax, newIntersection.tNear, newIntersection.tFar))
 		{
 			newIntersection.id = _MetaBrickBuffer[i].id;
-			intersections[numIntersections] = newIntersection;
+			intersections[numIntersections] = newIntersection;//This is packing the intersections in right next to each other. 
+			//But what if the intersections are not all perfectly associated with the brick number?
+			//For example, say that we intersect with brick [2]. Will this necssarily be the third ( index 2 ) intersection?
+			//This is why the intersections also store an "id" value. This id value corresponds to the brick associated with the given intersection. 
+
 			numIntersections++;
 		}
 	}
@@ -408,8 +428,11 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 	insertionSort(intersections, numIntersections);
 
 	// Initialize variables to keep track of the current brick being considered
-	int currentBrickIndex = 0;
+
+	int currentBrickIndex = 0;//Does this actually correspond with the current brick in question?
+
 	MetaBrick currentBrick = _MetaBrickBuffer[intersections[currentBrickIndex].id];
+	//MetaBrick currentBrick = _MetaBrickBuffer[currentBrickIndex];
 
 	//currentBrick.currentZLevel = 12; 
 
@@ -417,18 +440,23 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 
 	// Set up ray marching variables/vectors
 	float3 vol_ray_pos = ray.origin + (ray.direction * intersections[currentBrickIndex].tNear);	// ray start position in volume space
-	float3 brick_ray_pos = vol_ray_pos - currentBrick.boxMin;									// ray start position in the current brick's space
-	float3 ray_step = ray.direction * sqrt(3) / _Steps;											// the size of each step when ray marching
+	
+	float3 brick_ray_pos = vol_ray_pos - currentBrick.boxMin;									// ray start position in the current brick's space. This is never even used. 
+	float3 ray_step = normalize(ray.direction) * sqrt(3) / _Steps;								// the size of each step when ray marching
 
 	// Ray marching loop
 	float4 fColor = 0;
 	for (int k = 0; k < _Steps; k++)
 	{
+		
 		// Get the isovalue at the current position
 		float isovalue = sampleIntensity(vol_ray_pos, currentBrick, currentVolume.isHz, currentVolume.numBits);
 
 		// Transform this isovalue into the corresponding RGBA color value
-		float4 sampleColor = sampleTransferFunction(isovalue, currentVolume.numBits); 
+		//float4 sampleColor = (currentBrickIndex < 1 ? sampleTransferFunction(isovalue, currentVolume.numBits) : float4(2,0.975, 0.0025, 1));
+		//float4 sampleColor = (currentBrick.id == 0 ? sampleTransferFunction(isovalue, currentVolume.numBits) : float4(1, 1, 0, 0.01));
+		float4 sampleColor = sampleTransferFunction(isovalue, currentVolume.numBits);
+		
 
 		// Front to back blending function
 		fColor.rgb = fColor.rgb + (1 - fColor.a) * sampleColor.a * sampleColor.rgb;
@@ -438,23 +466,35 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 		vol_ray_pos += ray_step;
 		brick_ray_pos += ray_step;
 
+		
+
 		// Check if we have marched out of the volume
 		if (vol_ray_pos.x < currentVolume.boxMin.x || vol_ray_pos.y < currentVolume.boxMin.y || vol_ray_pos.z < currentVolume.boxMin.z
 			|| vol_ray_pos.x > currentVolume.boxMax.x || vol_ray_pos.y > currentVolume.boxMax.y || vol_ray_pos.z > currentVolume.boxMax.z)
+		{
 			break;
+		}
 
 		// Check if we have marched out of the current brick
 		if (vol_ray_pos.x < currentBrick.boxMin.x || vol_ray_pos.y < currentBrick.boxMin.y || vol_ray_pos.z < currentBrick.boxMin.z
 			|| vol_ray_pos.x > currentBrick.boxMax.x || vol_ray_pos.y > currentBrick.boxMax.y || vol_ray_pos.z > currentBrick.boxMax.z)
 		{
-			if (currentBrickIndex < numIntersections)
+
+		/* This needs to be numIntersections-1. Otherwise you will increment to a currentBrickIndex one above the actual index of the "last" (deepest) intersection. 
+		* If you do not do numIntersections-1, you end up reading in garbage on the boundaries. 
+		*/
+			if (currentBrickIndex < numIntersections - 1)
 			{
-				currentBrickIndex++;
+				currentBrickIndex++;//This needs to be less than numIntersections at all times. 
 				currentBrick = _MetaBrickBuffer[intersections[currentBrickIndex].id];
+				
 			}
 			else
 				break;
 		}
+
+		
+
 
 		// If alpha is completely saturated for this pixel, stop ray-marching
 		if (fColor.a > 1.0) 

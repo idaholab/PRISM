@@ -41,17 +41,19 @@ public class VolumeController : MonoBehaviour {
 	[Tooltip("Max size of a single RWStructuredBuffer. (in bytes)"), Range(10000000, 300000000)]
 	public int maxBufferSize = 200000000;
 
-	[Tooltip("The maximum number of data buffers to use."), Range(1, 10)]
-	public int numberOfBuffers = 2;
+    [Tooltip("The maximum number of data buffers to use."), Range(1, 10)]
+    public int numberOfBuffers = 3;//This is hard coded as 3 in Unity (Main Camera > Volume Controller > Number Of Buffers. Whatever is here is overridden by what is in Unity.   
 
-	private int maxNumberOfBuffers = 3;
+	private int maxNumberOfBuffers = 3;//Why is the max three buffers? Is this just a magic number?
 
-	private ComputeBuffer[] dataBuffers;
+	private ComputeBuffer[] dataBuffers;//An array of buffers. 
+
 	private Dictionary<int, string> dataBufferNames = new Dictionary<int, string> {
 		{ 0, "_DataBufferZero"},
 		{ 1, "_DataBufferOne" },
 		{ 2, "_DataBufferTwo" }
-	};
+       
+    };
 
 	/// <summary>
 	/// Initialization function for the VolumeController. Ensures that the global variables needed by other objects are initialized first.
@@ -85,7 +87,10 @@ public class VolumeController : MonoBehaviour {
 		// DEBUG: Creating a wireframe bounding box cube
 		if (drawBoundingBox)
 		{
-			boundingBoxLine = createBoundingBoxLineRenderer();
+
+            boundingBoxLine = createBoundingBoxLineRenderer();
+            Debug.Log("Trying to draw bounding box" + boundingBoxLine); 
+            			
 		}
 	}
 
@@ -238,13 +243,16 @@ public class VolumeController : MonoBehaviour {
 		MetaBrick[] metaBricks = initMetaBrickBuffer();
 
 		// Initialize the volumeBuffer (the metadata buffer)
-		MetaVolume[] metaVolumes = initMetaVolumeBuffer();
+		MetaVolume[] metaVolumes = initMetaVolumeBuffer();//This only ever seems to hold 1 single volume. What's the point of using a buffer to contain a single object?
+    
 
 		// Initialize the data buffers
 		initDataBuffers(metaBricks);
 
 		// Set the necessary parameters in the compute shader
-		metaBrickBuffer = new ComputeBuffer(metaBricks.Length, 64);       // n MetaBricks with a size of 64 bytes each
+		metaBrickBuffer = new ComputeBuffer(metaBricks.Length, 64);       // n MetaBricks with a size of 64 bytes each.
+        //This looks to be correct. Note that the MetaBrick is 64 bytes *in memory* use. This is not the dimension of the brick. 
+
 		metaBrickBuffer.SetData(metaBricks);
 
 		metaVolumeBuffer = new ComputeBuffer(1, 64);                      // 1 MetaVolume with a size of 64 bytes each
@@ -264,16 +272,21 @@ public class VolumeController : MonoBehaviour {
 	/// <returns></returns>
 	private MetaBrick[] initMetaBrickBuffer()
 	{
-		MetaBrick[] metaBricks = new MetaBrick[currentVolume.Bricks.Length];
+        MetaBrick[] metaBricks = new MetaBrick[currentVolume.Bricks.Length];//Make an array of MetaBricks. 
+       // MetaBrick[] metaBricks = new MetaBrick[1];//Make an array of MetaBricks. 
 
-      
+        //Debug.Log("This is the length of the metaBricks array: " + metaBricks.Length);//The length seems to be correct. 
 
-        for (int i = 0; i < metaBricks.Length; i++)
-		{
+
+
+       for (int i = 0; i < metaBricks.Length; i++)
+        {
 			// Create the MetaBrick
 			metaBricks[i] = currentVolume.Bricks[i].getMetaBrick();
-            metaBricks[i].currentZLevel =  metaBricks[i].maxZLevel;//    // TODO: Change this; it shouldn't necessarily be max level to begin with
-            //metaBricks[i].currentZLevel = ((i * 23) + 5) % 9; //metaBricks[i].maxZLevel; 
+
+            //metaBricks[i].currentZLevel = i==0 ? metaBricks[i].maxZLevel : 0 ;//  
+            metaBricks[i].currentZLevel =  metaBricks[i].maxZLevel;//    
+            // metaBricks[i].currentZLevel = ((i * 23) + 5) % 9; //metaBricks[i].maxZLevel; 
             //Debug.Log("HZ Level for this brick was " + ((i * 23)+5) % 9);
 
             metaBricks[i].id = i;
@@ -302,8 +315,13 @@ public class VolumeController : MonoBehaviour {
 	/// <returns></returns>
 	private int getMetaBrickDataSize(MetaBrick br)
 	{
-		int numData = 1 << br.currentZLevel;
-		return (numData * numData * numData);
+		int numData = 1 << br.currentZLevel;//This yields 2^br.currentZLevel
+
+
+       //Debug.Log("The number of data points is as follows: " + numData * numData * numData);
+
+        return (numData * numData * numData);
+        
 
 	}
 
@@ -323,18 +341,25 @@ public class VolumeController : MonoBehaviour {
 	/// <param name="mb"></param>
 	private void initDataBuffers(MetaBrick[] mb)
 	{
-		// Ensure that extra compute buffers are not unnecessarily initialized
+		// Ensure that extra compute buffers are not unnecessarily initialized. Essentially for use when the number of bricks is ONE. 
 		if (currentVolume.Bricks.Length < numberOfBuffers)
         {
             numberOfBuffers = currentVolume.Bricks.Length;
+            //Debug.Log("Did we enter this IF statement?");
         }
-			
 
-		dataBuffers = new ComputeBuffer[maxNumberOfBuffers];	// The compute buffers that will hold the data
-		int[] bufferDataSizes = new int[maxNumberOfBuffers];	// Total size of the data to be put in the ith buffer
+        //Debug.Log("Number of data buffers is 2? " + numberOfBuffers);
+        dataBuffers = new ComputeBuffer[maxNumberOfBuffers];	// The compute buffers that will hold the data. Instantiated on line 49 in the class data. 
+        //For some reason the max number of buffers is three. Seems to just be a magic number. 
+
+		int[] bufferDataSizes = new int[maxNumberOfBuffers];	//This will hold the total size of the data to be put in the ith buffer
+
 
 		// Initialize the lists of bricks associated with each buffer
 		Dictionary<int, List<int>> bricksInBuffer = new Dictionary<int, List<int>>();
+        // The key is the buffer number (0,1,2) and the value is a List<int> containing the indices of the bricks in that given buffer.
+
+
 		for (int i = 0; i < numberOfBuffers; i++)
 		{
 			bricksInBuffer.Add(i, new List<int>());
@@ -343,15 +368,32 @@ public class VolumeController : MonoBehaviour {
 		// Pre-compute the sizes of the compute buffers and which bricks will go inside of each
 		for (int i = 0; i < mb.Length; i++)
 		{
-			int currentBrickSize = getMetaBrickDataSize(mb[i]);																									// Get the amount of data points in the current brick	
-			currentBrickSize = currentVolume.BitsPerPixel == 8 ? (int) Math.Ceiling(currentBrickSize / 4.0) : (int) Math.Ceiling(currentBrickSize / 2.0);		// Account for any padding when packing the bytes into uints			
-            // TODO: Change this to a divide by 2 if the data is 16-bit
+			int currentBrickSize = getMetaBrickDataSize(mb[i]);
+            // Get the amount of data points in the current brick	
+
+            //Debug.Log("Bits per pixel is:  " + currentVolume.BitsPerPixel);//8 Seems to be the usual. 
+
+
+            currentBrickSize = currentVolume.BitsPerPixel == 8 ? (int) Math.Ceiling(currentBrickSize / 4.0) : (int) Math.Ceiling(currentBrickSize / 2.0);		// Account for any padding when packing the bytes into uints			
+            //Why divide by 4 or 2? What is this current brick size stuff? 
+
+
 			bufferDataSizes[i % numberOfBuffers] += currentBrickSize;																							// Ensure there is room for the ith brick in this buffer
 			bricksInBuffer[i % numberOfBuffers].Add(i);																											// Note the index of the brick to be added to the buffer
 		}
 
-		// Allocate the compute buffers, read in the data, copy the data into the buffer, and send the data to the compute shader
-		for (int bufIdx = 0; bufIdx < numberOfBuffers; bufIdx++)
+        //Debug.Log("This is the breakdown of buffer allocation " + bufferDataSizes);
+
+        /*foreach (int v in bufferDataSizes)
+        {
+            Debug.Log("This is in the buffer data sizes array: " + v);
+
+        }*/
+
+
+        //START HERE. 8/29/18
+        // Allocate the compute buffers, read in the data, copy the data into the buffer, and send the data to the compute shader
+        for (int bufIdx = 0; bufIdx < numberOfBuffers; bufIdx++)//This is a nested bunch of loops. 
 		{
 			dataBuffers[bufIdx] = new ComputeBuffer(bufferDataSizes[bufIdx], sizeof(uint));
 			int currentBufferOffset = 0;
@@ -366,8 +408,11 @@ public class VolumeController : MonoBehaviour {
 				if (currentVolume.BitsPerPixel == 8)
 				{
 					newData = currentVolume.Bricks[brIdx].readRaw8Into3DZLevelBufferUint();
-				}	
-				else
+                    //The function readRaw8Into3DZLevelBufferUint() packs all the data for the brick into an array of uints.
+                    //How does this employ HZ order? I guess it only reads as far into the HZ file as the current z-level dictates.
+                    // newData holds the raw data only for a single brick. This newData is then packed into the rawData buffer 
+                }
+                else
 				{
 					newData = currentVolume.Bricks[brIdx].readRaw16Into3DZLevelBufferUint();
 				}
@@ -388,12 +433,14 @@ public class VolumeController : MonoBehaviour {
 				currentBufferOffset += newData.Length;
 			}
 
-			// Set the data in the current compute buffer
-			dataBuffers[bufIdx].SetData(rawData);
+            // Set the data in the current compute buffer
+            dataBuffers[bufIdx].SetData(rawData);
+            //dataBuffers[1].SetData(rawData);
 
-			// Send the data in the compute buffer to the compute shader
-			renderingShader.SetBuffer(rendererKernelID, dataBufferNames[bufIdx], dataBuffers[bufIdx]);
-		}
+            // Send the data in the compute buffer to the compute shader
+            renderingShader.SetBuffer(rendererKernelID, dataBufferNames[bufIdx], dataBuffers[bufIdx]);
+            //renderingShader.SetBuffer(rendererKernelID, dataBufferNames[1], dataBuffers[1]);
+        }
 
 		// Initialize any extra buffers to contain 1 single element.
         // Why would we need extra buffers?
@@ -413,9 +460,9 @@ public class VolumeController : MonoBehaviour {
 	{
 		if (_target == null || _target.width != Screen.width || _target.height != Screen.height)
 		{
-			// Release render texture if we already have one
-			if (_target != null)
-				_target.Release();
+            // Release render texture if we already have one
+            if (_target != null)
+            { _target.Release(); }
 
 			// Get a render target for Ray Tracing
 			_target = new CustomRenderTexture(Screen.width, Screen.height, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
@@ -459,6 +506,9 @@ public class VolumeController : MonoBehaviour {
 		renderingShader.SetTexture(rendererKernelID, "Result", _target);
 		int threadGroupsX = Mathf.CeilToInt(Screen.width / 32.0f);
 		int threadGroupsY = Mathf.CeilToInt(Screen.height / 32.0f);
+
+        //Debug.Log("Trying to locate any eror in the render shader: " + renderingShader.FindKernel("CSMain"));
+
 		renderingShader.Dispatch(rendererKernelID, threadGroupsX, threadGroupsY, 1);
 
 		// Blit the results to the screen and finalize the render

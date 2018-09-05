@@ -1,1 +1,31 @@
-{"minLevel":128,"maxLevel":128,"bricks":[{"filename":"0.hz","size":128,"position":[0,0,0]},{"filename":"1.hz","size":128,"position":[0,128,0]},{"filename":"2.hz","size":128,"position":[0,0,128]},{"filename":"3.hz","size":128,"position":[0,128,128]}],"totalBricks":4,"bytesPerPixel":1,"scale":[1.57774,0.995861,1.00797],"endianness":"BIG_ENDIAN","globalSize":[128,256,256]}
+{
+    "minLevel": 128,
+    "maxLevel": 128,
+    "bricks": [
+        {
+            "filename": "0.hz",
+            "size": 128,
+            "position": [ 0, 0, 0 ]
+        },
+        {
+            "filename": "1.hz",
+            "size": 128,
+            "position": [  0,128,  0 ]
+        },
+        {
+            "filename": "2.hz",
+            "size": 128,
+            "position": [ 0, 0, 128 ]
+        },
+        {
+            "filename": "3.hz",
+            "size": 128,
+            "position": [ 0, 128, 128 ]
+        }
+    ],
+    "totalBricks": 4,
+    "bytesPerPixel": 1,
+    "scale": [ 1.57774,0.995861, 1.00797],
+    "endianness": "BIG_ENDIAN",
+    "globalSize": [128, 256, 256 ]
+}

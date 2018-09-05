@@ -146,7 +146,7 @@ public class Brick
 	/// <param name="_size"></param>
 	/// <param name="_position"></param>
 	/// <param name="mat"></param>
-	public Brick(string _filename, int _size,  int _zlevel, Vector3 _position, Vector3 _boxMin, Vector3 _boxMax, Volume _parentVolume)
+	public Brick(string _filename, int _size, Vector3 _position, Vector3 _boxMin, Vector3 _boxMax, Volume _parentVolume)
 	{
 		// Set the name of the data file associated with this brick
 		filename = _filename;
@@ -175,11 +175,13 @@ public class Brick
 		BoxMin = _boxMin;
 		BoxMax = _boxMax;
 
-		// Set the default level of detail that this brick renders to
-		CurrentZLevel = _zlevel;
+        // Set the default level of detail that this brick renders to
+        //CurrentZLevel = _zlevel;
 
-		// Disable the mesh of this cube so it doesn't render
-		gameObject.GetComponent<MeshRenderer>().enabled = false;
+        CurrentZLevel = 0;
+
+        // Disable the mesh of this cube so it doesn't render
+        gameObject.GetComponent<MeshRenderer>().enabled = false;
 	}
 
 	/*****************************************************************************
@@ -225,7 +227,7 @@ public class Brick
 		mb.bufferOffset = 0;
 		mb.bufferIndex = 0;
 		mb.maxZLevel = maxZLevel;
-		mb.currentZLevel = 0;
+		mb.currentZLevel = currentZLevel;
 		mb.id = -1;
 		mb.boxMin = BoxMin;
 		mb.boxMax = BoxMax;
@@ -237,33 +239,69 @@ public class Brick
 	 * DATA READING FUNCTIONS
 	 *****************************************************************************/
 	/// <summary>
-	/// Reads a certain amount of the brick's associated data into a byte array. The amount is dependent on the current z level of the brick. Packs the data into uints for use in the compute shader.
+	/// Reads a certain amount of the brick's associated data into a byte array. The amount is dependent on the current z level of the brick.
+    /// Packs the data into uints for use in the compute shader.
+    /// This may mean that the data would need to be re-rendered if you want to change the HZ-level. 
+    /// You would need to repack the buffer every time it would seem.
 	/// </summary>
 	/// <returns></returns>
-	public uint[] readRaw8Into3DZLevelBufferUint()
+	public uint[] readRaw8Into3DZLevelBufferUint()//How does this end up being used? 
 	{
 		try
 		{
 			// Get the size of the data based on the currentZLevel rendering level
-			int dataSize = 1 << currentZLevel; // equivalent to 2^currentZLevel
-
+			int dataSize = 1 << currentZLevel; // equivalent to 2^currentZLevel... Is this the correct dataSize?
+            int numBytesRead = -1;
 			// Read in the bytes
 			BinaryReader reader = new BinaryReader(new FileStream(filename, FileMode.Open));
 
 			int totalDataSize = dataSize * dataSize * dataSize;
 			byte[] buffer = new byte[totalDataSize];
-			reader.Read(buffer, 0, sizeof(byte) * buffer.Length);
-			reader.Close();
+			numBytesRead = reader.Read(buffer, 0, sizeof(byte) * buffer.Length);//sizeof(byte) should just be 1. sizeof() returns the size in bytes. 
+
+            if (numBytesRead != totalDataSize)
+            {
+                Debug.Log("Error reading the data into UInt Buffer in Brick class.");
+                
+            }
+
+            reader.Close();
+
+            if((totalDataSize % 4) > 0)
+            {
+                Debug.Log("The total data size is not divisible by 4.");
+            }
 
 			// Pack the bytes that were read into a uint array
-			uint[] uintBuffer = new uint[Mathf.CeilToInt(totalDataSize / 4.0f)];
+			uint[] uintBuffer = new uint[Mathf.CeilToInt(totalDataSize / 4.0f)];//Why divide by 4?
+            // A uint is four bytes on a standard architechture. Is this why we divide the totalDataSize by 4?
+            //I believe that this is why we divide by 4. Since each uint can hold 4 bytes, if we have a byte array (which "buffer" is), then dividing the length of the byte array
+            //    by 4 tells us how many uints it would take (i.e. how long of a uint array we need) to hold the byte data.
+            
+            //Here we take a byte array and pack it into a uint array.
+
+            /*  Byte array         |  0  |  1  |  2  |  3  |  4  |  5 |  6 |  7  |  8  |  9  |
+             *  Uint array         |  0                    |  1                  |  2        **********|  
+             * 
+             * Is there just garbage being shoved into the uint array if the data has a nuber of bytes not perfectly divisible by 4?
+             * I would seem that when the uint array is intialized, there is just garbage bits shoved into it. Whatever garabage is sitting in memory. 
+             * Note however that the total data size is actually divisible by 8 (at the very least) as long as we are rendering at HZ-level of at least 1.
+             * dataSize = 2^currentZLevel. totalDataSize is dataSize^3. Hence totalDataSize must be at least divisible by 8 as long as z > 0.  
+             * 
+             * Now, the question does still remain: Why even do this odd byte packing into uints in the first place? 
+             * 
+             * */
+
+
 			int[] byteShifts = { 24, 16, 8, 0 };    // use for big endian
 			//int[] byteShifts = { 0, 8, 16, 24 };    // use for little endian
 			int maskIndex = 0;
 			for (int i = 0; i < buffer.Length; i++)
 			{
-				uint val = buffer[i];
-				uintBuffer[i / 4] = uintBuffer[i / 4] | (val << byteShifts[maskIndex]);
+				uint val = buffer[i];//Gets the ith byte from the buffer array. 
+
+                uintBuffer[i / 4] = uintBuffer[i / 4] | (val << byteShifts[maskIndex]);
+
 				maskIndex = (maskIndex + 1) % 4;
 			}
 

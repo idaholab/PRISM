@@ -282,6 +282,10 @@ public class Volume {
 				Vector3 newBrickPosition = new Vector3(N["bricks"][i]["position"][0].AsInt,
 													   N["bricks"][i]["position"][1].AsInt,
 													   N["bricks"][i]["position"][2].AsInt);
+
+
+                Debug.Log("Brick " + i + " has position " + newBrickPosition);
+
                 /*
 				// Generate boundingVolumeCorner and boundingVolumeCenter (IN WORLD SPACE)
 				float maxGlobalSize = Mathf.Max(globalSize);
@@ -299,11 +303,12 @@ public class Volume {
     
                 */
 
-				// Calculate the position for each brick (IN VOXEL SPACE)
-				Vector3 brickPositionVoxelSpace = volumeCornerVoxelSpace + newBrickPosition;
+                // Calculate the position for each brick (IN VOXEL SPACE)
+                Vector3 brickPositionVoxelSpace = volumeCornerVoxelSpace + newBrickPosition;
+                
 
-				// Calculate the brick offset (IN VOXEL SPACE)
-				Vector3 brickOffsetVoxelSpace = new Vector3(newBrickSize, newBrickSize, newBrickSize) / 2.0f;
+                // Calculate the brick offset (IN VOXEL SPACE)
+                Vector3 brickOffsetVoxelSpace = new Vector3(newBrickSize, newBrickSize, newBrickSize) / 2.0f;
 
 				// Calculate final position for the brick (IN WORLD SPACE)
 				Vector3 finalBrickPosition = (brickPositionVoxelSpace + brickOffsetVoxelSpace) / maxGlobalSize;
@@ -315,13 +320,13 @@ public class Volume {
 				Vector3 brickMax = finalBrickPosition + ((new Vector3(newBrickSize, newBrickSize, newBrickSize) / 2.0f) / maxGlobalSize);
 
 				// Create the brick
-				bricks[i] = new Brick(newBrickFilename, newBrickSize, 0, finalBrickPosition, brickMin, brickMax, this);
+				bricks[i] = new Brick(newBrickFilename, newBrickSize, finalBrickPosition, brickMin, brickMax, this);
 
 				// Scale the bricks to the correct size
 				bricks[i].GameObject.transform.localScale = new Vector3(bricks[i].Size, bricks[i].Size, bricks[i].Size) / maxGlobalSize;
               
               //  Debug.Log("Size for this brick was " + bricks[i].Size);
-                Debug.Log("Local Scale for this brick was " +bricks[i].GameObject.transform.localScale.ToString("G4"));
+                //Debug.Log("Local Scale for this brick was " +bricks[i].GameObject.transform.localScale.ToString("G4"));
                 Debug.Log("Min and Max are as follows: " + brickMin.ToString("G4") + " and " + brickMax.ToString("G4"));
 
             }
