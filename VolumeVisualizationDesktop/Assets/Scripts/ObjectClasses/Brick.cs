@@ -193,7 +193,7 @@ public class Brick
 	/// <returns></returns>
 	public int calculateMaxLevels()
 	{
-		int totalLevels = 0;                                                                            // NOTE: Starting at 0, instead of -1
+		int totalLevels = 0;        // NOTE: Starting at 0, instead of -1
 		int tempBrickSize = size;
 
 		while (Convert.ToBoolean(tempBrickSize >>= 1))
