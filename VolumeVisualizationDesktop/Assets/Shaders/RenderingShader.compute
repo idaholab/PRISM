@@ -496,7 +496,7 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 		
 
 
-		// If alpha is completely saturated for this pixel, stop ray-marching
+		// If alpha is completely saturated for this pixel, stop ray-marching.
 		if (fColor.a > 1.0) 
 			break;
 	}

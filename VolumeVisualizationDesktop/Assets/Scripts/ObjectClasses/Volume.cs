@@ -334,9 +334,9 @@ public class Volume {
 			// Transform the volume after the bricks have been created
 			Scale = new Vector3(N["scale"][0].AsFloat,
 					N["scale"][1].AsFloat,
-					N["scale"][2].AsFloat);//Where is this scale ever actually used?
+					N["scale"][2].AsFloat);//Where is this scale ever actually used? The volume does not seem to be scaled appropriately. Scale is being ignored. 
 
-			Debug.Log("Metadata read. SCALE"+ Scale);
+			Debug.Log("Metadata read. SCALE " + Scale);
 		}
 		catch (Exception e)
 		{
