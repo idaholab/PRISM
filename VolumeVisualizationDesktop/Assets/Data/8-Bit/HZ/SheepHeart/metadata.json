@@ -52,7 +52,7 @@
             "size": 128,
             "position": [ 128, 256, 128 ]
         },
-        
+
         {
             "filename": "10.hz",
             "size": 128,
@@ -63,5 +63,5 @@
     "bytesPerPixel": 1,
     "scale": [ 1, 1, 1 ],
     "endianness": "BIG_ENDIAN",
-    "globalSize": [ 384, 384, 256 ]
+    "globalSize": [ 512, 512, 256 ]
 }

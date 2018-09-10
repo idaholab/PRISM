@@ -160,10 +160,22 @@ public class Brick
 
         // Set the position of the brick
         gameObject.transform.position = _position;
-        gameObject.transform.parent = parentVolume.VolumeCube.transform;
+        // gameObject.transform.position = new Vector3(5.5f, 0.5f, -10.0f);
 
-		// Set the cube's data size
-		Size = _size;
+
+        // gameObject.transform.parent = parentVolume.VolumeCube.transform;
+        gameObject.transform.SetParent(parentVolume.VolumeCube.transform);
+
+        //Debug.Log("The parent to this brick is " + gameObject.transform.parent); 
+
+        //gameObject.transform.localScale = new Vector3(1.2f, 3.0f, 0.7f);
+
+        //Debug.Log("Scale is " + gameObject.transform.localScale); 
+
+
+        // Set the cube's data size
+
+        Size = _size;
 
 		// Set the maximum z level
 		MaxZLevel = calculateMaxLevels();
@@ -171,9 +183,12 @@ public class Brick
 		// Set the last bit mask this brick uses
 		LastBitMask = calculateLastBitMask();
 
-		// Set the brick's min and max corner positions
-		BoxMin = _boxMin;
-		BoxMax = _boxMax;
+        // Set the brick's min and max corner positions
+        //BoxMin = new Vector3(0, 0, 0);//_boxMin;
+        //BoxMax = new Vector3(1, 1, 1);
+
+        BoxMin = _boxMin;
+        BoxMax = _boxMax;
 
         // Set the default level of detail that this brick renders to
         //CurrentZLevel = _zlevel;

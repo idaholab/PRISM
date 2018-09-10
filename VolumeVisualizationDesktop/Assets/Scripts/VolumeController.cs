@@ -15,7 +15,9 @@ public class VolumeController : MonoBehaviour {
 	private ClippingPlane clippingPlane;                // Clipping plane for modifying viewable portion of the volume
 	public Camera mainCamera;                           // Main camera in the scene		
 
-	[Tooltip("The path to the data relative to the base directory of the Unity project.")]
+    
+
+    [Tooltip("The path to the data relative to the base directory of the Unity project.")]
 	public string dataPath = "Assets/Data/BoxHz/";      // The path to the data to be loaded into the renderer
 
 	// Objects to draw for debugging purposes
@@ -63,6 +65,10 @@ public class VolumeController : MonoBehaviour {
 		// 0. Create the data volume and its rendering material
 		currentVolume = new Volume(dataPath, "metadata.json");
 
+       // currentVolume.Scale = Scale;
+
+       
+
 		// 1. Set up the transfer function
 		int isovalueRange = currentVolume.calculateIsovalueRange();
 		transferFunction = new TransferFunction(isovalueRange);
@@ -76,7 +82,11 @@ public class VolumeController : MonoBehaviour {
 		cameraControls.target = currentVolume.VolumeCube;
 
 		// 4. Initialize the render texture, compute shader, and other objects needed for rendering
-		initializeComputeRenderer();
+
+        //Debug.Log(currentVolume.Scale);
+
+
+		initializeComputeRenderer();//Called after the volume is scaled. 
 
 		// 5.  Unbound the framerate of this application
 		Application.targetFrameRate = -1;
@@ -100,6 +110,7 @@ public class VolumeController : MonoBehaviour {
 	private void Update()
 	{
 
+        //Debug.Log("Is this Update() function ever entered?"); //Yes, Many times. 
 	}
 
 	/// <summary>
@@ -332,6 +343,13 @@ public class VolumeController : MonoBehaviour {
 	{
 		MetaVolume[] metaVolume = new MetaVolume[1];//Why do we need a MetaVolume array of a single element? What's the point of using an array of a single element?
 		metaVolume[0] = currentVolume.getMetaVolume();
+
+       // metaVolume[0].scale = new Vector3(1.7f, 1.1f, 0.5f); 
+
+       // Debug.Log("The MetaVolume Scale has been hard coded as  " + metaVolume[0].scale); //Has zero effect it seems. 
+
+
+
 		return metaVolume;
 	}
 
@@ -371,15 +389,20 @@ public class VolumeController : MonoBehaviour {
 			int currentBrickSize = getMetaBrickDataSize(mb[i]);
             // Get the amount of data points in the current brick	
 
-            //Debug.Log("Bits per pixel is:  " + currentVolume.BitsPerPixel);//8 Seems to be the usual. 
+            Debug.Log("For MetaBrick " + i + "  the boxMin/boxMax is  " + mb[i].boxMin.ToString("G4") + " and " + mb[i].boxMax.ToString("G4"));
+            
+
+            //8 Bits seems to be the usual. 
+            currentBrickSize = currentVolume.BitsPerPixel == 8 ? (int) Math.Ceiling(currentBrickSize / 4.0) : (int) Math.Ceiling(currentBrickSize / 2.0);		
+            // Account for any padding when packing the bytes into uints			
+           
 
 
-            currentBrickSize = currentVolume.BitsPerPixel == 8 ? (int) Math.Ceiling(currentBrickSize / 4.0) : (int) Math.Ceiling(currentBrickSize / 2.0);		// Account for any padding when packing the bytes into uints			
-            //Why divide by 4 or 2? What is this current brick size stuff? 
+			bufferDataSizes[i % numberOfBuffers] += currentBrickSize;	// Ensure there is room for the ith brick in this buffer
 
+            //Debug.Log("bufferDataSizes for " + i + " is " + bufferDataSizes[i % numberOfBuffers]); 
 
-			bufferDataSizes[i % numberOfBuffers] += currentBrickSize;																							// Ensure there is room for the ith brick in this buffer
-			bricksInBuffer[i % numberOfBuffers].Add(i);																											// Note the index of the brick to be added to the buffer
+			bricksInBuffer[i % numberOfBuffers].Add(i);			        // Note the index of the brick to be added to the buffer
 		}
 
         //Debug.Log("This is the breakdown of buffer allocation " + bufferDataSizes);
@@ -410,6 +433,7 @@ public class VolumeController : MonoBehaviour {
 					newData = currentVolume.Bricks[brIdx].readRaw8Into3DZLevelBufferUint();
                     //The function readRaw8Into3DZLevelBufferUint() packs all the data for the brick into an array of uints.
                     //How does this employ HZ order? I guess it only reads as far into the HZ file as the current z-level dictates.
+                    //So to increase the HZ level, maybe we just read in the rest of the file up to where we need to? Seems to be the idea. 
                     // newData holds the raw data only for a single brick. This newData is then packed into the rawData buffer 
                 }
                 else
@@ -439,6 +463,8 @@ public class VolumeController : MonoBehaviour {
 
             // Send the data in the compute buffer to the compute shader
             renderingShader.SetBuffer(rendererKernelID, dataBufferNames[bufIdx], dataBuffers[bufIdx]);
+            //When we send this data, does this overwrite any scale that we may have been trying to enforce? In other words, does the HZ curve data also contain relative positioning?
+
             //renderingShader.SetBuffer(rendererKernelID, dataBufferNames[1], dataBuffers[1]);
         }
 
@@ -490,8 +516,13 @@ public class VolumeController : MonoBehaviour {
 	{
 		// Set the necessary parameters in the compute shader
 		renderingShader.SetMatrix("_CameraToWorld", mainCamera.cameraToWorldMatrix);
+
+        //Debug.Log(mainCamera.cameraToWorldMatrix); 
+
 		renderingShader.SetMatrix("_CameraInverseProjection", mainCamera.projectionMatrix.inverse);
-	}
+
+        //Debug.Log(mainCamera.projectionMatrix.inverse);
+    }
 
 	/// <summary>
 	/// Calls the rendering kernel and outputs the results to the screen.
@@ -506,11 +537,13 @@ public class VolumeController : MonoBehaviour {
 		renderingShader.SetTexture(rendererKernelID, "Result", _target);
 		int threadGroupsX = Mathf.CeilToInt(Screen.width / 32.0f);
 		int threadGroupsY = Mathf.CeilToInt(Screen.height / 32.0f);
+        
 
         //Debug.Log("Trying to locate any eror in the render shader: " + renderingShader.FindKernel("CSMain"));
 
-		renderingShader.Dispatch(rendererKernelID, threadGroupsX, threadGroupsY, 1);
+        renderingShader.Dispatch(rendererKernelID, threadGroupsX, threadGroupsY, 1);
 
+        
 		// Blit the results to the screen and finalize the render
 		Graphics.Blit(_target, destination);
 	}
