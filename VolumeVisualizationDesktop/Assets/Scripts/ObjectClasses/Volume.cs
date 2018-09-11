@@ -304,6 +304,7 @@ public class Volume {
             // Generate boundingVolumeCorner and boundingVolumeCenter (IN WORLD SPACE)
 
             float maxGlobalSize = Mathf.Max(globalSize);
+            //float maxGlobalSize = this.MaxLevel;
             //Vector3 boundingVolumeCenter = Vector3.Scale(new Vector3(maxGlobalSize, maxGlobalSize, maxGlobalSize), this.Scale) / 2.0f;
             Vector3 boundingVolumeCenter = Vector3.Scale(new Vector3(maxGlobalSize, maxGlobalSize, maxGlobalSize), this.Scale) / 2.0f;
             Vector3 boundingVolumeCorner = new Vector3(0, 0, 0);
@@ -319,7 +320,7 @@ public class Volume {
             //Vector3 volumeCornerVoxelSpace = Vector3.Scale(b - c, Scale);
             Vector3 volumeCornerVoxelSpace = b - c;
 
-            Debug.Log("The volumeCornerVoxelSpace is " + volumeCornerVoxelSpace); 
+            //Debug.Log("The volumeCornerVoxelSpace is " + volumeCornerVoxelSpace); 
 
 
 
@@ -390,10 +391,11 @@ public class Volume {
                 // Scale the bricks to the correct size
                 //bricks[i].GameObject.transform.localScale = new Vector3(0.1f,2.4f,3.6f);//
                 bricks[i].GameObject.transform.localScale = new Vector3(bricks[i].Size, bricks[i].Size, bricks[i].Size) / maxGlobalSize;
+                //bricks[i].GameObject.transform.localScale = new Vector3(bricks[i].Size, bricks[i].Size, bricks[i].Size) / this.MaxLevel;
               
               //  Debug.Log("Size for this brick was " + bricks[i].Size);
                 //Debug.Log("Local Scale for this brick was " +bricks[i].GameObject.transform.localScale.ToString("G4"));
-                Debug.Log("Min and Max are as follows: " + brickMin.ToString("G4") + " and " + brickMax.ToString("G4"));
+                //Debug.Log("Min and Max are as follows: " + brickMin.ToString("G4") + " and " + brickMax.ToString("G4"));
 
             }
 

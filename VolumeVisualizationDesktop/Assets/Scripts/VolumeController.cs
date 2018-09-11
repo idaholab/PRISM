@@ -389,7 +389,7 @@ public class VolumeController : MonoBehaviour {
 			int currentBrickSize = getMetaBrickDataSize(mb[i]);
             // Get the amount of data points in the current brick	
 
-            Debug.Log("For MetaBrick " + i + "  the boxMin/boxMax is  " + mb[i].boxMin.ToString("G4") + " and " + mb[i].boxMax.ToString("G4"));
+            //Debug.Log("For MetaBrick " + i + "  the boxMin/boxMax is  " + mb[i].boxMin.ToString("G4") + " and " + mb[i].boxMax.ToString("G4"));
             
 
             //8 Bits seems to be the usual. 

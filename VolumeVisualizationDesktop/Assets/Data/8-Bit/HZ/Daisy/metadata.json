@@ -1,1 +1,111 @@
-{"minLevel":64,"maxLevel":128,"bricks":[{"filename":"0.hz","size":128,"position":[0,0,0]},{"filename":"1.hz","size":64,"position":[128,0,0]},{"filename":"2.hz","size":64,"position":[128,64,0]},{"filename":"3.hz","size":64,"position":[0,128,0]},{"filename":"4.hz","size":64,"position":[64,128,0]},{"filename":"5.hz","size":64,"position":[128,128,0]},{"filename":"6.hz","size":64,"position":[128,0,64]},{"filename":"7.hz","size":64,"position":[128,64,64]},{"filename":"8.hz","size":64,"position":[0,128,64]},{"filename":"9.hz","size":64,"position":[64,128,64]},{"filename":"10.hz","size":64,"position":[128,128,64]},{"filename":"11.hz","size":64,"position":[0,0,128]},{"filename":"12.hz","size":64,"position":[64,0,128]},{"filename":"13.hz","size":64,"position":[128,0,128]},{"filename":"14.hz","size":64,"position":[0,64,128]},{"filename":"15.hz","size":64,"position":[64,64,128]},{"filename":"16.hz","size":64,"position":[128,64,128]},{"filename":"17.hz","size":64,"position":[0,128,128]},{"filename":"18.hz","size":64,"position":[64,128,128]},{"filename":"19.hz","size":64,"position":[128,128,128]}],"totalBricks":20,"bytesPerPixel":1,"scale":[1,1,1],"endianness":"BIG_ENDIAN","globalSize":[192,192,192]}
+{
+    "minLevel": 64,
+    "maxLevel": 128,
+    "bricks": [
+        {
+            "filename": "0.hz",
+            "size": 128,
+            "position": [ 0, 0, 0 ]
+        },
+        {
+            "filename": "1.hz",
+            "size": 64,
+            "position": [ 128, 0, 0 ]
+        },
+        {
+            "filename": "2.hz",
+            "size": 64,
+            "position": [ 128, 64, 0 ]
+        },
+        {
+            "filename": "3.hz",
+            "size": 64,
+            "position": [ 0, 128, 0 ]
+        },
+        {
+            "filename": "4.hz",
+            "size": 64,
+            "position": [ 64, 128, 0 ]
+        },
+        {
+            "filename": "5.hz",
+            "size": 64,
+            "position": [ 128, 128, 0 ]
+        },
+        {
+            "filename": "6.hz",
+            "size": 64,
+            "position": [ 128, 0, 64 ]
+        },
+        {
+            "filename": "7.hz",
+            "size": 64,
+            "position": [ 128, 64, 64 ]
+        },
+        {
+            "filename": "8.hz",
+            "size": 64,
+            "position": [ 0, 128, 64 ]
+        },
+        {
+            "filename": "9.hz",
+            "size": 64,
+            "position": [ 64, 128, 64 ]
+        },
+        {
+            "filename": "10.hz",
+            "size": 64,
+            "position": [ 128, 128, 64 ]
+        },
+        {
+            "filename": "11.hz",
+            "size": 64,
+            "position": [ 0, 0, 128 ]
+        },
+        {
+            "filename": "12.hz",
+            "size": 64,
+            "position": [ 64, 0, 128 ]
+        },
+        {
+            "filename": "13.hz",
+            "size": 64,
+            "position": [ 128, 0, 128 ]
+        },
+        {
+            "filename": "14.hz",
+            "size": 64,
+            "position": [ 0, 64, 128 ]
+        },
+        {
+            "filename": "15.hz",
+            "size": 64,
+            "position": [ 64, 64, 128 ]
+        },
+        {
+            "filename": "16.hz",
+            "size": 64,
+            "position": [ 128, 64, 128 ]
+        },
+        {
+            "filename": "17.hz",
+            "size": 64,
+            "position": [ 0, 128, 128 ]
+        },
+        {
+            "filename": "18.hz",
+            "size": 64,
+            "position": [ 64, 128, 128 ]
+        },        
+        {
+            "filename": "19.hz",
+            "size": 64,
+            "position": [ 128, 128, 128 ]
+        }
+    ],
+    "totalBricks": 20,
+    "bytesPerPixel": 1,
+    "scale": [ 1, 1, 1 ],
+    "endianness": "BIG_ENDIAN",
+    "globalSize": [ 256, 256, 256 ]
+}
