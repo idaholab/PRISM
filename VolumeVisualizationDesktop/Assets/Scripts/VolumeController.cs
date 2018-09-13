@@ -81,6 +81,7 @@ public class VolumeController : MonoBehaviour {
 		CameraControls cameraControls = (CameraControls)mainCamera.GetComponent(typeof(CameraControls));
 		cameraControls.target = currentVolume.VolumeCube;
 
+        
 		// 4. Initialize the render texture, compute shader, and other objects needed for rendering
 
         //Debug.Log(currentVolume.Scale);
@@ -110,8 +111,8 @@ public class VolumeController : MonoBehaviour {
 	private void Update()
 	{
 
-        //Debug.Log("Is this Update() function ever entered?"); //Yes, Many times. 
-	}
+        
+    }
 
 	/// <summary>
 	/// Dispose of all compute buffers when the application quits
@@ -252,6 +253,7 @@ public class VolumeController : MonoBehaviour {
 
 		// Initialize the brickBuffer (the metadata buffer)
 		MetaBrick[] metaBricks = initMetaBrickBuffer();
+		MetaBrick[] metaBricks_2 = new MetaBrick[4];
 
 		// Initialize the volumeBuffer (the metadata buffer)
 		MetaVolume[] metaVolumes = initMetaVolumeBuffer();//This only ever seems to hold 1 single volume. What's the point of using a buffer to contain a single object?
@@ -263,10 +265,25 @@ public class VolumeController : MonoBehaviour {
 		// Set the necessary parameters in the compute shader
 		metaBrickBuffer = new ComputeBuffer(metaBricks.Length, 64);       // n MetaBricks with a size of 64 bytes each.
         //This looks to be correct. Note that the MetaBrick is 64 bytes *in memory* use. This is not the dimension of the brick. 
-
+               
 		metaBrickBuffer.SetData(metaBricks);
 
-		metaVolumeBuffer = new ComputeBuffer(1, 64);                      // 1 MetaVolume with a size of 64 bytes each
+        /*
+        metaBrickBuffer.GetData(metaBricks_2);
+
+        for (int i = 0; i < metaBricks.Length; i++)
+        {
+            Debug.Log("These are the metaBrick z-levels " + metaBricks_2[i].currentZLevel);
+
+            metaBricks_2[i].currentZLevel = i+3;
+
+            Debug.Log("These are the metaBrick z-levels " + metaBricks_2[i].currentZLevel);
+
+        }
+
+        metaBrickBuffer.SetData(metaBricks_2);*/
+
+        metaVolumeBuffer = new ComputeBuffer(1, 64);                      // 1 MetaVolume with a size of 64 bytes each
 		metaVolumeBuffer.SetData(metaVolumes);
 
 		renderingShader.SetBuffer(rendererKernelID, "_MetaBrickBuffer", metaBrickBuffer);
@@ -414,7 +431,7 @@ public class VolumeController : MonoBehaviour {
         }*/
 
 
-        //START HERE. 8/29/18
+       
         // Allocate the compute buffers, read in the data, copy the data into the buffer, and send the data to the compute shader
         for (int bufIdx = 0; bufIdx < numberOfBuffers; bufIdx++)//This is a nested bunch of loops. 
 		{
@@ -498,6 +515,35 @@ public class VolumeController : MonoBehaviour {
 		}
 	}
 
+    /*
+     A method used by the VolumeController object in the GeneralControlsHandler to update the MetaBrickBuffer with a new Z-level setting. 
+         */
+    public void updateMetaBrickBuffer(int newZlevel)
+    {
+        MetaBrick[] mbBuff = new MetaBrick[this.CurrentVolume.Bricks.Length]; 
+
+        metaBrickBuffer.GetData(mbBuff); 
+
+        for (int i = 0; i < mbBuff.Length; i++)
+        {
+
+
+            // Update the actual Brick objects in the volume. 
+            currentVolume.Bricks[i].CurrentZLevel = newZlevel;
+
+            //Update the associated MetaBrick. We run the update through the actual brick first to enforce clamping to maximal level.
+            //If you directly assign the MetaBrick the newZlevel, then you can overrun the available z levels when you have bricks of different sizes. 
+            //By passing the newZlevel through the actual brick first, we clamp the z level of the metaBrick to at most the maxZLevel. 
+            mbBuff[i].currentZLevel = currentVolume.Bricks[i].CurrentZLevel;//    
+            
+
+        }
+
+        metaBrickBuffer.SetData(mbBuff);
+
+
+    }
+
 	/// <summary>
 	/// A method called by Unity after all rendering is complete. Allows for post-processing effects.
 	/// </summary>
@@ -505,6 +551,7 @@ public class VolumeController : MonoBehaviour {
 	/// <param name="destination"></param>
 	private void OnRenderImage(RenderTexture source, RenderTexture destination)
 	{
+      //  Debug.Log("How often are we re-rendering?");
 		setShaderParameters();
 		render(destination);
 	}
@@ -530,8 +577,11 @@ public class VolumeController : MonoBehaviour {
 	/// <param name="destination"></param>
 	private void render(RenderTexture destination)
 	{
-		// Initialize the render texture
-		initRenderTexture();
+
+        //Debug.Log("How often are we re-rendering?");
+
+        // Initialize the render texture
+        initRenderTexture();
 
 		// Call the compute shader 
 		renderingShader.SetTexture(rendererKernelID, "Result", _target);

@@ -1,5 +1,6 @@
 ﻿/*
 * Rendering Shader | Marko Sterbentz, summer 2018
+				   | Randall Reese Sept 2018. 
 * Contains the methods and kernels needed for using ray marching in combination 
 * with raw or HZ-ordered data to produce an accurate and high quality volume visualization.
 */
@@ -296,6 +297,7 @@ float sampleIntensityHz(float3 pos, MetaBrick brick, int bitsPerPixel)
 {
 	uint zIndex = morton3D(pos, brick.size);												// Get the Z order index		
 	uint maskedZIndex = computeMaskedZIndex(zIndex, brick.currentZLevel, brick.maxZLevel);	// Get the masked Z index
+	//uint maskedZIndex = computeMaskedZIndex(zIndex, 3, brick.maxZLevel);	// Get the masked Z index
 	uint hzIndex = getHZIndex(maskedZIndex, brick.lastBitMask);								// Find the hz order index
 
 	//hzIndex = 8;
@@ -502,6 +504,8 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 		
 		// Get the isovalue at the current position
 		float isovalue = sampleIntensity(vol_ray_pos, currentBrick, currentVolume.isHz, currentVolume.numBits);
+		//float isovalue = currentBrick.currentZLevel * 5.0 * (1 + currentBrick.id);
+		//float isovalue = 6.0 * 15.0 * (currentBrick.id);
 
 		// Transform this isovalue into the corresponding RGBA color value
 		//float4 sampleColor = (currentBrickIndex < 1 ? sampleTransferFunction(isovalue, currentVolume.numBits) : float4(2,0.975, 0.0025, 1));

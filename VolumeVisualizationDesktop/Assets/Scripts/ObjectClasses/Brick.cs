@@ -1,4 +1,4 @@
-﻿/* Brick | Marko Sterbentz 7/3/2017 */
+﻿/* Brick | Marko Sterbentz 7/3/2017 Randall Reese 09/11/2018*/
 
 using System;
 using System.IO;

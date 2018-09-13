@@ -1,4 +1,4 @@
-﻿/* Volume | Marko Sterbentz 8/2/2017 */
+﻿/* Volume | Marko Sterbentz 8/2/2017 Randall Reese 09/11/2018*/
 
 using System;
 using System.IO;
@@ -17,6 +17,7 @@ public class Volume {
 	private int totalBricks;
 	private int minLevel;
 	private int maxLevel;
+    private int maxZLevel;
 	private int[] globalSize;
 	private string dataPath;
 	private Vector3 position;
@@ -83,7 +84,19 @@ public class Volume {
 			maxLevel = value;
 		}
 	}
-	public int[] GlobalSize
+
+    public int MaxZLevel
+    {
+        get
+        {
+            return maxZLevel;
+        }
+        set
+        {
+            maxZLevel = value;
+        }
+    }
+    public int[] GlobalSize
 	{
 		get
 		{
@@ -210,7 +223,7 @@ public class Volume {
         // Load the volume from the JSOn metadata file
         loadVolume(_dataPath, _metadataFileName);
 
-        Debug.Log("The Scale right after loading the volume is " + Scale);
+        //Debug.Log("The Scale right after loading the volume is " + Scale);
 
         // Set the default position of the volume
         Position = Vector3.Scale(new Vector3(0.5f, 0.5f, 0.5f), this.Scale);
@@ -239,7 +252,7 @@ public class Volume {
         // BoxMin = Vector3.Scale(BoxMin, new Vector3(1.1f, 1.1f, 1.1f));
         // BoxMax = Vector3.Scale(BoxMin, new Vector3(1.1f, 1.1f, 1.1f));
 
-        Debug.Log("The BoxMax right after loading the volume is " + BoxMax);
+        //Debug.Log("The BoxMax right after loading the volume is " + BoxMax);
 
 
     }
@@ -305,6 +318,11 @@ public class Volume {
 
             float maxGlobalSize = Mathf.Max(globalSize);
             //float maxGlobalSize = this.MaxLevel;
+
+
+
+
+
             //Vector3 boundingVolumeCenter = Vector3.Scale(new Vector3(maxGlobalSize, maxGlobalSize, maxGlobalSize), this.Scale) / 2.0f;
             Vector3 boundingVolumeCenter = Vector3.Scale(new Vector3(maxGlobalSize, maxGlobalSize, maxGlobalSize), this.Scale) / 2.0f;
             Vector3 boundingVolumeCorner = new Vector3(0, 0, 0);
@@ -337,27 +355,8 @@ public class Volume {
                 /*Vector3 newBrickPosition = new Vector3(N["bricks"][i]["position"][0].AsInt,
                                                        N["bricks"][i]["position"][1].AsInt,
                                                        N["bricks"][i]["position"][2].AsInt);*/
-
-
-                //Debug.Log("Brick " + i + " has position " + newBrickPosition);
-
-                /*
-				// Generate boundingVolumeCorner and boundingVolumeCenter (IN WORLD SPACE)
-				float maxGlobalSize = Mathf.Max(globalSize);
-				Vector3 boundingVolumeCenter = new Vector3(maxGlobalSize, maxGlobalSize, maxGlobalSize) / 2.0f;
-				Vector3 boundingVolumeCorner = new Vector3(0, 0, 0);
-				Vector3 b = boundingVolumeCenter - boundingVolumeCorner;
-
-				// Find volumeCenter and volumeCorner of the data (IN WORLD SPACE)
-				Vector3 volumeCenter = new Vector3(globalSize[0], globalSize[1], globalSize[2]) / 2.0f;
-				Vector3 volumeCorner = new Vector3(0, 0, 0);
-				Vector3 c = volumeCenter - volumeCorner;
-
-				// Calculate vector a: the bottom left corner of the volume (IN VOXEL SPACE)
-				Vector3 volumeCornerVoxelSpace = b - c;
-    
-                */
-
+                                                       
+                
                 // Calculate the position for each brick (IN VOXEL SPACE)
                 Vector3 brickPositionVoxelSpace = volumeCornerVoxelSpace + newBrickPosition;
                 
@@ -400,6 +399,8 @@ public class Volume {
             }
 
 
+            MaxZLevel = calculateMaxZlevel();
+
 			Debug.Log("Metadata read. SCALE " + Scale.ToString("G4"));
 		}
 		catch (Exception e)
@@ -407,6 +408,18 @@ public class Volume {
 			Debug.Log("Failed to read the metadata file: " + e);
 		}
 	}
+
+    private int calculateMaxZlevel()
+    {
+        int[] zLevs = new int[totalBricks];
+
+        for(int b = 0; b < totalBricks; b++)
+        {
+            zLevs[b] = Bricks[b].MaxZLevel;
+        }
+
+        return Mathf.Max(zLevs);
+    }
 
 	/// <summary>
 	/// Generates the isovalue range given the number of bits per pixels.

@@ -1,4 +1,4 @@
-﻿/* General Controls Handler | Marko Sterbentz 6/6/2017 */
+﻿/* General Controls Handler | Marko Sterbentz 6/6/2017 | Randall Reese 08/29/2018 */
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -23,8 +23,12 @@ public class GeneralControlsHandler : MonoBehaviour {
 		//volumeController = (VolumeController)GameObject.Find("VolumeController").GetComponent(typeof(VolumeController));
 		volumeController = (VolumeController)GameObject.Find("Main Camera").GetComponent(typeof(VolumeController));
 
-		// Initialize the user interface text fields
-		maxStepsValueText.text = GameObject.Find("Max Steps Slider").GetComponent<Slider>().value.ToString();
+        GameObject.Find("HZ Render Level Slider").GetComponent<Slider>().minValue = 0;
+        GameObject.Find("HZ Render Level Slider").GetComponent<Slider>().maxValue = volumeController.CurrentVolume.MaxZLevel;//Also can be found by using the log_2 function. 
+
+
+        // Initialize the user interface text fields
+        maxStepsValueText.text = GameObject.Find("Max Steps Slider").GetComponent<Slider>().value.ToString();
         normPerRayValueText.text = GameObject.Find("Norm Per Ray Slider").GetComponent<Slider>().value.ToString();
         hzRenderLevelValueText.text = GameObject.Find("HZ Render Level Slider").GetComponent<Slider>().value.ToString();
 	}
@@ -57,7 +61,7 @@ public class GeneralControlsHandler : MonoBehaviour {
 	/// <param name="newVal"></param>
 	public void updateHZRenderLevel(float newVal)
     {
-        MetaBrick brickToUpdate;
+        /*MetaBrick brickToUpdate;
         for(int i= 0; i < volumeController.CurrentVolume.Bricks.Length; i++)
         {
             //volumeController.RenderingComputeShader.SetInt("_MetaBrickBuffer[i].currentZLevel", (int)newVal);
@@ -73,8 +77,17 @@ public class GeneralControlsHandler : MonoBehaviour {
            // Debug.Log("Trying to set brick number " + i + " to the value " + newVal); 
             hzRenderLevelValueText.text = newVal.ToString();
             //We need to find a way to make these bricks push their info to the associated meta brick. 
-        }
-		//volumeController.CurrentVolume.updateMaterialPropIntAll("_HZRenderLevel", (int) newVal);
-        
+
+            
+        }*/
+        //volumeController.CurrentVolume.updateMaterialPropIntAll("_HZRenderLevel", (int) newVal);
+
+        //Debug.Log("The meta bricks should be updated to " + newVal); 
+
+        volumeController.updateMetaBrickBuffer((int)newVal);
+
+        hzRenderLevelValueText.text = newVal.ToString(); 
+
+
     }
 }
