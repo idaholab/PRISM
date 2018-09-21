@@ -14,6 +14,7 @@ public class GeneralControlsHandler : MonoBehaviour {
 	public Text maxStepsValueText;
     public Text normPerRayValueText;
     public Text hzRenderLevelValueText;
+    public Text lambdaValueText;
 
     /// <summary>
 	/// Initialization function for the GeneralControlsHandler.
@@ -25,13 +26,17 @@ public class GeneralControlsHandler : MonoBehaviour {
 
         GameObject.Find("HZ Render Level Slider").GetComponent<Slider>().minValue = 0;
         GameObject.Find("HZ Render Level Slider").GetComponent<Slider>().maxValue = volumeController.CurrentVolume.MaxZLevel;//Also can be found by using the log_2 function. 
-
+       
 
         // Initialize the user interface text fields
         maxStepsValueText.text = GameObject.Find("Max Steps Slider").GetComponent<Slider>().value.ToString();
         normPerRayValueText.text = GameObject.Find("Norm Per Ray Slider").GetComponent<Slider>().value.ToString();
         hzRenderLevelValueText.text = GameObject.Find("HZ Render Level Slider").GetComponent<Slider>().value.ToString();
-	}
+        lambdaValueText.text = (GameObject.Find("Lambda Slider").GetComponent<Slider>().value/100).ToString();
+        //We divide by 100 here because the slider is set up on a scale from 0 to 100, incrementing by whole numbers. 
+        //Unity only allows sliders to increment by 0.1 using the arrows. I felt it would be better to increment by 0.01 using the arrows keys. Hence the slightly awkward work-around. 
+
+    }
 	
 
 	/// <summary>
@@ -90,4 +95,16 @@ public class GeneralControlsHandler : MonoBehaviour {
 
 
     }
+
+    /// <summary>
+	/// Lambda slider update function.
+	/// </summary>
+	/// <param name="newVal"></param>
+	public void updateLambda(float newVal)
+    {
+        
+        volumeController.RenderingComputeShader.SetFloat("_Lambda", newVal/100);
+        lambdaValueText.text = (newVal/100).ToString("0.00");
+    }
+
 }

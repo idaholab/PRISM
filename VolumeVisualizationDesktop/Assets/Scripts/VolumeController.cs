@@ -253,20 +253,24 @@ public class VolumeController : MonoBehaviour {
 
 		// Initialize the brickBuffer (the metadata buffer)
 		MetaBrick[] metaBricks = initMetaBrickBuffer();
-		MetaBrick[] metaBricks_2 = new MetaBrick[4];
+		//MetaBrick[] metaBricks_2 = new MetaBrick[4];
 
 		// Initialize the volumeBuffer (the metadata buffer)
 		MetaVolume[] metaVolumes = initMetaVolumeBuffer();//This only ever seems to hold 1 single volume. What's the point of using a buffer to contain a single object?
     
 
-		// Initialize the data buffers
+		// Initialize the data buffers with the RAW data. 
 		initDataBuffers(metaBricks);
 
 		// Set the necessary parameters in the compute shader
 		metaBrickBuffer = new ComputeBuffer(metaBricks.Length, 64);       // n MetaBricks with a size of 64 bytes each.
-        //This looks to be correct. Note that the MetaBrick is 64 bytes *in memory* use. This is not the dimension of the brick. 
-               
-		metaBrickBuffer.SetData(metaBricks);
+                                                                          //This looks to be correct. Note that the MetaBrick is 64 bytes *in memory* use. This is not the dimension of the brick. 
+
+       
+
+        metaBrickBuffer.SetData(metaBricks);
+
+        updateMetaBrickBuffer(1); //This is done to enforce a minimal loading (not packing, however) of the data on initial render. 
 
         /*
         metaBrickBuffer.GetData(metaBricks_2);
@@ -307,12 +311,12 @@ public class VolumeController : MonoBehaviour {
 
 
 
-       for (int i = 0; i < metaBricks.Length; i++)
+       for (int i = 0; i < metaBricks.Length; i++)//This controls what Z level is loaded INTO THE BUFFERS. 
         {
 			// Create the MetaBrick
 			metaBricks[i] = currentVolume.Bricks[i].getMetaBrick();
 
-            //metaBricks[i].currentZLevel = i==0 ? metaBricks[i].maxZLevel : 0 ;//  
+            //metaBricks[i].currentZLevel = i==0 ? metaBricks[i].maxZLevel : 1 ;//  
             metaBricks[i].currentZLevel =  metaBricks[i].maxZLevel;//    
             // metaBricks[i].currentZLevel = ((i * 23) + 5) % 9; //metaBricks[i].maxZLevel; 
             //Debug.Log("HZ Level for this brick was " + ((i * 23)+5) % 9);
@@ -435,7 +439,7 @@ public class VolumeController : MonoBehaviour {
         // Allocate the compute buffers, read in the data, copy the data into the buffer, and send the data to the compute shader
         for (int bufIdx = 0; bufIdx < numberOfBuffers; bufIdx++)//This is a nested bunch of loops. 
 		{
-			dataBuffers[bufIdx] = new ComputeBuffer(bufferDataSizes[bufIdx], sizeof(uint));
+			dataBuffers[bufIdx] = new ComputeBuffer(bufferDataSizes[bufIdx], sizeof(uint));// Could the stride (second argument) be made into the size of a short? It could cut the necessary buffer size in half. 
 			int currentBufferOffset = 0;
 
 			uint[] rawData = new uint[bufferDataSizes[bufIdx]]; 
@@ -452,6 +456,9 @@ public class VolumeController : MonoBehaviour {
                     //How does this employ HZ order? I guess it only reads as far into the HZ file as the current z-level dictates.
                     //So to increase the HZ level, maybe we just read in the rest of the file up to where we need to? Seems to be the idea. 
                     // newData holds the raw data only for a single brick. This newData is then packed into the rawData buffer 
+
+
+
                 }
                 else
 				{
@@ -473,6 +480,8 @@ public class VolumeController : MonoBehaviour {
 				// Update the currentBufferOffset 
 				currentBufferOffset += newData.Length;
 			}
+
+            
 
             // Set the data in the current compute buffer
             dataBuffers[bufIdx].SetData(rawData);
@@ -517,6 +526,7 @@ public class VolumeController : MonoBehaviour {
 
     /*
      A method used by the VolumeController object in the GeneralControlsHandler to update the MetaBrickBuffer with a new Z-level setting. 
+     Note that this does NOT update the actual raw data buffer. 
          */
     public void updateMetaBrickBuffer(int newZlevel)
     {
@@ -589,7 +599,7 @@ public class VolumeController : MonoBehaviour {
 		int threadGroupsY = Mathf.CeilToInt(Screen.height / 32.0f);
         
 
-        //Debug.Log("Trying to locate any eror in the render shader: " + renderingShader.FindKernel("CSMain"));
+        //Debug.Log("Trying to locate any error in the render shader: " + renderingShader.FindKernel("CSMain"));
 
         renderingShader.Dispatch(rendererKernelID, threadGroupsX, threadGroupsY, 1);
 
@@ -598,3 +608,4 @@ public class VolumeController : MonoBehaviour {
 		Graphics.Blit(_target, destination);
 	}
 }
+

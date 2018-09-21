@@ -63,6 +63,7 @@ RWStructuredBuffer<uint> _DataBufferOne;
 RWStructuredBuffer<uint> _DataBufferTwo;
 int _Steps;
 float _NormPerRay;
+float _Lambda;
 Texture2D<float4> _TransferFunctionTexture;
 SamplerState sampler_TransferFunctionTexture;
 
@@ -463,6 +464,7 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 			//But what if the intersections are not all perfectly associated with the brick number?
 			//For example, say that we intersect with brick [2]. Will this necssarily be the third ( index 2 ) intersection?
 			//This is why the intersections also store an "id" value. This id value corresponds to the brick associated with the given intersection. 
+			//Later on in the code we use a "currentBrickIndex." This value would more appropriately be called "currentIntersectionIndex." 
 
 			numIntersections++;
 		}
@@ -481,34 +483,42 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 
 	// Initialize variables to keep track of the current brick being considered
 
-	int currentBrickIndex = 0;//Does this actually correspond with the current brick in question? Not exactly. 
+	int currentIntersectionIndex = 0;//Does this actually correspond with the current brick in question? Not exactly. 
 	//It actually keeps track of the current *Intersection* index in the intersections array. 
 
-	MetaBrick currentBrick = _MetaBrickBuffer[intersections[currentBrickIndex].id];
-	//MetaBrick currentBrick = _MetaBrickBuffer[currentBrickIndex];
-
-	//currentBrick.currentZLevel = 12; 
-
+	MetaBrick currentBrick = _MetaBrickBuffer[intersections[currentIntersectionIndex].id];
+	//currentBrick.currentZLevel = 5;
+	//MetaBrick currentBrick = _MetaBrickBuffer[currentIntersectionIndex];
+	
+	
+	
+	
 	MetaVolume currentVolume = _MetaVolumeBuffer[0];
 
 	// Set up ray marching variables/vectors
-	float3 vol_ray_pos = ray.origin + (ray.direction * intersections[currentBrickIndex].tNear);	// ray start position in volume space
+	float3 vol_ray_pos = ray.origin + (ray.direction * intersections[currentIntersectionIndex].tNear);	// ray start position in volume space
 	
 	//float3 brick_ray_pos = vol_ray_pos - currentBrick.boxMin;									// ray start position in the current brick's space. This is never even used. 
 	float3 ray_step = normalize(ray.direction) * sqrt(3) / _Steps;								// the size of each step when ray marching
 
 	// Ray marching loop
 	float4 fColor = 0;
+
+	currentBrick.currentZLevel = max(currentBrick.currentZLevel, currentBrick.maxZLevel*(1.0 - (fColor.a * _Lambda)));
+	//currentBrick.currentZLevel = currentBrick.maxZLevel;
+
+
 	for (int k = 0; k < _Steps; k++)
 	{
 		
 		// Get the isovalue at the current position
 		float isovalue = sampleIntensity(vol_ray_pos, currentBrick, currentVolume.isHz, currentVolume.numBits);
+		//float isovalue = sampleIntensity(vol_ray_pos, currentBrick, currentVolume.isHz, currentVolume.numBits) + 15*currentBrick.id;
 		//float isovalue = currentBrick.currentZLevel * 5.0 * (1 + currentBrick.id);
 		//float isovalue = 6.0 * 15.0 * (currentBrick.id);
 
 		// Transform this isovalue into the corresponding RGBA color value
-		//float4 sampleColor = (currentBrickIndex < 1 ? sampleTransferFunction(isovalue, currentVolume.numBits) : float4(2,0.975, 0.0025, 1));
+		//float4 sampleColor = (currentIntersectionIndex < 1 ? sampleTransferFunction(isovalue, currentVolume.numBits) : float4(2,0.975, 0.0025, 1));
 		//float4 sampleColor = (currentBrick.id == 0 ? sampleTransferFunction(isovalue, currentVolume.numBits) : float4(1, 1, 0, 0.01));
 		float4 sampleColor = sampleTransferFunction(isovalue, currentVolume.numBits);
 		//float4 sampleColor = float4(currentVolume.scale[0], currentVolume.scale[1], currentVolume.scale[2], 0.05);//This proves that the scale is making it this far into the shader. 
@@ -537,13 +547,19 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 			|| vol_ray_pos.x > currentBrick.boxMax.x || vol_ray_pos.y > currentBrick.boxMax.y || vol_ray_pos.z > currentBrick.boxMax.z)
 		{
 
-		/* This needs to be numIntersections-1. Otherwise you will increment to a currentBrickIndex one above the actual index of the "last" (deepest) intersection. 
+		/* This needs to be numIntersections-1. Otherwise you will increment to a currentIntersectionIndex one above the actual index of the "last" (deepest) intersection. 
 		* If you do not do numIntersections-1, you end up reading in garbage on the boundaries. 
 		*/
-			if (currentBrickIndex < numIntersections - 1)
+			if (currentIntersectionIndex < numIntersections - 1)
 			{
-				currentBrickIndex++;//This needs to be less than numIntersections at all times. 
-				currentBrick = _MetaBrickBuffer[intersections[currentBrickIndex].id];
+				currentIntersectionIndex++;//This needs to be less than numIntersections at all times. 
+				currentBrick = _MetaBrickBuffer[intersections[currentIntersectionIndex].id]; 
+
+				//currentBrick.currentZLevel = max(currentBrick.currentZLevel, currentBrick.maxZLevel/(1 << (currentIntersectionIndex)));
+				currentBrick.currentZLevel = max(currentBrick.currentZLevel, currentBrick.maxZLevel*(1.0 - (fColor.a * _Lambda)));
+				//currentBrick.currentZLevel = max(5, currentBrick.maxZLevel*(1.0-fColor.a/2));
+				//currentBrick.currentZLevel = max(currentBrick.currentZLevel, 4);
+				//currentBrick.currentZLevel = (int)max(currentBrick.currentZLevel / fColor.a, 2);
 				
 			}
 			else
