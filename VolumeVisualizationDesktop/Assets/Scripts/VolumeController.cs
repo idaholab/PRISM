@@ -53,9 +53,11 @@ public class VolumeController : MonoBehaviour {
 	private Dictionary<int, string> dataBufferNames = new Dictionary<int, string> {
 		{ 0, "_DataBufferZero"},
 		{ 1, "_DataBufferOne" },
-		{ 2, "_DataBufferTwo" }
-       
-    };
+		{ 2, "_DataBufferTwo" },
+        { 3, "_DataBufferThree" },
+        { 4, "_DataBufferFour" }
+
+    };//I put up to five buffer names here in order for future implementations using more than three buffers. 
 
 	/// <summary>
 	/// Initialization function for the VolumeController. Ensures that the global variables needed by other objects are initialized first.

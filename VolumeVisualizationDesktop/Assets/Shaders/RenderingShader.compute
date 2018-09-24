@@ -504,8 +504,9 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 	// Ray marching loop
 	float4 fColor = 0;
 
-	currentBrick.currentZLevel = max(currentBrick.currentZLevel, currentBrick.maxZLevel*(1.0 - (fColor.a * _Lambda)));
-	//currentBrick.currentZLevel = currentBrick.maxZLevel;
+	//currentBrick.currentZLevel = max(currentBrick.currentZLevel, currentBrick.maxZLevel*(1.0 - (fColor.a * _Lambda)));
+	currentBrick.currentZLevel = currentBrick.maxZLevel;//Using the fColor.a value is not needed. fColor.a = 0 is set just a few lines above.
+	// The max() selection will always yield the maxZLevel anyway.  
 
 
 	for (int k = 0; k < _Steps; k++)
@@ -522,11 +523,11 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 		//float4 sampleColor = (currentBrick.id == 0 ? sampleTransferFunction(isovalue, currentVolume.numBits) : float4(1, 1, 0, 0.01));
 		float4 sampleColor = sampleTransferFunction(isovalue, currentVolume.numBits);
 		//float4 sampleColor = float4(currentVolume.scale[0], currentVolume.scale[1], currentVolume.scale[2], 0.05);//This proves that the scale is making it this far into the shader. 
-		//float4 sampleColor = float4(1.0,1.0,1.0, 0.05);
+		//float4 sampleColor = float4(0,0,currentBrick.currentZLevel* 20.0, 0.05);
 		
 
 		// Front to back blending function
-		fColor.rgb = fColor.rgb + (1 - fColor.a) * sampleColor.a * sampleColor.rgb;
+		fColor.rgb = fColor.rgb  + (1 - fColor.a) * sampleColor.a * sampleColor.rgb;
 		fColor.a = fColor.a + (1 - fColor.a) * sampleColor.a;
 
 		// March along the ray
