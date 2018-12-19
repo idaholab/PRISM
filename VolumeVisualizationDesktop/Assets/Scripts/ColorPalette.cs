@@ -34,7 +34,6 @@ public class ColorPalette : MonoBehaviour
 		greenValueText.text = greenSlider.value.ToString();
 		blueValueText.text = blueSlider.value.ToString();
 
-		//volumeController = (VolumeController)GameObject.Find("VolumeController").GetComponent(typeof(VolumeController));
 		volumeController = (VolumeController)GameObject.Find("Main Camera").GetComponent(typeof(VolumeController));
 		transferFunction = volumeController.TransferFunction;
 

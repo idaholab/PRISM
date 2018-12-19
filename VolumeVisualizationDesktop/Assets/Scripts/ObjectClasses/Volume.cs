@@ -27,6 +27,11 @@ public class Volume {
 	public string endianness;
 	private Vector3 boxMin;		// The bottom, front, left corner of the bounding box around the volume (can be different than the volume's corner)
 	private Vector3 boxMax;		// The top, back, right corner of the bounding box around the volume (can be different than the volume's corner)
+    public SievasController controller; 
+
+
+
+
 
 	/* Properties */
 	public Brick[] Bricks
@@ -155,11 +160,9 @@ public class Volume {
 		}
 		set
 		{
-            //Debug.Log("We are trying to set the scale"); 
 
             volumeCube.transform.localScale = value;
 
-           // volumeCube.transform.localScale = new Vector3(1.0f, 2.0f, 4.0f);
         }
 	}
 	public string Endianness
@@ -227,10 +230,7 @@ public class Volume {
 
         // Set the default position of the volume
         Position = Vector3.Scale(new Vector3(0.5f, 0.5f, 0.5f), this.Scale);
-        //Position = new Vector3(0.5f, 0.5f, 0.5f);
-
-        //Position = new Vector3(0.5f, 0.5f, 0.5f); 
-
+        
 
         // Set the position of the Unity game object
         volumeCube.transform.position = Position;
@@ -239,22 +239,10 @@ public class Volume {
         volumeCube.GetComponent<MeshRenderer>().enabled = false;
 
 
-        //BoxMin = new Vector3(0.25f, 0.0f, 0.0f) ;
-
-        //BoxMax = new Vector3(0.75f, 1.0f, 1.0f);
-
         BoxMin = new Vector3(0.0f, 0.0f, 0.0f);
 
-        //BoxMax = new Vector3(0.371094f, 0.371094f, 1.0f);
-        BoxMax = Scale;//There could be a way to find a tighter box. 
-       // BoxMax = new Vector3(this.GlobalSize[0], this.GlobalSize[1], this.GlobalSize[2]) / Mathf.Max(this.GlobalSize); 
-         
-        // BoxMin = Vector3.Scale(BoxMin, new Vector3(1.1f, 1.1f, 1.1f));
-        // BoxMax = Vector3.Scale(BoxMin, new Vector3(1.1f, 1.1f, 1.1f));
-
-        //Debug.Log("The BoxMax right after loading the volume is " + BoxMax);
-
-
+        
+        BoxMax = Scale;
     }
 
 	/* Methods */
@@ -308,39 +296,29 @@ public class Volume {
             float invertedMinScale = 1.0f / Mathf.Min(read_in_scale); 
         
             this.Scale = Vector3.Scale(new Vector3(read_in_scale[0], read_in_scale[1], read_in_scale[2]),  new Vector3(invertedMinScale, invertedMinScale, invertedMinScale));
-            //Where is this scale ever actually used? Scale is a property of a Volume object. When scale is called/assigned, the property functions handle it.
-            //The set.Scale function sets a local scale to t
-            //It seems right now (9-6-2018) that the Scale property is being overridden by Unity or something. Unity is just ignoring it. 
-
-
-
+            
             // Generate boundingVolumeCorner and boundingVolumeCenter (IN WORLD SPACE)
 
             float maxGlobalSize = Mathf.Max(globalSize);
-            //float maxGlobalSize = this.MaxLevel;
+            
 
 
 
 
 
-            //Vector3 boundingVolumeCenter = Vector3.Scale(new Vector3(maxGlobalSize, maxGlobalSize, maxGlobalSize), this.Scale) / 2.0f;
+            
             Vector3 boundingVolumeCenter = Vector3.Scale(new Vector3(maxGlobalSize, maxGlobalSize, maxGlobalSize), this.Scale) / 2.0f;
             Vector3 boundingVolumeCorner = new Vector3(0, 0, 0);
             Vector3 b = boundingVolumeCenter - boundingVolumeCorner;
 
             // Find volumeCenter and volumeCorner of the data (IN WORLD SPACE)
-            //Vector3 volumeCenter =  Vector3.Scale(new Vector3(globalSize[0], globalSize[1], globalSize[2]), this.Scale) / 2.0f;
             Vector3 volumeCenter = Vector3.Scale(new Vector3(globalSize[0], globalSize[1], globalSize[2]), this.Scale)/ 2.0f;
             Vector3 volumeCorner = new Vector3(0,0,0);
             Vector3 c = volumeCenter - volumeCorner;
 
             // Calculate vector a: the bottom left corner of the volume (IN VOXEL SPACE)
-            //Vector3 volumeCornerVoxelSpace = Vector3.Scale(b - c, Scale);
+           
             Vector3 volumeCornerVoxelSpace = b - c;
-
-            //Debug.Log("The volumeCornerVoxelSpace is " + volumeCornerVoxelSpace); 
-
-
 
             // Create and position all of the bricks within a 1 x 1 x 1 cube
             for (int i = 0; i < bricks.Length; i++)
@@ -352,9 +330,6 @@ public class Volume {
 													   N["bricks"][i]["position"][1].AsInt,
 													   N["bricks"][i]["position"][2].AsInt), this.Scale);
 
-                /*Vector3 newBrickPosition = new Vector3(N["bricks"][i]["position"][0].AsInt,
-                                                       N["bricks"][i]["position"][1].AsInt,
-                                                       N["bricks"][i]["position"][2].AsInt);*/
                                                        
                 
                 // Calculate the position for each brick (IN VOXEL SPACE)
@@ -363,39 +338,22 @@ public class Volume {
 
                 // Calculate the brick offset (IN VOXEL SPACE)
                 Vector3 brickOffsetVoxelSpace = Vector3.Scale(new Vector3(newBrickSize, newBrickSize, newBrickSize), this.Scale) / 2.0f;
-               // Vector3 brickOffsetVoxelSpace = new Vector3(newBrickSize, newBrickSize, newBrickSize)/ 2.0f;
-
+               
                 // Calculate final position for the brick (IN WORLD SPACE)
-                //Vector3 finalBrickPosition = Vector3.Scale((brickPositionVoxelSpace + brickOffsetVoxelSpace) / maxGlobalSize, new Vector3(1.1f, 1.5f, 2.0f));
                 Vector3 finalBrickPosition = (brickPositionVoxelSpace + brickOffsetVoxelSpace) / maxGlobalSize;
 
                 // Calculate the bottom, front, left corner of the brick (IN WORLD SPACE)
                 Vector3 brickMin = finalBrickPosition - ((Vector3.Scale(new Vector3(newBrickSize, newBrickSize, newBrickSize) , this.Scale)/ 2.0f) / maxGlobalSize) ;
-                //Vector3 brickMin = finalBrickPosition - ((new Vector3(newBrickSize*2.0f, newBrickSize * 2.0f, newBrickSize) / 2.0f) / maxGlobalSize);
-                //Vector3 brickMin = Vector3.Scale(finalBrickPosition - ((new Vector3(newBrickSize, newBrickSize, newBrickSize) ) / 2.0f) / maxGlobalSize,Scale);
-               // Vector3 brickMin = finalBrickPosition - (new Vector3(0.125f, 0.125f, 0.125f));
-
-
-
+                
                 // Calculate the top, back, right corner of the brick (IN WORLD SPACE) 
                 Vector3 brickMax = finalBrickPosition + ((Vector3.Scale(new Vector3(newBrickSize, newBrickSize, newBrickSize), this.Scale) / 2.0f) / maxGlobalSize) ;
-                //Vector3 brickMax = finalBrickPosition + ((new Vector3(newBrickSize*2.0f, newBrickSize * 2.0f, newBrickSize) / 2.0f) / maxGlobalSize);
-               // Vector3 brickMax = Vector3.Scale(finalBrickPosition + ((new Vector3(newBrickSize, newBrickSize, newBrickSize)) / 2.0f) / maxGlobalSize, Scale);
-                //Vector3 brickMax = finalBrickPosition + (new Vector3(0.125f, 0.125f, 0.125f));
-
-
+               
                 // Create the brick
                 bricks[i] = new Brick(newBrickFilename, newBrickSize, finalBrickPosition, brickMin, brickMax, this);
 
                 // Scale the bricks to the correct size
-                //bricks[i].GameObject.transform.localScale = new Vector3(0.1f,2.4f,3.6f);//
                 bricks[i].GameObject.transform.localScale = new Vector3(bricks[i].Size, bricks[i].Size, bricks[i].Size) / maxGlobalSize;
-                //bricks[i].GameObject.transform.localScale = new Vector3(bricks[i].Size, bricks[i].Size, bricks[i].Size) / this.MaxLevel;
-              
-              //  Debug.Log("Size for this brick was " + bricks[i].Size);
-                //Debug.Log("Local Scale for this brick was " +bricks[i].GameObject.transform.localScale.ToString("G4"));
-                //Debug.Log("Min and Max are as follows: " + brickMin.ToString("G4") + " and " + brickMax.ToString("G4"));
-
+                
             }
 
 

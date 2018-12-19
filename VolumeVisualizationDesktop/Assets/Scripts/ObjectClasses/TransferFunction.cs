@@ -219,7 +219,8 @@ public class TransferFunction
         for (int i = 0; i < colorPoints.Count - 1; i++)
         {
             // Get the distance for the interpolation interval
-            int distance = (int) Math.Round((colorPoints[i + 1].isovalue - colorPoints[i].isovalue) / (double) isovalueRange * 255.0f);    // divide by isovalue range and multiply by texture width to normalize values in this range
+            int distance = (int) Math.Round((colorPoints[i + 1].isovalue - colorPoints[i].isovalue) / (double) isovalueRange * 255.0f);    
+            // divide by isovalue range and multiply by texture width to normalize values in this range
             for (int j = 0; j < distance; j++)
             {
                 // Perform interpolation between the colors in the current interval

@@ -160,18 +160,11 @@ public class Brick
 
         // Set the position of the brick
         gameObject.transform.position = _position;
-        // gameObject.transform.position = new Vector3(5.5f, 0.5f, -10.0f);
-
-
-        // gameObject.transform.parent = parentVolume.VolumeCube.transform;
+        
+        //Setting the parent of the volume. 
         gameObject.transform.SetParent(parentVolume.VolumeCube.transform);
 
-        //Debug.Log("The parent to this brick is " + gameObject.transform.parent); 
-
-        //gameObject.transform.localScale = new Vector3(1.2f, 3.0f, 0.7f);
-
-        //Debug.Log("Scale is " + gameObject.transform.localScale); 
-
+       
 
         // Set the cube's data size
 
@@ -184,15 +177,10 @@ public class Brick
 		LastBitMask = calculateLastBitMask();
 
         // Set the brick's min and max corner positions
-        //BoxMin = new Vector3(0, 0, 0);//_boxMin;
-        //BoxMax = new Vector3(1, 1, 1);
-
         BoxMin = _boxMin;
         BoxMax = _boxMax;
 
         // Set the default level of detail that this brick renders to
-        //CurrentZLevel = _zlevel;
-
         CurrentZLevel = 0;
 
         // Disable the mesh of this cube so it doesn't render
@@ -256,16 +244,23 @@ public class Brick
 	/// <summary>
 	/// Reads a certain amount of the brick's associated data into a byte array. The amount is dependent on the current z level of the brick.
     /// Packs the data into uints for use in the compute shader.
-    /// This may mean that the data would need to be re-rendered if you want to change the HZ-level. 
+    /// This may mean that the data would need to be re-packed if you want to change the HZ-level. 
     /// You would need to repack the buffer every time it would seem.
+    /// 
+    /// This is the issue with trying to dynamically decide upon a "correct" level of detail to render a brick at. 
+    /// You have to repack the buffer everytime you want to change the z-level of ANY brick. If one brick changes, you need to adjust the compute buffer holding that brick.
+    /// Note, however, that every brick in the given compute buffer also needs to be shifted to accomadate the change in the z-level for the brick in question.  
+    /// 
+    /// This function is not used when we stream the brick data using SIEVAS. 
+    /// However, a very similar function is used in the volume controller and the same comments on repacking still stand. 
 	/// </summary>
 	/// <returns></returns>
-	public uint[] readRaw8Into3DZLevelBufferUint()//How does this end up being used? 
+	public uint[] readRaw8Into3DZLevelBufferUint()
 	{
 		try
 		{
 			// Get the size of the data based on the currentZLevel rendering level
-			int dataSize = 1 << currentZLevel; // equivalent to 2^currentZLevel... Is this the correct dataSize?
+			int dataSize = 1 << currentZLevel; // equivalent to 2^currentZLevel... Is this the correct dataSize? Yes. 
             int numBytesRead = -1;
 			// Read in the bytes
 			BinaryReader reader = new BinaryReader(new FileStream(filename, FileMode.Open));
@@ -290,7 +285,7 @@ public class Brick
 			// Pack the bytes that were read into a uint array
 			uint[] uintBuffer = new uint[Mathf.CeilToInt(totalDataSize / 4.0f)];//Why divide by 4?
             // A uint is four bytes on a standard architechture. Is this why we divide the totalDataSize by 4?
-            //I believe that this is why we divide by 4. Since each uint can hold 4 bytes, if we have a byte array (which "buffer" is), then dividing the length of the byte array
+            //This is why we divide by 4. Since each uint can hold 4 bytes, if we have a byte array (which "buffer" is), then dividing the length of the byte array
             //    by 4 tells us how many uints it would take (i.e. how long of a uint array we need) to hold the byte data.
             
             //Here we take a byte array and pack it into a uint array.
@@ -303,7 +298,7 @@ public class Brick
              * Note however that the total data size is actually divisible by 8 (at the very least) as long as we are rendering at HZ-level of at least 1.
              * dataSize = 2^currentZLevel. totalDataSize is dataSize^3. Hence totalDataSize must be at least divisible by 8 as long as z > 0.  
              * 
-             * Now, the question does still remain: Why even do this odd byte packing into uints in the first place? 
+             * Now, the question does still remain: Why even do this odd byte packing into uints in the first place? The shader cannot use a byte intrinsic type. 
              * 
              * */
 
@@ -349,7 +344,7 @@ public class Brick
 			reader.Read(buffer, 0, sizeof(byte) * buffer.Length);
 			reader.Close();
 
-			// Convert the bytes to ushort (Note: Buffer.BlockCopy() assumes data is in little endian format.
+			// Convert the bytes to ushort (Note: Buffer.BlockCopy() assumes data is in little endian format).
 			// TODO: Figure out a better way to read in ushort rather than doing this... This may not be available on non-Windows platforms?
 			ushort[] ushortBuffer = new ushort[buffer.Length / 2];
 			Buffer.BlockCopy(buffer, 0, ushortBuffer, 0, buffer.Length);

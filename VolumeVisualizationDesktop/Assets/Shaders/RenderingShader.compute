@@ -56,11 +56,26 @@ RWTexture2D<float4> Result;
 float4x4 _CameraToWorld;//When does this become initialized? Near the end of VolumeController.cs. 
 float4x4 _CameraInverseProjection;
 RWStructuredBuffer<MetaBrick> _MetaBrickBuffer;
-RWStructuredBuffer<MetaVolume> _MetaVolumeBuffer;//This volume buffer seems to only ever hold a single volume. Must volumes be passed via buffers? Why not just make this a metavolume object?
-//Essentially, what is the point of wrapping this MetaVolume in a buffer? I guess that all data passed to the shader needs to be wrapped in a buffer perhaps. 
+RWStructuredBuffer<MetaVolume> _MetaVolumeBuffer;
+
 RWStructuredBuffer<uint> _DataBufferZero;
 RWStructuredBuffer<uint> _DataBufferOne;
 RWStructuredBuffer<uint> _DataBufferTwo;
+RWStructuredBuffer<uint> _DataBufferThree;
+RWStructuredBuffer<uint> _DataBufferFour;
+RWStructuredBuffer<uint> _DataBufferFive;
+RWStructuredBuffer<uint> _DataBufferSix;
+RWStructuredBuffer<uint> _DataBufferSeven;
+RWStructuredBuffer<uint> _DataBufferEight;
+/*RWStructuredBuffer<uint> _DataBufferNine;
+RWStructuredBuffer<uint> _DataBufferTen;
+RWStructuredBuffer<uint> _DataBufferEleven;
+RWStructuredBuffer<uint> _DataBufferTwelve;
+RWStructuredBuffer<uint> _DataBufferThirteen;
+RWStructuredBuffer<uint> _DataBufferFourteen;
+RWStructuredBuffer<uint> _DataBufferFifteen;
+RWStructuredBuffer<uint> _DataBufferSixteen;
+RWStructuredBuffer<uint> _DataBufferSeventeen;*/
 int _Steps;
 float _NormPerRay;
 float _Lambda;
@@ -231,44 +246,181 @@ float samplePackedBuffers(uint bufferIndex, uint bufferOffset, uint byteIndex, i
 		uintIndex = bufferOffset + (byteIndex / 4);
 		uintIndexOffset = byteIndex % 4;
 
-		if (bufferIndex == 0)
+		switch (bufferIndex)
 		{
-			return (_DataBufferZero[uintIndex] & MASKS_8BIT[uintIndexOffset]) >> BYTE_SHIFTS_8BIT[uintIndexOffset];//Note that the AND (&) occurs first. 
+			case 0:
+			{
+				return (_DataBufferZero[uintIndex] & MASKS_8BIT[uintIndexOffset]) >> BYTE_SHIFTS_8BIT[uintIndexOffset];//Note that the AND (&) occurs first. 
+			}
+			case  1:
+			{
+				return (_DataBufferOne[uintIndex] & MASKS_8BIT[uintIndexOffset]) >> BYTE_SHIFTS_8BIT[uintIndexOffset];
+			}
+			case  2:
+			{
+				return (_DataBufferTwo[uintIndex] & MASKS_8BIT[uintIndexOffset]) >> BYTE_SHIFTS_8BIT[uintIndexOffset];
+			}
+
+			case  3:
+			{
+				return (_DataBufferThree[uintIndex] & MASKS_8BIT[uintIndexOffset]) >> BYTE_SHIFTS_8BIT[uintIndexOffset];
+			}
+			case  4:
+			{
+				return (_DataBufferFour[uintIndex] & MASKS_8BIT[uintIndexOffset]) >> BYTE_SHIFTS_8BIT[uintIndexOffset];
+			}
+			
+			/*case  5:
+			{
+				return (_DataBufferFive[uintIndex] & MASKS_8BIT[uintIndexOffset]) >> BYTE_SHIFTS_8BIT[uintIndexOffset];
+			}
+			
+			case  6:
+			{
+				return (_DataBufferSix[uintIndex] & MASKS_8BIT[uintIndexOffset]) >> BYTE_SHIFTS_8BIT[uintIndexOffset];
+			}
+			case  7:
+			{
+				return (_DataBufferSeven[uintIndex] & MASKS_8BIT[uintIndexOffset]) >> BYTE_SHIFTS_8BIT[uintIndexOffset];
+			}
+			
+			case  8:
+			{
+				return (_DataBufferEight[uintIndex] & MASKS_8BIT[uintIndexOffset]) >> BYTE_SHIFTS_8BIT[uintIndexOffset];
+			}
+			case  9:
+			{
+				return (_DataBufferNine[uintIndex] & MASKS_8BIT[uintIndexOffset]) >> BYTE_SHIFTS_8BIT[uintIndexOffset];
+			}
+			case  10:
+			{
+				return (_DataBufferTen[uintIndex] & MASKS_8BIT[uintIndexOffset]) >> BYTE_SHIFTS_8BIT[uintIndexOffset];
+			}
+			case  11:
+			{
+				return (_DataBufferEleven[uintIndex] & MASKS_8BIT[uintIndexOffset]) >> BYTE_SHIFTS_8BIT[uintIndexOffset];
+			}
+			case  12:
+			{
+				return (_DataBufferTwelve[uintIndex] & MASKS_8BIT[uintIndexOffset]) >> BYTE_SHIFTS_8BIT[uintIndexOffset];
+			}
+			case  13:
+			{
+				return (_DataBufferThirteen[uintIndex] & MASKS_8BIT[uintIndexOffset]) >> BYTE_SHIFTS_8BIT[uintIndexOffset];
+			}
+			case  14:
+			{
+				return (_DataBufferFourteen[uintIndex] & MASKS_8BIT[uintIndexOffset]) >> BYTE_SHIFTS_8BIT[uintIndexOffset];
+			}
+			case  15:
+			{
+				return (_DataBufferFifteen[uintIndex] & MASKS_8BIT[uintIndexOffset]) >> BYTE_SHIFTS_8BIT[uintIndexOffset];
+			}
+			case  16:
+			{
+				return (_DataBufferSixteen[uintIndex] & MASKS_8BIT[uintIndexOffset]) >> BYTE_SHIFTS_8BIT[uintIndexOffset];
+			}
+			case  17:
+			{
+				return (_DataBufferSeventeen[uintIndex] & MASKS_8BIT[uintIndexOffset]) >> BYTE_SHIFTS_8BIT[uintIndexOffset];
+			}*/
+			default:
+			{
+				return 0;
+			}
 		}
-		else if (bufferIndex == 1)
-		{
-			return (_DataBufferOne[uintIndex] & MASKS_8BIT[uintIndexOffset]) >> BYTE_SHIFTS_8BIT[uintIndexOffset];
-		}
-		else if (bufferIndex == 2)
-		{
-			return (_DataBufferTwo[uintIndex] & MASKS_8BIT[uintIndexOffset]) >> BYTE_SHIFTS_8BIT[uintIndexOffset];
-		}
-		else
-		{
-			return 0;
-		}
+		
+
+		
 	}
 	else
 	{
 		uintIndex = bufferOffset + (byteIndex / 2);
 		uintIndexOffset = byteIndex % 2;
-
-		if (bufferIndex == 0)
+		switch (bufferIndex)
 		{
-			return (_DataBufferZero[uintIndex] & MASKS_16BIT[uintIndexOffset]) >> BYTE_SHIFTS_16BIT[uintIndexOffset];
-		}
-		else if (bufferIndex == 1)
-		{
+			case 0:
+			{
+				return (_DataBufferZero[uintIndex] & MASKS_16BIT[uintIndexOffset]) >> BYTE_SHIFTS_16BIT[uintIndexOffset];//Note that the AND (&) occurs first. 
+			}
+			case  1:
+			{
 			return (_DataBufferOne[uintIndex] & MASKS_16BIT[uintIndexOffset]) >> BYTE_SHIFTS_16BIT[uintIndexOffset];
-		}
-		else if (bufferIndex == 2)
-		{
+			}
+			case  2:
+			{
 			return (_DataBufferTwo[uintIndex] & MASKS_16BIT[uintIndexOffset]) >> BYTE_SHIFTS_16BIT[uintIndexOffset];
+			}
+			
+			case  3:
+			{
+			return (_DataBufferThree[uintIndex] & MASKS_16BIT[uintIndexOffset]) >> BYTE_SHIFTS_16BIT[uintIndexOffset];
+			}
+			case  4:
+			{
+			return (_DataBufferFour[uintIndex] & MASKS_16BIT[uintIndexOffset]) >> BYTE_SHIFTS_16BIT[uintIndexOffset];
+			}
+			/*
+			case  5:
+			{
+			return (_DataBufferFive[uintIndex] & MASKS_16BIT[uintIndexOffset]) >> BYTE_SHIFTS_16BIT[uintIndexOffset];
+			}
+			case  6:
+			{
+			return (_DataBufferSix[uintIndex] & MASKS_16BIT[uintIndexOffset]) >> BYTE_SHIFTS_16BIT[uintIndexOffset];
+			}
+			case  7:
+			{
+			return (_DataBufferSeven[uintIndex] & MASKS_16BIT[uintIndexOffset]) >> BYTE_SHIFTS_16BIT[uintIndexOffset];
+			}
+			
+			case  8:
+			{
+			return (_DataBufferEight[uintIndex] & MASKS_16BIT[uintIndexOffset]) >> BYTE_SHIFTS_16BIT[uintIndexOffset];
+			}
+			case  9:
+			{
+			return (_DataBufferNine[uintIndex] & MASKS_16BIT[uintIndexOffset]) >> BYTE_SHIFTS_16BIT[uintIndexOffset];
+			}
+			case  10:
+			{
+			return (_DataBufferTen[uintIndex] & MASKS_16BIT[uintIndexOffset]) >> BYTE_SHIFTS_16BIT[uintIndexOffset];
+			}
+			case  11:
+			{
+			return (_DataBufferEleven[uintIndex] & MASKS_16BIT[uintIndexOffset]) >> BYTE_SHIFTS_16BIT[uintIndexOffset];
+			}
+			case  12:
+			{
+			return (_DataBufferTwelve[uintIndex] & MASKS_16BIT[uintIndexOffset]) >> BYTE_SHIFTS_16BIT[uintIndexOffset];
+			}
+			case  13:
+			{
+			return (_DataBufferThirteen[uintIndex] & MASKS_16BIT[uintIndexOffset]) >> BYTE_SHIFTS_16BIT[uintIndexOffset];
+			}
+			case  14:
+			{
+			return (_DataBufferFourteen[uintIndex] & MASKS_16BIT[uintIndexOffset]) >> BYTE_SHIFTS_16BIT[uintIndexOffset];
+			}
+			case  15:
+			{
+			return (_DataBufferFifteen[uintIndex] & MASKS_16BIT[uintIndexOffset]) >> BYTE_SHIFTS_16BIT[uintIndexOffset];
+			}
+			case  16:
+			{
+			return (_DataBufferSixteen[uintIndex] & MASKS_16BIT[uintIndexOffset]) >> BYTE_SHIFTS_16BIT[uintIndexOffset];
+			}
+			case  17:
+			{
+			return (_DataBufferSeventeen[uintIndex] & MASKS_16BIT[uintIndexOffset]) >> BYTE_SHIFTS_16BIT[uintIndexOffset];
+			}*/
+			
+			default: 
+			{
+				return 0;
+			}
 		}
-		else
-		{
-			return 0;
-		}
+		
 	}
 }
 

@@ -1,35 +1,112 @@
-﻿using UnityEngine;
+﻿/* Sievas Controller for interfacing with SIEVAS. Randall Reese 12/07/2018.
+    This class is heavily based on the class SessionViewController.cs in the SIEVAS_UnityDev project. 
+ */
+
+using UnityEngine;
 using System.Collections;
 using UnityEngine.EventSystems;
 using Apache.NMS;
 using Newtonsoft.Json;
 using UnityEngine.UI;
 using UnityEngine.Events;
+using System.Collections.Generic;
 using System.Reflection;
 using System;
 using System.Linq;
 
-public class SievasController : MonoBehaviour {
+public class SievasController : MonoBehaviour
+{
+    //SievasController is based on SessionViewController in SIEVAS_UnityDev
 
     public SIEVASSession[] sessionList;
     public UnityEngine.Object row;
     public Canvas canvas;
-	//public Planet_Data_Loader loader;
-    public DVRMessageViewer dvrMessageViewer;
-    public TimeSlider timeSlider;
+	
     public IMessageProducer controlMsgProducer;
     public IMessageProducer dataMsgProducer;
     public IConnection connection;
-    bool runonce = false;
+
+    public bool runonce = true;//Originally set to false
     public IMessageEvent myEvent;
     public bool autoSelect = true;//Originally set to false. Allows for automatic selection of the session as a VolViz session.
     public string SessionName = "VolViz Session";
-    
+    private string volName = "VisMale"; //defaults to VisMale
+
+    private byte[] nextBrickData;
+    private bool sievasInitialized = false;
+    private int nextBrick;
+    private Dictionary<int, byte[]> byteDataDict = new Dictionary<int, byte[]>();
+
 
     private bool autoCheck = false;
 
-	// Use this for initialization
-	void Start () {
+    public byte[] NextBrickData
+    {
+        get
+        {
+            return nextBrickData;
+        }
+
+        set
+        {
+            nextBrickData = value;
+        }
+    }
+
+    public bool SievasInitialized
+    {
+        get
+        {
+            return sievasInitialized;
+        }
+
+        set
+        {
+            sievasInitialized = value;
+        }
+    }
+
+    public int NextBrick
+    {
+        get
+        {
+            return nextBrick;
+        }
+
+        set
+        {
+            nextBrick = value;
+        }
+    }
+
+    public Dictionary<int, byte[]> ByteDataDict
+    {
+        get
+        {
+            return byteDataDict;
+        }
+
+        set
+        {
+            byteDataDict = value;
+        }
+    }
+
+    public string VolName
+    {
+        get
+        {
+            return volName;
+        }
+
+        set
+        {
+            volName = value;
+        }
+    }
+
+    // Use this for initialization
+    void Start () {
 
     }
 
@@ -58,15 +135,13 @@ public class SievasController : MonoBehaviour {
     }
 	
 	// Update is called once per frame
-	void Update () {
-
-        //print("autoSelect" + autoSelect);
-        //print("autoCheck" + autoCheck);
+	void Update ()
+    {
 
 
         if (runonce && autoCheck)
         {
-            //print("We are entering here SessViewCont line 63"); 
+            
             return;
         }
 
@@ -74,10 +149,7 @@ public class SievasController : MonoBehaviour {
         {
             SIEVASSession session = FindSession();
 
-            //print("We are entering here SessViewCont line 71");
-
-            //print(session.name); 
-
+            
             if (session != null)
             {
                 initSession(session);
@@ -87,7 +159,7 @@ public class SievasController : MonoBehaviour {
 
         if (!runonce)
         {
-            //print("We are entering here SessViewCont line 82");
+            
 
             for (int i = 0; i < sessionList.Length; i++)
             {
@@ -106,10 +178,9 @@ public class SievasController : MonoBehaviour {
             }
         }
 
-       // print("We are entering here SessViewCont line 101");
-
     }
 
+    //Handles the click of the "Login" button on the SIEVAS login screen. 
     public void handleClick(PointerEventData data)
     {
         PointerEventData evt = data;
@@ -129,16 +200,14 @@ public class SievasController : MonoBehaviour {
         ISession amqSession = connection.CreateSession(AcknowledgementMode.AutoAcknowledge);
         ITopic controlTopic = amqSession.GetTopic(session.controlStreamName);
         IMessageConsumer controlConsumer = amqSession.CreateConsumer(controlTopic);
-        controlConsumer.Listener += onControlMessage;//Tell the consumer what functions to listen to. This tells the listener that one of the places it needs to listen is to this.onControlMessage()
-        controlConsumer.Listener += timeSlider.onControlMessage;//Also listen to timeSlider.onControlMessage(). 
+        controlConsumer.Listener += onControlMessage;
+        //Tell the consumer what functions to listen to. This tells the listener that one of the places it needs to listen is to this.onControlMessage()
+      
 
         ITopic dataTopic = amqSession.GetTopic(session.dataStreamName);
         IMessageConsumer dataConsumer = amqSession.CreateConsumer(dataTopic);
-        dataConsumer.Listener += dvrMessageViewer.onDataMessage;
-        dataConsumer.Listener += timeSlider.onDataMessage;
-        //dataConsumer.Listener += WaterDataLoader.Instance.onDataMessage;
         dataConsumer.Listener += this.onDataMessage;
-        //dataConsumer.Listener += Planet_Data_Loader.Instance.onDataMessage;
+       
 
         controlMsgProducer = amqSession.CreateProducer(controlTopic);
         dataMsgProducer = amqSession.CreateProducer(dataTopic); 
@@ -151,25 +220,10 @@ public class SievasController : MonoBehaviour {
 
         ITextMessage initializeMessage = controlMsgProducer.CreateTextMessage("Initializing the HZReader");
         initializeMessage.Properties.SetBool("InitializeHZR", true);
-        initializeMessage.Properties.SetString("VolumeName", "visMale");
+        initializeMessage.Properties.SetString("VolumeName", VolName);
 
         controlMsgProducer.Send(initializeMessage); 
-
-
-        //get the current status of backend
-        DVRCommandMessage dvrControlMsg = new DVRCommandMessage("GetStatus", 13L);
-        ITextMessage msg = controlMsgProducer.CreateTextMessage(JsonConvert.SerializeObject(dvrControlMsg));
-        msg.Properties.SetString("ObjectName", dvrControlMsg.GetType().Name);
-        controlMsgProducer.Send(msg);
-
-        //send a little test message to request that the data channel send something back. 
-
-        ITextMessage dataRequest = controlMsgProducer.CreateTextMessage("This is a test message to request that data be sent.");
-        dataRequest.Properties.SetBool("BrickRequest", true);
-        dataRequest.Properties.SetInt("BrickNum", 0);
-        dataRequest.Properties.SetInt("zLevel", 4);
-        dataRequest.Properties.SetString("VolumeName", "visMale");
-        dataMsgProducer.Send(dataRequest); 
+        SievasInitialized = true; 
 
     }
 
@@ -177,10 +231,10 @@ public class SievasController : MonoBehaviour {
     private void onControlMessage(IMessage msg)
 	{
 		print ("We are receiving a CONTROL message.");
-		//print (msg);
+		
 	}
 
-    private void onDataMessage(IMessage msg)//Maybe we will have to eventually pass out a byte/int buffer from here.
+    private void onDataMessage(IMessage msg)
     {
         int bytesRead = 0;
         int zLev = msg.Properties.GetInt("zLevReply");
@@ -194,28 +248,17 @@ public class SievasController : MonoBehaviour {
 
             print("We are receiving a DATA message of " + bytesRead + " bytes.");
 
-            /*System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            NextBrickData = byteBuffer; //This sets the byte buffer of the next brick up. 
+            NextBrick = msg.Properties.GetInt("BrickNumReply");
 
-            sb.Append("[");
-
-            foreach (var b in byteBuffer)
-            {
-                sb.Append(b + ", ");
-
-            }
-
-            sb.Append("END]");
-            print(sb.ToString()); */
+            print("This is the nextBrick number: " + NextBrick); 
+            
         }
 
        
 
-        
+        ByteDataDict.Add(NextBrick, nextBrickData); 
 
-
-
-
-        //print (msg);
     }
 
 
