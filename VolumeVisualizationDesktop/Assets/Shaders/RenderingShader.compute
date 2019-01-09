@@ -269,8 +269,8 @@ float samplePackedBuffers(uint bufferIndex, uint bufferOffset, uint byteIndex, i
 			{
 				return (_DataBufferFour[uintIndex] & MASKS_8BIT[uintIndexOffset]) >> BYTE_SHIFTS_8BIT[uintIndexOffset];
 			}
-			
-			/*case  5:
+			/*
+			case  5:
 			{
 				return (_DataBufferFive[uintIndex] & MASKS_8BIT[uintIndexOffset]) >> BYTE_SHIFTS_8BIT[uintIndexOffset];
 			}
@@ -450,10 +450,10 @@ float sampleIntensityHz(float3 pos, MetaBrick brick, int bitsPerPixel)
 {
 	uint zIndex = morton3D(pos, brick.size);												// Get the Z order index		
 	uint maskedZIndex = computeMaskedZIndex(zIndex, brick.currentZLevel, brick.maxZLevel);	// Get the masked Z index
-	//uint maskedZIndex = computeMaskedZIndex(zIndex, 3, brick.maxZLevel);	// Get the masked Z index
+	
 	uint hzIndex = getHZIndex(maskedZIndex, brick.lastBitMask);								// Find the hz order index
 
-	//hzIndex = 8;
+	
 
 	//brick.bufferIndex is the integer (0,1,2) that indicates which raw data buffer the given brick is held in.
 	//brick.bufferOffset is the starting position of the data in the raw data buffer.
@@ -557,18 +557,15 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 	// Get a ray for the UVs
 	Ray ray = createCameraRay(uv);
 
-	float3 scaler = float3(1.0, 1.0, 1.0); // _MetaVolumeBuffer[0].scale;
+	float3 scaler = float3(1.0, 1.0, 1.0);
 
 	// Calculate eye ray intersection with cube bounding box
 	float3 boxMin = _MetaVolumeBuffer[0].boxMin;
-	//float3 boxMin = componentMult(_MetaVolumeBuffer[0].boxMin, scaler);//Already Scaled, no need to scale again. 
-	//float3 boxMin = float3(0.0, 0.0, 0.0);
+	
 
 
 	float3 boxMax = _MetaVolumeBuffer[0].boxMax;
-	//float3 boxMax = componentMult(_MetaVolumeBuffer[0].boxMax, scaler);
-	//float3 boxMax = float3(3.0, 2.0, 1.0);
-
+	
 
 
 
@@ -595,11 +592,10 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 	for (int i = 0; i < _MetaVolumeBuffer[0].numBricks; i++)
 	{
 		_MetaBrickBuffer[i].boxMin = _MetaBrickBuffer[i].boxMin;
-		//_MetaBrickBuffer[i].boxMin = componentMult(_MetaBrickBuffer[i].boxMin, scaler); //Already scaled. No need to scale again. 
+		
 
 		_MetaBrickBuffer[i].boxMax = _MetaBrickBuffer[i].boxMax; 
-		//_MetaBrickBuffer[i].boxMax = componentMult(_MetaBrickBuffer[i].boxMax, scaler);
-
+		
 
 		BrickIntersection newIntersection; //Is the tNear value or the tFar value ever set for this intersection?
 		//We use the newIntersection.tNear and newIntersection.tFar values directly below. But as far as I can tell, they are never set. 
@@ -612,12 +608,7 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 		if (IntersectBox(ray.origin, ray.direction, _MetaBrickBuffer[i].boxMin, _MetaBrickBuffer[i].boxMax, newIntersection.tNear, newIntersection.tFar))
 		{
 			newIntersection.id = _MetaBrickBuffer[i].id;
-			intersections[numIntersections] = newIntersection;//This is packing the intersections in right next to each other. 
-			//But what if the intersections are not all perfectly associated with the brick number?
-			//For example, say that we intersect with brick [2]. Will this necssarily be the third ( index 2 ) intersection?
-			//This is why the intersections also store an "id" value. This id value corresponds to the brick associated with the given intersection. 
-			//Later on in the code we use a "currentBrickIndex." This value would more appropriately be called "currentIntersectionIndex." 
-
+			intersections[numIntersections] = newIntersection;
 			numIntersections++;
 		}
 	}
@@ -635,14 +626,9 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 
 	// Initialize variables to keep track of the current brick being considered
 
-	int currentIntersectionIndex = 0;//Does this actually correspond with the current brick in question? Not exactly. 
-	//It actually keeps track of the current *Intersection* index in the intersections array. 
+	int currentIntersectionIndex = 0;
 
 	MetaBrick currentBrick = _MetaBrickBuffer[intersections[currentIntersectionIndex].id];
-	//currentBrick.currentZLevel = 5;
-	//MetaBrick currentBrick = _MetaBrickBuffer[currentIntersectionIndex];
-	
-	
 	
 	
 	MetaVolume currentVolume = _MetaVolumeBuffer[0];
@@ -650,13 +636,13 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 	// Set up ray marching variables/vectors
 	float3 vol_ray_pos = ray.origin + (ray.direction * intersections[currentIntersectionIndex].tNear);	// ray start position in volume space
 	
-	//float3 brick_ray_pos = vol_ray_pos - currentBrick.boxMin;									// ray start position in the current brick's space. This is never even used. 
+							
 	float3 ray_step = normalize(ray.direction) * sqrt(3) / _Steps;								// the size of each step when ray marching
 
 	// Ray marching loop
 	float4 fColor = 0;
 
-	//currentBrick.currentZLevel = max(currentBrick.currentZLevel, currentBrick.maxZLevel*(1.0 - (fColor.a * _Lambda)));
+	
 	currentBrick.currentZLevel = currentBrick.maxZLevel;//Using the fColor.a value is not needed. fColor.a = 0 is set just a few lines above.
 	// The max() selection will always yield the maxZLevel anyway.  
 
@@ -666,16 +652,12 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 		
 		// Get the isovalue at the current position
 		float isovalue = sampleIntensity(vol_ray_pos, currentBrick, currentVolume.isHz, currentVolume.numBits);
-		//float isovalue = sampleIntensity(vol_ray_pos, currentBrick, currentVolume.isHz, currentVolume.numBits) + 15*currentBrick.id;
-		//float isovalue = currentBrick.currentZLevel * 5.0 * (1 + currentBrick.id);
-		//float isovalue = 6.0 * 15.0 * (currentBrick.id);
+		
 
 		// Transform this isovalue into the corresponding RGBA color value
-		//float4 sampleColor = (currentIntersectionIndex < 1 ? sampleTransferFunction(isovalue, currentVolume.numBits) : float4(2,0.975, 0.0025, 1));
-		//float4 sampleColor = (currentBrick.id == 0 ? sampleTransferFunction(isovalue, currentVolume.numBits) : float4(1, 1, 0, 0.01));
+		
 		float4 sampleColor = sampleTransferFunction(isovalue, currentVolume.numBits);
-		//float4 sampleColor = float4(currentVolume.scale[0], currentVolume.scale[1], currentVolume.scale[2], 0.05);//This proves that the scale is making it this far into the shader. 
-		//float4 sampleColor = float4(0,0,currentBrick.currentZLevel* 20.0, 0.05);
+		
 		
 
 		// Front to back blending function
@@ -708,11 +690,7 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 				currentIntersectionIndex++;//This needs to be less than numIntersections at all times. 
 				currentBrick = _MetaBrickBuffer[intersections[currentIntersectionIndex].id]; 
 
-				//currentBrick.currentZLevel = max(currentBrick.currentZLevel, currentBrick.maxZLevel/(1 << (currentIntersectionIndex)));
 				currentBrick.currentZLevel = max(currentBrick.currentZLevel, currentBrick.maxZLevel*(1.0 - (fColor.a * _Lambda)));
-				//currentBrick.currentZLevel = max(5, currentBrick.maxZLevel*(1.0-fColor.a/2));
-				//currentBrick.currentZLevel = max(currentBrick.currentZLevel, 4);
-				//currentBrick.currentZLevel = (int)max(currentBrick.currentZLevel / fColor.a, 2);
 				
 			}
 			else

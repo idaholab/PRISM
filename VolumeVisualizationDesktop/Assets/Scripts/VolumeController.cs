@@ -476,33 +476,12 @@ public class VolumeController : MonoBehaviour {
                     newData = pack8BitHZbyteArrayToUint(controller.ByteDataDict[brIdx]); 
 
                 }
-                /* 
-                                                                                
-                                                                                
-TTTTTTTTTTTTTTTTTTTTTTT                   DDDDDDDDDDDDD                         
-T:::::::::::::::::::::T                   D::::::::::::DDD                      
-T:::::::::::::::::::::T                   D:::::::::::::::DD                    
-T:::::TT:::::::TT:::::T                   DDD:::::DDDDD:::::D                   
-TTTTTT  T:::::T  TTTTTTooooooooooo          D:::::D    D:::::D    ooooooooooo   
-        T:::::T      oo:::::::::::oo        D:::::D     D:::::D oo:::::::::::oo 
-        T:::::T     o:::::::::::::::o       D:::::D     D:::::Do:::::::::::::::o
-        T:::::T     o:::::ooooo:::::o       D:::::D     D:::::Do:::::ooooo:::::o
-        T:::::T     o::::o     o::::o       D:::::D     D:::::Do::::o     o::::o
-        T:::::T     o::::o     o::::o       D:::::D     D:::::Do::::o     o::::o
-        T:::::T     o::::o     o::::o       D:::::D     D:::::Do::::o     o::::o
-        T:::::T     o::::o     o::::o       D:::::D    D:::::D o::::o     o::::o
-      TT:::::::TT   o:::::ooooo:::::o     DDD:::::DDDDD:::::D  o:::::ooooo:::::o
-      T:::::::::T   o:::::::::::::::o     D:::::::::::::::DD   o:::::::::::::::o
-      T:::::::::T    oo:::::::::::oo      D::::::::::::DDD      oo:::::::::::oo 
-      TTTTTTTTTTT      ooooooooooo        DDDDDDDDDDDDD           ooooooooooo   
-                                                                                
-                                                                 */
+                
 
 
-                else//Implment for 16 bit. 
+                else
                 {
-                    //print("Streaming 16-bit data is not yet implemented"); 
-                    //newData = currentVolume.Bricks[brIdx].readRaw16Into3DZLevelBufferUint();
+                    
 
                     newData = pack8BitHZbyteArrayToUint(controller.ByteDataDict[brIdx]);
                 }
