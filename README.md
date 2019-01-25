@@ -1,5 +1,4 @@
-
-#Volume Visualization Tool (PRISM)
+# Volume Visualization Tool (PRISM)
 
 #### As of January 10, 2019.
 
