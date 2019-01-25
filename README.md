@@ -1,8 +1,4 @@
----
-output:
-  pdf_document: default
-  html_document: default
----
+
 #Volume Visualization Tool (PRISM)
 
 #### As of January 10, 2019.
