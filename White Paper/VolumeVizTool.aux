@@ -1,0 +1,78 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyperFirstAtBeginDocument{\AtBeginDocument}
+\HyperFirstAtBeginDocument{\ifx\hyper@anchor\@undefined
+\global\let\oldcontentsline\contentsline
+\gdef\contentsline#1#2#3#4{\oldcontentsline{#1}{#2}{#3}}
+\global\let\oldnewlabel\newlabel
+\gdef\newlabel#1#2{\newlabelxx{#1}#2}
+\gdef\newlabelxx#1#2#3#4#5#6{\oldnewlabel{#1}{{#2}{#3}}}
+\AtEndDocument{\ifx\hyper@anchor\@undefined
+\let\contentsline\oldcontentsline
+\let\newlabel\oldnewlabel
+\fi}
+\fi}
+\global\let\hyper@last\relax 
+\gdef\HyperFirstAtBeginDocument#1{#1}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\citation{PEARC18}
+\citation{Sterbentz2018}
+\citation{Sterbentz2018}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{1}{section.1}}
+\citation{SIEVAS}
+\citation{PEARC18}
+\citation{Sterbentz2018}
+\@writefile{toc}{\contentsline {section}{\numberline {2}Inherent scale in raw HZ-leveled data}{2}{section.2}}
+\newlabel{scale}{{2}{2}{Inherent scale in raw HZ-leveled data}{section.2}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Attempts at overcoming buffer overflow with culling}{2}{section.3}}
+\newlabel{LODcull}{{3}{2}{Attempts at overcoming buffer overflow with culling}{section.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Aggregated $\alpha $-based LOD culling: Voxel level}{3}{subsection.3.1}}
+\newlabel{voxelLevel}{{3.1}{3}{Aggregated $\alpha $-based LOD culling: Voxel level}{subsection.3.1}{}}
+\newlabel{culling}{{1}{3}{Aggregated $\alpha $-based LOD culling: Voxel level}{equation.3.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Aggregated $\alpha $-based LOD culling: Brick level}{3}{subsection.3.2}}
+\newlabel{brickLevel}{{3.2}{3}{Aggregated $\alpha $-based LOD culling: Brick level}{subsection.3.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Feasibility of using a compute shader}{4}{subsection.3.3}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Brick Shelling}{4}{section.4}}
+\newlabel{shells}{{4}{4}{Brick Shelling}{section.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Details of the shelling process}{4}{subsection.4.1}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.1}Determining Z-level for each brick}{5}{subsubsection.4.1.1}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.2}Possible approaches to calculating $\sigma _k$}{5}{subsubsection.4.1.2}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Foreseeable difficulties}{6}{subsection.4.2}}
+\newlabel{repack}{{4.2.1}{6}{Repeated repacking of data into buffers}{subsubsection.4.2.1}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.1}Repeated repacking of data into buffers}{6}{subsubsection.4.2.1}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces A punch bowl and a small Dixie cup.}}{6}{figure.1}}
+\newlabel{Punch}{{1}{6}{A punch bowl and a small Dixie cup}{figure.1}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.2}Current choice of $\sigma _k$ too weak}{7}{subsubsection.4.2.2}}
+\newlabel{badBlend}{{4.2.3}{7}{Incorrect blending of bricks in different shells}{subsubsection.4.2.3}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.3}Incorrect blending of bricks in different shells}{7}{subsubsection.4.2.3}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces An overhead view of ray-tracing through several bricks. This figure demonstrates the various orders that a given brick can be ``seen" by ray-tracing.}}{8}{figure.2}}
+\newlabel{Shell_Issue}{{2}{8}{An overhead view of ray-tracing through several bricks. This figure demonstrates the various orders that a given brick can be ``seen" by ray-tracing}{figure.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces An overhead view of ray-tracing through several bricks. This figure demonstrates a possible depiction error. Brick $B_1$ is shown in its actual position in the volume (solid red), as well as in a position (pink, with RGB$\alpha $ annotation) emulating an erroneous blending of the RGB$\alpha $ values associated with the voxels intersected by Ray 3. Compare with Figure \ref  {Shell_Issue}}}{8}{figure.3}}
+\newlabel{Shell_Issue2}{{3}{8}{An overhead view of ray-tracing through several bricks. This figure demonstrates a possible depiction error. Brick $B_1$ is shown in its actual position in the volume (solid red), as well as in a position (pink, with RGB$\alpha $ annotation) emulating an erroneous blending of the RGB$\alpha $ values associated with the voxels intersected by Ray 3. Compare with Figure \ref {Shell_Issue}}{figure.3}{}}
+\citation{LIVE}
+\citation{SIEVAS}
+\citation{LIVE}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Streaming volume data via SIEVAS}{9}{section.5}}
+\newlabel{SIEVAS}{{5}{9}{Streaming volume data via SIEVAS}{section.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Using the control and data topics}{9}{subsection.5.1}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}LOD culling with SIEVAS}{9}{subsection.5.2}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.1}Current thoughts on using SIEVAS (Jan. 8, 2019)}{9}{subsubsection.5.2.1}}
+\@writefile{toc}{\contentsline {section}{\numberline {6}Summary of foreseen issues with compute shader rendering}{10}{section.6}}
+\newlabel{issues}{{6}{10}{Summary of foreseen issues with compute shader rendering}{section.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Lack of buffer space}{10}{subsection.6.1}}
+\citation{PEARC18}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Determination \emph  {a priori} of requisite LOD}{11}{subsection.6.2}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Streaming data bricks one at a time}{11}{subsection.6.3}}
+\newlabel{steamOne}{{6.3}{11}{Streaming data bricks one at a time}{subsection.6.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.4}Repeated repacking of data into buffers}{12}{subsection.6.4}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.5}Limits on the number of initialized buffers}{13}{subsection.6.5}}
+\@writefile{toc}{\contentsline {section}{\numberline {7}Current State}{13}{section.7}}
+\newlabel{conclude}{{7}{13}{Current State}{section.7}{}}
+\bibstyle{ACM-Reference-Format-Journals}
+\bibdata{LODrefs}
+\bibcite{PEARC18}{\citeauthoryear {Money, Sterbentz, Morrical, Szewczyk, and Woolley}{Money et\nobreakspace  {}al\unhbox \voidb@x \hbox {.}}{2018}}
+\bibcite{LIVE}{\citeauthoryear {Money and Szewczyk}{Money and Szewczyk}{2017a}}
+\bibcite{SIEVAS}{\citeauthoryear {Money and Szewczyk}{Money and Szewczyk}{2017b}}
+\bibcite{Sterbentz2018}{\citeauthoryear {Sterbentz and Money}{Sterbentz and Money}{2018}}
+\lastpage{14}

@@ -1,0 +1,25 @@
+\BOOKMARK [1][-]{section.1}{Introduction}{}% 1
+\BOOKMARK [1][-]{section.2}{Inherent scale in raw HZ-leveled data}{}% 2
+\BOOKMARK [1][-]{section.3}{Attempts at overcoming buffer overflow with culling}{}% 3
+\BOOKMARK [2][-]{subsection.3.1}{Aggregated -based LOD culling: Voxel level}{section.3}% 4
+\BOOKMARK [2][-]{subsection.3.2}{Aggregated -based LOD culling: Brick level}{section.3}% 5
+\BOOKMARK [2][-]{subsection.3.3}{Feasibility of using a compute shader}{section.3}% 6
+\BOOKMARK [1][-]{section.4}{Brick Shelling}{}% 7
+\BOOKMARK [2][-]{subsection.4.1}{Details of the shelling process}{section.4}% 8
+\BOOKMARK [3][-]{subsubsection.4.1.1}{Determining Z-level for each brick}{subsection.4.1}% 9
+\BOOKMARK [3][-]{subsubsection.4.1.2}{Possible approaches to calculating k}{subsection.4.1}% 10
+\BOOKMARK [2][-]{subsection.4.2}{Foreseeable difficulties}{section.4}% 11
+\BOOKMARK [3][-]{subsubsection.4.2.1}{Repeated repacking of data into buffers}{subsection.4.2}% 12
+\BOOKMARK [3][-]{subsubsection.4.2.2}{Current choice of k too weak}{subsection.4.2}% 13
+\BOOKMARK [3][-]{subsubsection.4.2.3}{Incorrect blending of bricks in different shells}{subsection.4.2}% 14
+\BOOKMARK [1][-]{section.5}{Streaming volume data via SIEVAS}{}% 15
+\BOOKMARK [2][-]{subsection.5.1}{Using the control and data topics}{section.5}% 16
+\BOOKMARK [2][-]{subsection.5.2}{LOD culling with SIEVAS}{section.5}% 17
+\BOOKMARK [3][-]{subsubsection.5.2.1}{Current thoughts on using SIEVAS \(Jan. 8, 2019\)}{subsection.5.2}% 18
+\BOOKMARK [1][-]{section.6}{Summary of foreseen issues with compute shader rendering}{}% 19
+\BOOKMARK [2][-]{subsection.6.1}{Lack of buffer space}{section.6}% 20
+\BOOKMARK [2][-]{subsection.6.2}{Determination a priori of requisite LOD}{section.6}% 21
+\BOOKMARK [2][-]{subsection.6.3}{Streaming data bricks one at a time}{section.6}% 22
+\BOOKMARK [2][-]{subsection.6.4}{Repeated repacking of data into buffers}{section.6}% 23
+\BOOKMARK [2][-]{subsection.6.5}{Limits on the number of initialized buffers}{section.6}% 24
+\BOOKMARK [1][-]{section.7}{Current State}{}% 25

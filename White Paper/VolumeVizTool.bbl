@@ -1,0 +1,89 @@
+%%% -*-BibTeX-*-
+%%% Do NOT edit. File created by BibTeX with style
+%%% ACM-Reference-Format-Journals [18-Jan-2012].
+
+\begin{thebibliography}{00}
+
+%%% ====================================================================
+%%% NOTE TO THE USER: you can override these defaults by providing
+%%% customized versions of any of these macros before the \bibliography
+%%% command.  Each of them MUST provide its own final punctuation,
+%%% except for \shownote{}, \showDOI{}, and \showURL{}.  The latter two
+%%% do not use final punctuation, in order to avoid confusing it with
+%%% the Web address.
+%%%
+%%% To suppress output of a particular field, define its macro to expand
+%%% to an empty string, or better, \unskip, like this:
+%%%
+%%% \newcommand{\showDOI}[1]{\unskip}   % LaTeX syntax
+%%%
+%%% \def \showDOI #1{\unskip}           % plain TeX syntax
+%%%
+%%% ====================================================================
+
+\ifx \showCODEN    \undefined \def \showCODEN     #1{\unskip}     \fi
+\ifx \showDOI      \undefined \def \showDOI       #1{{\tt DOI:}\penalty0{#1}\ }
+  \fi
+\ifx \showISBNx    \undefined \def \showISBNx     #1{\unskip}     \fi
+\ifx \showISBNxiii \undefined \def \showISBNxiii  #1{\unskip}     \fi
+\ifx \showISSN     \undefined \def \showISSN      #1{\unskip}     \fi
+\ifx \showLCCN     \undefined \def \showLCCN      #1{\unskip}     \fi
+\ifx \shownote     \undefined \def \shownote      #1{#1}          \fi
+\ifx \showarticletitle \undefined \def \showarticletitle #1{#1}   \fi
+\ifx \showURL      \undefined \def \showURL       #1{#1}          \fi
+
+\bibitem[\protect\citeauthoryear{Money, Sterbentz, Morrical, Szewczyk, and
+  Woolley}{Money et~al\mbox{.}}{2018}]%
+        {PEARC18}
+{James~H. Money}, {Marko Sterbentz}, {Nathan Morrical}, {Thomas Szewczyk},
+  {and} {Landon Woolley}. 2018.
+\newblock \showarticletitle{GPGPU Enabled Ray Directed Adaptive Volume
+  Visualization for High Density Scans}. In {\em Proceedings of the Practice
+  and Experience on Advanced Research Computing} {\em (PEARC '18)}. ACM, New
+  York, NY, USA, Article 62, 7 pages.
+\newblock
+\showISBNx{978-1-4503-6446-1}
+\showDOI{%
+\url{http://dx.doi.org/10.1145/3219104.3219105}}
+
+
+\bibitem[\protect\citeauthoryear{Money and Szewczyk}{Money and
+  Szewczyk}{2017a}]%
+        {LIVE}
+{James~H. Money} {and} {Thomas Szewczyk}. 2017a.
+\newblock \showarticletitle{Live Integrated Visualization Environment: An
+  Experiment in Generalized Structured Frameworks for Visualization and
+  Analysis}. In {\em Proceedings of the Practice and Experience in Advanced
+  Research Computing 2017 on Sustainability, Success and Impact} {\em
+  (PEARC17)}. ACM, New York, NY, USA, Article 29, 7 pages.
+\newblock
+\showISBNx{978-1-4503-5272-7}
+\showDOI{%
+\url{http://dx.doi.org/10.1145/3093338.3093344}}
+
+
+\bibitem[\protect\citeauthoryear{Money and Szewczyk}{Money and
+  Szewczyk}{2017b}]%
+        {SIEVAS}
+{James~H. Money} {and} {Thomas Szewczyk}. 2017b.
+\newblock \showarticletitle{Scientific and Intelligence Exascale Visualization
+  Analysis System: Theory of Computation}.
+\newblock {\em Pre-print May 2017\/} (2017), 1--5.
+\newblock
+\newblock
+\shownote{As found on the AVL/papers repository on GitLab.}
+
+
+\bibitem[\protect\citeauthoryear{Sterbentz and Money}{Sterbentz and
+  Money}{2018}]%
+        {Sterbentz2018}
+{Marko Sterbentz} {and} {James~H. Money}. 2018.
+\newblock \showarticletitle{Large Scale Adaptive Volume Visualization Using
+  GPGPU Techniques and Commodity Game Engines}.
+\newblock {\em Pre-print August 2018\/} (2018), 1--9.
+\newblock
+\newblock
+\shownote{As provided to me by Marko Sterbentz, August 2018.}
+
+
+\end{thebibliography}
