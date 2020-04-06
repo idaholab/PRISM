@@ -78,7 +78,7 @@ There are several components to this panel.
 * **Transfer Function Selector:** Defaults to `Black_To_White`. Select the transfer function you wish to use and load it. Take note that the save button will overwrite the current transfer function file with the current values of the color spectrum bar and the transfer function controls. If you do not wish to overwrite the predefined transfer functions with new values, first create a separate transfer function file that can be safely written over. 
 
 ## Termination and Reset of SIEVAS
-At times it is useful to be able to terminate and reset the connection to SIEVAS that the VVT is using. This is especially useful when doing development. On a standard Wondows machine, the backend of SIEVAS runs on port 61616. If the backend enters an error state, one must terminate the backend processes. This can be accomplished using a short shell script like the following:
+At times it is useful to be able to terminate and reset the connection to SIEVAS that the VVT is using. This is especially useful when doing development. On a standard Windows machine, the backend of SIEVAS runs on port 61616. If the backend enters an error state, one must terminate the backend processes. This can be accomplished using a short shell script like the following:
 ```
 #!/bin/sh
 
